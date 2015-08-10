@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<package>
+  <name>tobi_picknplace</name>
+  <version>0.1.0</version>
+  <description>Server for controlling pick and place strategies for robot tobi</description>
+
+  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
+  <maintainer email="lziegler@techfak.uni-bielefeld.de">Leon Ziegler</maintainer>
+
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>TODO</license>
+
+
+  <!-- Url tags are optional, but mutiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!-- <url type="website">http://wiki.ros.org/tobi_picknplace_server</url> -->
+
+
+  <!-- Author tags are optional, mutiple are allowed, one per tag -->
+  <!-- Authors do not have to be maintianers, but could be -->
+  <author email="lziegler@techfak.uni-bielefeld.de">Leon Ziegler</author>
+
+
+  <!-- The *_depend tags are used to specify dependencies -->
+  <!-- Dependencies can be catkin packages or system dependencies -->
+  <build_depend>message_generation</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>moveit_ros_planning_interface</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>shape_tools</build_depend>
+  <build_depend>shape_msgs</build_depend>
+  <build_depend>moveit_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>cmake_modules</build_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>message_runtime</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>tf2</run_depend>
+  <run_depend>moveit_ros_planning_interface</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>shape_tools</run_depend>
+  <run_depend>shape_msgs</run_depend>
+  <run_depend>moveit_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rosrun tobi_picknplace_server tobi_picknplace_client --findNearestPose
