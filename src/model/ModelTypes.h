@@ -10,6 +10,7 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 #include <map>
+#include <string>
 #include <stdint.h>
 #include <time.h>
 #include <sys/time.h>
