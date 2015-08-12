@@ -142,7 +142,7 @@ bool ViaPoseStrategy::moveTo(const std::string& poseName, bool withRecovery) {
                 continue;
             } else {
                 RSCWARN(logger,
-                        "!!!WARNING!!!! First Pose is not a known pose. Planning path to " << currentTargetPose);
+                        "!!!WARNING!!!! Starting pose is not a known pose. Planning path to " << currentTargetPose);
                 success = model->moveTo(currentTargetPose, true);
             }
 		} else {
