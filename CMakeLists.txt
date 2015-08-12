@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
     moveit_msgs
     visualization_msgs
     cmake_modules
+    katana_msgs
 )
 include_directories(${catkin_INCLUDE_DIRS})
 
@@ -29,6 +30,7 @@ catkin_package(
     shape_msgs
     moveit_msgs
     visualization_msgs
+    katana_msgs
 )
 
 ## System dependencies are found with CMake's conventions

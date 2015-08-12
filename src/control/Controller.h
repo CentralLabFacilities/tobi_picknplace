@@ -29,7 +29,7 @@ public:
 
 	void requestMoveJointAngles(const std::vector<double> &angle);
 	int requestNumJoints() const;
-	std::vector<double> requestJointAngles() const;
+	std::map<std::string, double> requestJointAngles() const;
 
 	void requestOpenGripper(bool withSensors);
 	void requestCloseGripper(bool withSensors);
@@ -48,7 +48,7 @@ public:
 	GraspReturnType requestPlaceObject(EefPose obj, bool simulate);
 	GraspReturnType requestPlaceObject(ObjectShape obj, bool simulate);
 	std::string requestNearestPose() const;
-	Poses requestPoses() const;
+	ArmPoses requestPoses() const;
 
 private:
 	Model::Ptr katana;

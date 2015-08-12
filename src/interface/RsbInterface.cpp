@@ -86,12 +86,12 @@ public:
 
 	shared_ptr<JointAngles> listAngles() {
 		RSCDEBUG(logger, "Invoked ListAngles");
-		vector<double> joints = listener->requestJointAngles();
+		map<string, double> joints = listener->requestJointAngles();
 
 		shared_ptr<JointAngles> angles(new JointAngles());
-		for (int i = 0; i < joints.size(); ++i) {
-			angles->add_angles(joints[i]);
-			RSCDEBUG(logger, "joint " << i << " with value " << joints[i]);
+		for (map<string, double>::iterator i = joints.begin(); i != joints.end(); ++i) {
+			angles->add_angles(i->second);
+			RSCDEBUG(logger, "joint " << i->first << " with value " << i->second);
 		}
 		return angles;
 	}
@@ -112,7 +112,7 @@ public:
 		return shared_ptr<void>();
 	}
 
-	shared_ptr<bool> goTo(shared_ptr<Pose> input, bool linear, bool orientation) {
+	shared_ptr<bool> goTo(shared_ptr<rst::geometry::Pose> input, bool linear, bool orientation) {
 		shared_ptr<bool> sucess(new bool(true));
 		RSCDEBUG(logger, "Invoked gotToLinear");
 		try {
@@ -125,30 +125,30 @@ public:
 		return sucess;
 	}
 
-	shared_ptr<bool> goToLinear(shared_ptr<Pose> input) {
+	shared_ptr<bool> goToLinear(shared_ptr<rst::geometry::Pose> input) {
 		RSCDEBUG(logger, "Invoked gotToLinear");
 		return goTo(input, true, false);
 	}
 
-	shared_ptr<bool> goToNonLinear(shared_ptr<Pose> input) {
+	shared_ptr<bool> goToNonLinear(shared_ptr<rst::geometry::Pose> input) {
 		RSCDEBUG(logger, "Invoked gotToNonLinear");
 		return goTo(input, false, false);
 	}
 
-	shared_ptr<bool> goToLinearOrient(shared_ptr<Pose> input) {
+	shared_ptr<bool> goToLinearOrient(shared_ptr<rst::geometry::Pose> input) {
 		RSCDEBUG(logger, "Invoked gotToLinearOrient");
 		return goTo(input, true, true);
 	}
 
-	shared_ptr<bool> goToNonLinearOrient(shared_ptr<Pose> input) {
+	shared_ptr<bool> goToNonLinearOrient(shared_ptr<rst::geometry::Pose> input) {
 		RSCDEBUG(logger, "Invoked gotToNonLinearOrient");
 		return goTo(input, false, true);
 	}
 
-	shared_ptr<Pose> getPosition() {
+	shared_ptr<rst::geometry::Pose> getPosition() {
 		RSCDEBUG(logger, "Invoked getPosition");
 		EefPose position = listener->requestEefPose();
-		shared_ptr<Pose> poseOut = convert(position);
+		shared_ptr<rst::geometry::Pose> poseOut = convert(position);
 		RSCDEBUG(logger, "Received following pose: " << poseOut->DebugString());
 		return poseOut;
 	}
@@ -220,11 +220,11 @@ public:
 		rst::generic::Value* newVal;
 		KeyValuePair* key;
 
-		Poses poses = listener->requestPoses();
+		ArmPoses poses = listener->requestPoses();
 
-		for (Poses::iterator poseIt = poses.begin(); poseIt != poses.end(); ++poseIt) {
+		for (ArmPoses::iterator poseIt = poses.begin(); poseIt != poses.end(); ++poseIt) {
 			string poseName = poseIt->first;
-			vector<double> poseValues = poseIt->second;
+			ArmPose poseValues = poseIt->second;
 
 			//add new keyValuepair in the array
 			key = output->mutable_entries()->Add();
@@ -238,10 +238,10 @@ public:
 			newVal = key->mutable_value()->mutable_array()->Add();
 			newVal->set_type(rst::generic::Value_Type_INT);
 			newVal->set_int_(poseValues.size());
-			for (int f = 0; f < poseValues.size(); f++) {
+			for (ArmPose::iterator f = poseValues.begin(); f != poseValues.end(); ++f) {
 				newVal = key->mutable_value()->mutable_array()->Add();
 				newVal->set_type(rst::generic::Value_Type_DOUBLE);
-				newVal->set_double_(poseValues[f]);
+				newVal->set_double_(f->second);
 			}
 		}
 
@@ -267,7 +267,7 @@ public:
 		GraspReturnType grt = listener->requestGraspObject(convert(input), false);
 		return convert(grt);
 	}
-	shared_ptr<Dictionary> placeObject(shared_ptr<Pose> input) {
+	shared_ptr<Dictionary> placeObject(shared_ptr<rst::geometry::Pose> input) {
 		RSCDEBUG(logger, "Invoked placeObject");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
 		return convert(grt);
@@ -277,7 +277,7 @@ public:
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
 		return convert(grt);
 	}
-	shared_ptr<Dictionary> isObjectPlaceable(shared_ptr<Pose> input) {
+	shared_ptr<Dictionary> isObjectPlaceable(shared_ptr<rst::geometry::Pose> input) {
 		RSCDEBUG(logger, "Invoked isObjectPlaceable");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), true);
 		return convert(grt);
@@ -337,7 +337,7 @@ public:
 		}
 		return output;
 	}
-	EefPose convert(shared_ptr<Pose> input) {
+	EefPose convert(shared_ptr<rst::geometry::Pose> input) {
 		EefPose pose;
 		pose.translation.xMeter = input->translation().x();
 		pose.translation.yMeter = input->translation().y();
@@ -354,7 +354,7 @@ public:
 	}
 
 	shared_ptr<Pose> convert(const EefPose &input) {
-		boost::shared_ptr<Pose> retPose(new Pose());
+		boost::shared_ptr<rst::geometry::Pose> retPose(new rst::geometry::Pose());
 		retPose->mutable_translation()->set_x(input.translation.xMeter);
 		retPose->mutable_translation()->set_y(input.translation.yMeter);
 		retPose->mutable_translation()->set_z(input.translation.zMeter);
@@ -414,7 +414,7 @@ void RsbInterface::init() {
 	RSCDEBUG(d->logger, "registering methods");
 
 	// add converters
-	converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(Pose));
+	converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(rst::geometry::Pose));
 	converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(JointAngles));
 	converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(Dictionary));
 	converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(BoundingBox3DFloat));
@@ -425,11 +425,11 @@ void RsbInterface::init() {
 	d->server->registerMethod("listAngles", CREATE_CALLBACK_0(JointAngles, listAngles));
 	d->server->registerMethod("moveJoints", CREATE_CALLBACK_1(JointAngles, void, moveJoints));
 	//d->server->registerMethod("goto", CREATE_CALLBACK(string, string, echo));
-	d->server->registerMethod("gotoLinear", CREATE_CALLBACK_1(Pose, bool, goToLinear));
-	d->server->registerMethod("gotoNonLinear", CREATE_CALLBACK_1(Pose, bool, goToNonLinear));
-	d->server->registerMethod("gotoLinearOrient", CREATE_CALLBACK_1(Pose, bool, goToLinearOrient));
-	d->server->registerMethod("gotoNonLinearOrient", CREATE_CALLBACK_1(Pose, bool, goToNonLinearOrient));
-	d->server->registerMethod("getPosition", CREATE_CALLBACK_0(Pose, getPosition));
+	d->server->registerMethod("gotoLinear", CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToLinear));
+	d->server->registerMethod("gotoNonLinear", CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToNonLinear));
+	d->server->registerMethod("gotoLinearOrient", CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToLinearOrient));
+	d->server->registerMethod("gotoNonLinearOrient", CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToNonLinearOrient));
+	d->server->registerMethod("getPosition", CREATE_CALLBACK_0(rst::geometry::Pose, getPosition));
 	d->server->registerMethod("findNearestPose", CREATE_CALLBACK_0(string, findNearestPose));
 	//d->server->registerMethod("listActions", CREATE_CALLBACK(string, string, echo));
 	d->server->registerMethod("listPoses", CREATE_CALLBACK_0(Dictionary, listPoses));
@@ -452,10 +452,10 @@ void RsbInterface::init() {
 	d->server->registerMethod("isObjectGraspable", CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, isObjectGraspable));
 	d->server->registerMethod("graspObject", CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, graspObject));
 	//d->server->registerMethod("graspObjectOrientation", CREATE_CALLBACK(string, string, echo));
-	d->server->registerMethod("placeObjectAt", CREATE_CALLBACK_1(Pose, Dictionary, placeObject));
+	d->server->registerMethod("placeObjectAt", CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, placeObject));
 	d->server->registerMethod("placeObjectInRegion", CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, placeObjectInRegion));
 	//d->server->registerMethod("placeObjectAtExact", CREATE_CALLBACK(string, string, echo));
-	d->server->registerMethod("isPlaceable", CREATE_CALLBACK_1(Pose, Dictionary, isObjectPlaceable));
+	d->server->registerMethod("isPlaceable", CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, isObjectPlaceable));
 	//d->server->registerMethod("wipingMovement", CREATE_CALLBACK(string, string, echo));
 	//d->server->registerMethod("joggingMovement", CREATE_CALLBACK(string, string, echo));
 	//d->server->registerMethod("findLeverAndMoveDown", CREATE_CALLBACK(string, string, echo));

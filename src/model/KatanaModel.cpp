@@ -48,12 +48,13 @@ KatanaModel::KatanaModel(): lastHeightAboveTable(0.0) {
 	placeActionClient.reset(
 			new actionlib::SimpleActionClient<moveit_msgs::PlaceAction>(nh,
 					move_group::PLACE_ACTION, false));
-
-	//scene = moveit::planning_interface::getSharedStateMonitor(moveit::planning_interface::getSharedRobotModel("tobi"), moveit::planning_interface::getSharedTF());
-	//scene->startStateMonitor();
+	movementActionClient.reset(
+	            new actionlib::SimpleActionClient<katana_msgs::JointMovementAction>(nh,
+	                    "katana_arm_controller/joint_movement_action", false));
 
 	waitForAction(pickActionClient, ros::Duration(0, 0), move_group::PICKUP_ACTION);
 	waitForAction(placeActionClient, ros::Duration(0, 0), move_group::PLACE_ACTION);
+	waitForAction(movementActionClient, ros::Duration(0, 0), "katana_arm_controller/joint_movement_action");
 
 	ROS_INFO("KatanaModel: connected");
 }
@@ -76,18 +77,24 @@ void KatanaModel::removeListener(ModelListener* listener) {
 	}
 }
 
-vector<double> KatanaModel::getJointAngles() const {
+map<string, double> KatanaModel::getJointAngles() const {
 	ROS_DEBUG("Invoked getJointAngles");
-	return groupArm->getCurrentJointValues();
+	map<string, double> jointAngles;
+	vector<string> jointNames = groupArm->getJoints();
+	vector<double> jointValues = groupArm->getCurrentJointValues();
+	for (int i = 0; i < jointNames.size(); i++) {
+	    jointAngles[jointNames[i]] = jointValues[i];
+	}
+	return jointAngles;
 }
 
-void KatanaModel::setJointAngle(int joint, double angle) {
+vector<string> KatanaModel::getJointNames() const {
+    ROS_DEBUG("Invoked getJointNames");
+    return groupArm->getJoints();
+}
+
+void KatanaModel::setJointAngle(const string &joint, double angle) {
 	ROS_INFO("### Invoked setJointAngle ###");
-	vector<string> joints = groupArm->getJoints();
-	if (joint < 0 || joint >= joints.size()) {
-		ROS_ERROR("Requested joint %i does not exist!", joint);
-		return;
-	}
 
 	if (!isSomethingInGripper()) {
 		rosTools.detach_collision_object();
@@ -95,28 +102,43 @@ void KatanaModel::setJointAngle(int joint, double angle) {
 
 	groupArm->clearPoseTargets();
 	groupArm->setStartStateToCurrentState();
-	groupArm->setJointValueTarget(joints[joint], angle);
+	groupArm->setJointValueTarget(joint, angle);
+	groupArm->move();
+}
+
+void KatanaModel::setJointAngles(const map<string, double> &angles) {
+	ROS_INFO("### Invoked setJointAngles ###");
+
+	if (!isSomethingInGripper()) {
+		rosTools.detach_collision_object();
+	}
+
+	groupArm->clearPoseTargets();
+	groupArm->setStartStateToCurrentState();
+	for (map<string, double>::const_iterator i = angles.begin(); i != angles.end(); ++i) {
+		groupArm->setJointValueTarget(i->first, i->second);
+	}
 	groupArm->move();
 }
 
 void KatanaModel::setJointAngles(const vector<double> &angles) {
-	ROS_INFO("### Invoked setJointAngles ###");
-	vector<string> joints = groupArm->getJoints();
-	if (angles.size() < 0 || angles.size() > joints.size()) {
-		ROS_ERROR("Requested number of joints wrong! (%i)", (int )angles.size());
-		return;
-	}
+    ROS_INFO("### Invoked setJointAngles ###");
+    vector<string> joints = groupArm->getJoints();
+    if (angles.size() < 0 || angles.size() > joints.size()) {
+        ROS_ERROR("Requested number of joints wrong! (%i)", (int )angles.size());
+        return;
+    }
 
-	if (!isSomethingInGripper()) {
-		rosTools.detach_collision_object();
-	}
+    if (!isSomethingInGripper()) {
+        rosTools.detach_collision_object();
+    }
 
-	groupArm->clearPoseTargets();
-	groupArm->setStartStateToCurrentState();
-	for (int i = 0; i < angles.size(); i++) {
-		groupArm->setJointValueTarget(joints[i], angles[i]);
-	}
-	groupArm->move();
+    groupArm->clearPoseTargets();
+    groupArm->setStartStateToCurrentState();
+    for (int i = 0; i < angles.size(); i++) {
+        groupArm->setJointValueTarget(joints[i], angles[i]);
+    }
+    groupArm->move();
 }
 
 int KatanaModel::getNumJoints() const {
@@ -221,41 +243,57 @@ MoveResult KatanaModel::moveTo(const EefPose& pose, bool linear, bool orientatio
 	return rosTools.moveResultFromMoveit(groupArm->move());
 }
 
-MoveResult KatanaModel::moveTo(const std::string& poseName) {
+MoveResult KatanaModel::moveTo(const std::string& poseName, bool plan) {
 	ROS_INFO("### Invoked moveTo (string) ###");
 
 	if (!isSomethingInGripper()) {
 		rosTools.detach_collision_object();
 	}
 
-	groupArm->clearPoseTargets();
-	groupArm->setStartStateToCurrentState();
-	groupArm->setNamedTarget(poseName);
-
-	return rosTools.moveResultFromMoveit(groupArm->move());
+	if (plan) {
+        groupArm->clearPoseTargets();
+        groupArm->setStartStateToCurrentState();
+        groupArm->setNamedTarget(poseName);
+        return rosTools.moveResultFromMoveit(groupArm->move());
+	} else {
+	    katana_msgs::JointMovementGoal goal = buildMovementGoal(poseName);
+	    movementActionClient->sendGoal(goal);
+        if (!movementActionClient->waitForResult()) {
+            ROS_INFO_STREAM("Movement action returned early");
+            return OTHER;
+        }
+        if (movementActionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+            return SUCCESS;
+        } else {
+            return OTHER;
+        }
+	}
 }
 
 
-map<string, vector<double> > KatanaModel::getRememberedPoses() const {
+ArmPoses KatanaModel::getRememberedPoses() const {
 	ROS_DEBUG("Invoked getRememberedPoses");
 	string planningGroup = groupArm->getName();
 	const robot_model::JointModelGroup* jmg =
 			groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(planningGroup);
 	vector<string> names = jmg->getDefaultStateNames();
-	Poses poses;
+	ArmPoses poses;
 	for (vector<string>::iterator it = names.begin(); it != names.end(); it++) {
 		string name = *it;
-		vector<double> angleVals;
 		map<string, double> angles;
 		jmg->getVariableDefaultPositions(name, angles);
-		map<string, double>::iterator ait;
-		for (ait = angles.begin(); ait != angles.end(); ++ait) {
-			angleVals.push_back(ait->second);
-		}
-		poses[name] = angleVals;
+		poses[name] = angles;
 	}
 	ROS_DEBUG("poses %d, names %d", (int )poses.size(), (int )names.size());
 	return poses;
+}
+
+ArmPose KatanaModel::getRememberedPose(const std::string &name) const {
+    const robot_model::JointModelGroup* jmg =
+                groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(groupArm->getName());
+    map<string, double> angles;
+    jmg->getVariableDefaultPositions(name, angles);
+    return angles;
 }
 
 void KatanaModel::stop() const {
@@ -412,7 +450,7 @@ GraspReturnType KatanaModel::graspObject(ObjectShape obj, bool simulate, const s
 		}
 	} else if (pickActionClient->getState() == actionlib::SimpleClientGoalState::ABORTED
 			|| (pickActionClient->getState() == SimpleClientGoalState::PENDING
-					&& placeActionClient->getResult()->error_code.val == MoveItErrorCode::SUCCESS)) {
+					&& pickActionClient->getResult()->error_code.val == MoveItErrorCode::SUCCESS)) {
 		ROS_WARN_STREAM(
 				"  Pick Action ABORTED (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
 		grt.result = GraspReturnType::ROBOT_CRASHED;
@@ -680,4 +718,14 @@ moveit_msgs::PlaceGoal KatanaModel::buildPlaceGoal(
 	goal.planning_options.planning_scene_diff.is_diff = true;
 	goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
 	return goal;
+}
+
+katana_msgs::JointMovementGoal KatanaModel::buildMovementGoal(const std::string &poseName) {
+    ArmPose pose = getRememberedPose(poseName);
+    katana_msgs::JointMovementGoal goal;
+    for (ArmPose::iterator i = pose.begin(); i != pose.end(); ++i) {
+        goal.jointGoal.name.push_back(i->first);
+        goal.jointGoal.position.push_back(i->second);
+    }
+    return goal;
 }

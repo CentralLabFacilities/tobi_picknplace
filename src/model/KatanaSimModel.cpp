@@ -23,17 +23,24 @@ void KatanaSimModel::addListener(ModelListener* listener) {
 void KatanaSimModel::removeListener(ModelListener* listener) {
 }
 
-vector<double> KatanaSimModel::getJointAngles() const {
+map<string, double> KatanaSimModel::getJointAngles() const {
 	ROS_INFO("Invoked getJointAngles");
-	return vector<double>();
+	return map<string, double>();
+}
+vector<string> KatanaSimModel::getJointNames() const {
+    ROS_INFO("Invoked getJointNames");
+    return vector<string>();
 }
 
-void KatanaSimModel::setJointAngle(int joint, double angle) {
+void KatanaSimModel::setJointAngle(const string &joint, double angle) {
 	ROS_INFO("Invoked setJointAngle");
 }
 
-void KatanaSimModel::setJointAngles(const vector<double> &angles) {
+void KatanaSimModel::setJointAngles(const map<string, double> &angles) {
 	ROS_INFO("Invoked setJointAngles");
+}
+void KatanaSimModel::setJointAngles(const vector<double> &angles) {
+    ROS_INFO("Invoked setJointAngles");
 }
 
 int KatanaSimModel::getNumJoints() const {
@@ -73,11 +80,15 @@ MoveResult KatanaSimModel::moveTo(const EefPose& pose, bool linear, bool orienta
 	return OTHER;
 }
 
-map<string, vector<double> > KatanaSimModel::getRememberedPoses() const {
-	return map<string, vector<double> >();
+ArmPoses KatanaSimModel::getRememberedPoses() const {
+	return ArmPoses();
 }
 
-MoveResult KatanaSimModel::moveTo(const std::string& poseName) {
+ArmPose KatanaSimModel::getRememberedPose(const std::string &name) const {
+    return ArmPose();
+}
+
+MoveResult KatanaSimModel::moveTo(const std::string& poseName, bool plan) {
 	ROS_INFO("Invoked moveTo (string)");
 	return OTHER;
 }

@@ -17,7 +17,8 @@
 
 #include "ModelListener.h"
 
-typedef std::map<std::string, std::vector<double> > Poses;
+typedef std::map<std::string, double> ArmPose;
+typedef std::map<std::string, ArmPose > ArmPoses;
 typedef std::map<std::string, short> SensorReadings;
 
 enum MoveResult {

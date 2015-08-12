@@ -128,22 +128,26 @@ bool ViaPoseStrategy::moveTo(const std::string& poseName, bool withRecovery) {
 		moveGripper = false;
 	}
 
-	int offset = 0;
-	if (calcErrorToPose(*path.begin()) < 0.03) {
-		offset++;
-		RSCDEBUG(logger, "First Pose is reached going to:  " << *(path.begin()+offset));
-	} else {
-		RSCWARN(logger,
-				"!!!WARNING!!!! First Pose is not a known pose. Moving anyway  " << *(path.begin()+offset));
-	}
-
 	// execute path
-	for (Path::iterator pathIt = path.begin() + offset; pathIt != path.end(); ++pathIt) {
+	for (Path::iterator pathIt = path.begin(); pathIt != path.end(); ++pathIt) {
+		bool first = pathIt == path.begin();
 		bool last = pathIt == path.end() - 1;
 		string currentTargetPose = *pathIt;
 
 		RSCINFO(logger, "  next pose: " << currentTargetPose);
-		MoveResult success = model->moveTo(currentTargetPose);
+		MoveResult success;
+		if (first) {
+		    if (calcErrorToPose(currentTargetPose) < 0.03) {
+                RSCDEBUG(logger, "First Pose is reached");
+                continue;
+            } else {
+                RSCWARN(logger,
+                        "!!!WARNING!!!! First Pose is not a known pose. Planning path to " << currentTargetPose);
+                success = model->moveTo(currentTargetPose, true);
+            }
+		} else {
+		    success = model->moveTo(currentTargetPose, false);
+		}
 		if (success == SUCCESS) {
 			RSCINFO(logger, "    result: success");
 		} else if (success == NOPLAN) {
@@ -182,10 +186,9 @@ string ViaPoseStrategy::findNearestPose() const {
 	std::string bestPose = "NoUsablePoseFound";
 
 	double lowestError = numeric_limits<double>().max();
-	vector<double> joints = model->getJointAngles();
-	Poses rememberedPoses = model->getRememberedPoses();
+	ArmPoses rememberedPoses = model->getRememberedPoses();
 
-	Poses::iterator it;
+	ArmPoses::iterator it;
 	RSCDEBUG(logger, "Poses we know: " << rememberedPoses.size());
 	for (it = rememberedPoses.begin(); it != rememberedPoses.end(); ++it) {
 		double squareError = calcErrorToPose(it->first);
@@ -203,22 +206,22 @@ string ViaPoseStrategy::findNearestPose() const {
 
 double ViaPoseStrategy::calcErrorToPose(const std::string& pose) const {
 
-	Poses rememberedPoses = model->getRememberedPoses();
+	ArmPoses rememberedPoses = model->getRememberedPoses();
 	if (!rememberedPoses.count(pose)) {
 		RSCERROR(logger, "Named pose is unknown: " << pose);
 		return numeric_limits<double>::max();
 	}
 
-	vector<double> angles = rememberedPoses[pose];
-	vector<double> joints = model->getJointAngles();
+	map<string, double> angles = rememberedPoses[pose];
+	map<string, double> joints = model->getJointAngles();
 
 	double squareError = 0;
 
 	// look only at first 3 joints, with descending weight
 	// TODO if joint 2 points straight, joint 1 is not so important
-	squareError += pow(angles[0] - joints[0], 2) * 3;
-	squareError += pow(angles[1] - joints[1], 2) * 2;
-	squareError += pow(angles[2] - joints[2], 2) * 1;
+	squareError += pow(angles["katana_motor1_pan_joint"]  - joints["katana_motor1_pan_joint"],  2) * 3;
+	squareError += pow(angles["katana_motor2_lift_joint"] - joints["katana_motor2_lift_joint"], 2) * 2;
+	squareError += pow(angles["katana_motor3_lift_joint"] - joints["katana_motor3_lift_joint"], 2) * 1;
 	squareError /= 3;
 	RSCDEBUG(logger, "Error to Pose: " << pose << " is: " << squareError);
 	return squareError;

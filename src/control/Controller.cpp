@@ -44,7 +44,7 @@ std::string Controller::requestNearestPose() const{
 	return strategy->findNearestPose();
 }
 
-Poses Controller::requestPoses() const {
+ArmPoses Controller::requestPoses() const {
 	return katana->getRememberedPoses();
 }
 
@@ -67,7 +67,7 @@ int Controller::requestNumJoints() const {
 	return katana->getNumJoints();
 }
 
-vector<double> Controller::requestJointAngles() const {
+map<string, double> Controller::requestJointAngles() const {
 	return katana->getJointAngles();
 }
 

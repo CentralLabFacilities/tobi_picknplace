@@ -22,9 +22,11 @@ public:
 	void addListener(ModelListener* listener);
 	void removeListener(ModelListener* listener);
 
-	virtual std::vector<double> getJointAngles() const;
-	virtual void setJointAngle(int joint, double angle);
-	virtual void setJointAngles(const std::vector<double> &angle);
+	virtual std::map<std::string, double> getJointAngles() const;
+	virtual std::vector<std::string> getJointNames() const;
+    virtual void setJointAngle(const std::string &joint, double angle);
+    virtual void setJointAngles(const std::map<std::string, double> &angle);
+    virtual void setJointAngles(const std::vector<double> &angles);
 	virtual int getNumJoints() const;
 
 	virtual void openGripper(bool withSensors);
@@ -35,9 +37,10 @@ public:
 	virtual void motorsOff();
 
 	virtual EefPose getEefPose() const;
-	virtual Poses getRememberedPoses() const;
+	virtual ArmPoses getRememberedPoses() const;
+	virtual ArmPose getRememberedPose(const std::string &name) const;
 	virtual MoveResult moveTo(const EefPose &pose, bool linear, bool orientation);
-	virtual MoveResult moveTo(const std::string &poseName);
+	virtual MoveResult moveTo(const std::string &poseName, bool plan);
 	virtual void stop() const;
 
 	virtual bool isSomethingInGripper() const;

@@ -19,6 +19,7 @@
 #include <moveit_msgs/Grasp.h>
 #include <moveit_msgs/PickupAction.h>
 #include <moveit_msgs/PlaceAction.h>
+#include <katana_msgs/JointMovementAction.h>
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 #include <sensor_msgs/JointState.h>
@@ -38,9 +39,11 @@ public:
 	void addListener(ModelListener* listener);
 	void removeListener(ModelListener* listener);
 
-	virtual std::vector<double> getJointAngles() const;
-	virtual void setJointAngle(int joint, double angle);
-	virtual void setJointAngles(const std::vector<double> &angle);
+	virtual std::map<std::string, double> getJointAngles() const;
+	virtual std::vector<std::string> getJointNames() const;
+    virtual void setJointAngle(const std::string &joint, double angle);
+    virtual void setJointAngles(const std::map<std::string, double> &angle);
+    virtual void setJointAngles(const std::vector<double> &angles);
 	virtual int getNumJoints() const;
 
 	virtual void openGripper(bool withSensors);
@@ -51,9 +54,10 @@ public:
 	virtual void motorsOff();
 
 	virtual EefPose getEefPose() const;
-	virtual Poses getRememberedPoses() const;
+	virtual ArmPoses getRememberedPoses() const;
+	virtual ArmPose getRememberedPose(const std::string &name) const;
 	virtual MoveResult moveTo(const EefPose &pose, bool linear, bool orientation);
-	virtual MoveResult moveTo(const std::string &poseName);
+	virtual MoveResult moveTo(const std::string &poseName, bool plan);
 	virtual void stop() const;
 
 	virtual bool isSomethingInGripper() const;
@@ -74,6 +78,7 @@ private:
 	moveit::planning_interface::PlanningSceneInterface *planningScene;
 	boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PickupAction> > pickActionClient;
 	boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PlaceAction> > placeActionClient;
+	boost::scoped_ptr<actionlib::SimpleActionClient<katana_msgs::JointMovementAction> > movementActionClient;
 
 	ros::Subscriber sensor_subscriber;
 
@@ -95,6 +100,7 @@ private:
 	void attachDefaultObject();
 	moveit_msgs::PlaceGoal buildPlaceGoal(const std::vector<moveit_msgs::PlaceLocation>& locations,
 			bool simulate);
+	katana_msgs::JointMovementGoal buildMovementGoal(const std::string &poseName);
 
 	template<typename T>
 	void waitForAction(const T &action, const ros::Duration &wait_for_server,

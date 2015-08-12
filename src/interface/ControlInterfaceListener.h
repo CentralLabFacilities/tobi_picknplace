@@ -21,7 +21,7 @@ public:
 
 	virtual void requestMoveJointAngles(const std::vector<double> &angle) = 0;
 	virtual int requestNumJoints() const = 0;
-	virtual std::vector<double> requestJointAngles() const = 0;
+	virtual std::map<std::string, double> requestJointAngles() const = 0;
 
 	virtual void requestOpenGripper(bool withSensors) = 0;
 	virtual void requestCloseGripper(bool withSensors) = 0;
@@ -40,14 +40,14 @@ public:
 	virtual GraspReturnType requestPlaceObject(EefPose obj, bool simulate) = 0;
 	virtual GraspReturnType requestPlaceObject(ObjectShape obj, bool simulate) = 0;
 	virtual std::string requestNearestPose() const = 0;
-    virtual Poses requestPoses() const = 0;
+    virtual ArmPoses requestPoses() const = 0;
 };
 
 class EmptyControlInterfaceListener: public ControlInterfaceListener {
 public:
 	void requestMoveJointAngles(const std::vector<double> &angle){}
 	int requestNumJoints() const{return -1;}
-	std::vector<double> requestJointAngles() const{return std::vector<double>();}
+	std::map<std::string, double> requestJointAngles() const{return std::map<std::string, double>();}
 
 	void requestOpenGripper(bool withSensors){}
 	void requestCloseGripper(bool withSensors){}
@@ -66,7 +66,7 @@ public:
 	GraspReturnType requestPlaceObject(EefPose obj, bool simulate){return GraspReturnType();}
 	GraspReturnType requestPlaceObject(ObjectShape obj, bool simulate){return GraspReturnType();}
 	std::string requestNearestPose() const{return std::string();}
-	Poses requestPoses() const{return Poses();};
+	ArmPoses requestPoses() const{return ArmPoses();};
 };
 
 
