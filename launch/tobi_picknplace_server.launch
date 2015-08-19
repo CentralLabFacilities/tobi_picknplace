@@ -7,7 +7,7 @@
   <arg unless="$(arg use_sim)" name="use_sim_args" value="" />
   <arg     if="$(arg use_sim)" name="use_sim_args" value="--sim" />
 
-  <node name="tobi_picknplace_server" pkg="tobi_picknplace_server" type="tobi_picknplace_server_node" args="--transitions $(arg transitions) $(arg use_sim_args)" output="screen">
+  <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="--transitions $(arg transitions) $(arg use_sim_args)" output="screen">
     <param name="gripperPositionClosed" value="$(arg gripperPositionClosed)" />
     <param name="gripperPositionOpen" value="0.298" />
     <param name="approachDesiredDistance" value="0.10" />
