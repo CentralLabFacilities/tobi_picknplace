@@ -42,6 +42,7 @@ KatanaModel::KatanaModel(): lastHeightAboveTable(0.0) {
 	groupGripper->startStateMonitor();
 
 	sensor_subscriber = nh.subscribe("sensor_states", 1, &KatanaModel::sensorCallback, this);
+
 	pickActionClient.reset(
 			new actionlib::SimpleActionClient<moveit_msgs::PickupAction>(nh,
 					move_group::PICKUP_ACTION, false));
@@ -367,10 +368,14 @@ std::vector<moveit_msgs::Grasp> KatanaModel::generate_grasps_angle_trans(ObjectS
 	return graspGenerator.generate_grasps_angle_trans(shape.center.xMeter, shape.center.yMeter, shape.center.zMeter, shape.heightMeter);
 }
 
+std::vector<moveit_msgs::Grasp> KatanaModel::generate_grasps_angle_trans(moveit_msgs::CollisionObject shape) {
+    tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameOriginArm);
+    return graspGenerator.generate_grasps_angle_trans(shape.primitive_poses[0].position.x, shape.primitive_poses[0].position.y, shape.primitive_poses[0].position.z, shape.primitives[0].dimensions[0]);
+}
 
 GraspReturnType KatanaModel::graspObject(ObjectShape obj, bool simulate, const string &startPose) {
 
-	ROS_INFO("### Invoked graspObject ###");
+	ROS_INFO("### Invoked graspObject(ObjectShape) ###");
 
 	if (obj.widthMeter > 0.1) {
 		obj.widthMeter = 0.1;
@@ -379,54 +384,68 @@ GraspReturnType KatanaModel::graspObject(ObjectShape obj, bool simulate, const s
 		obj.depthMeter = 0.1;
 	}
 
-	GraspReturnType grt;
-
-	if (!pickActionClient) {
-		ROS_ERROR_STREAM("Pick action client not found");
-		grt.result = GraspReturnType::FAIL;
-		return grt;
-	}
-	if (!pickActionClient->isServerConnected()) {
-		ROS_ERROR_STREAM("Pick action server not connected");
-		grt.result = GraspReturnType::FAIL;
-		return grt;
-	}
-
 	ROS_INFO("Trying to pick object at %.3f, %.3f, %.3f (frame: %s).", obj.center.xMeter, obj.center.yMeter, obj.center.zMeter, obj.center.frame.c_str());
+	string objId = rosTools.getDefaultObjectName();
 
 	// publish collision object
-	rosTools.publish_collision_object(obj, 0.5);
+	rosTools.publish_collision_object(objId, obj, 0.5);
 
 	vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(obj);
 	rosTools.publish_grasps_as_markerarray(grasps);
 	
-	moveit_msgs::PickupGoal goal;
-	goal.possible_grasps = grasps;
-	goal.attached_object_touch_links.push_back("katana_gripper_tool_frame");
-	goal.attached_object_touch_links.push_back("katana_gripper_link");
-	goal.attached_object_touch_links.push_back("katana_gripper_tool_frame");
-	goal.attached_object_touch_links.push_back("katana_l_finger_link");
-	goal.attached_object_touch_links.push_back("katana_r_finger_link");
-	goal.attached_object_touch_links.push_back("katana_base_link");
-	goal.attached_object_touch_links.push_back("katana_motor4_lift_link");
-	goal.attached_object_touch_links.push_back("katana_motor5_wrist_roll_link");
-	goal.target_name = rosTools.getDefaultObjectName();
-	goal.group_name = groupArm->getName();
-	goal.end_effector = groupArm->getEndEffector();
-	goal.allowed_planning_time = groupArm->getPlanningTime();
-	goal.support_surface_name = "";
-	goal.planner_id = "";
-	goal.planning_options.plan_only = simulate;
-	goal.planning_options.look_around = false;
-	goal.planning_options.replan = false;
-	goal.planning_options.replan_delay = 2.0;
-	goal.planning_options.planning_scene_diff.is_diff = true;
-	goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
+	ObjectShape objArmFrame;
+    tfTransformer.transform(obj, objArmFrame, ParamReader::getParamReader().frameOriginArm);
+    double tableHeightArmFrame = objArmFrame.center.xMeter - objArmFrame.heightMeter / 2.0;
+
+    return graspObject(objId, "", grasps, tableHeightArmFrame, simulate, startPose);
+}
+
+GraspReturnType KatanaModel::graspObject(const string &obj, const string &surface, bool simulate, const string &startPose) {
+
+	ROS_INFO("### Invoked graspObject(string) ###");
+
+    moveit_msgs::CollisionObject collisionObject;
+    bool success = rosTools.getCollisionObjectByName(obj, collisionObject);
+
+    GraspReturnType grt;
+    if (!success) {
+        ROS_WARN_STREAM("No object with id \"" << obj << "\" found in planning scene");
+        grt.result = GraspReturnType::FAIL;
+        return grt;
+    }
+
+    moveit_msgs::CollisionObject collisionObjectArmCoords;
+    tfTransformer.transform(collisionObject, collisionObjectArmCoords, ParamReader::getParamReader().frameOriginArm);
+    double tableHeightArmCoords = collisionObjectArmCoords.primitive_poses[0].position.x - collisionObjectArmCoords.primitives[0].dimensions[0] / 2.0;
+
+	vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(collisionObject);
+	rosTools.publish_grasps_as_markerarray(grasps);
+
+	return graspObject(obj, surface, grasps, tableHeightArmCoords, simulate, startPose);
+}
+
+GraspReturnType KatanaModel::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
+
+    GraspReturnType grt;
+
+    if (!pickActionClient) {
+        ROS_ERROR_STREAM("Pick action client not found");
+        grt.result = GraspReturnType::FAIL;
+        return grt;
+    }
+    if (!pickActionClient->isServerConnected()) {
+        ROS_ERROR_STREAM("Pick action server not connected");
+        grt.result = GraspReturnType::FAIL;
+        return grt;
+    }
+
+    moveit_msgs::PickupGoal goal = buildPickupGoal(obj, surface, grasps, simulate);
 
 	pickActionClient->sendGoal(goal);
 	if (!pickActionClient->waitForResult()) {
 		ROS_INFO_STREAM("Pickup action returned early");
 	}
+
 	ROS_INFO("###########################");
 	if (pickActionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
 		ROS_INFO("  Pick Action succeeded. (err_code: %d, state: %s)", pickActionClient->getResult()->error_code.val, pickActionClient->getState().toString().c_str());
@@ -439,9 +458,7 @@ GraspReturnType KatanaModel::graspObject(ObjectShape obj, bool simulate, const s
 			grt.point.frame = resultGrasp.grasp_pose.header.frame_id;
 			lastGraspPose = resultGrasp.grasp_pose;
 
-			ObjectShape objArmFrame;
-			tfTransformer.transform(obj, objArmFrame, ParamReader::getParamReader().frameOriginArm);
-			lastHeightAboveTable = resultGrasp.grasp_pose.pose.position.x - objArmFrame.center.xMeter + objArmFrame.heightMeter / 2.0;
+			lastHeightAboveTable = resultGrasp.grasp_pose.pose.position.x - tableHeightArmCoords;
 			grt.result = GraspReturnType::SUCCESS;
 			ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
 		} else {
@@ -476,93 +493,46 @@ GraspReturnType KatanaModel::placeObject(EefPose obj, bool simulate,
 		const string &startPose) {
 	ROS_INFO("### Invoked placeObject ###");
 
-	GraspReturnType grt;
-
-	if (!pickActionClient) {
-		ROS_ERROR_STREAM("Pick action client not found");
-		grt.result = GraspReturnType::FAIL;
-		return grt;
-	}
-	if (!pickActionClient->isServerConnected()) {
-		ROS_ERROR_STREAM("Pick action server not connected");
-		grt.result = GraspReturnType::FAIL;
-		return grt;
-	}
-
 	vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(obj);
 	rosTools.publish_place_locations_as_markerarray(locations);
 
-	moveit_msgs::PlaceGoal goal = buildPlaceGoal(locations, simulate);
-
-	for (int i = 0; i < 3; i++) {
-		placeActionClient->sendGoal(goal);
-		SimpleClientGoalState resultState = placeActionClient->getState();
-
-		if (!placeActionClient->waitForResult()) {
-			ROS_INFO_STREAM("Place action returned early");
-		}
-
-		ROS_INFO("###########################");
-		if (resultState == SimpleClientGoalState::SUCCEEDED) {
-			ROS_INFO("Place Action succeeded.");
-			grt.point = obj.translation;
-			grt.result = GraspReturnType::SUCCESS;
-			ROS_INFO("###########################");
-			break;
-		} else if (resultState == SimpleClientGoalState::PENDING
-				&& placeActionClient->getResult()->error_code.val == MoveItErrorCode::INVALID_GROUP_NAME) {
-			ROS_WARN("  PENDING: attached object not preset! Try to fix by attaching default object.");
-			attachDefaultObject();
-			ROS_INFO("###########################");
-			continue;
-		} else if (resultState == SimpleClientGoalState::ABORTED
-				|| (resultState == SimpleClientGoalState::PENDING
-						&& (placeActionClient->getResult()->error_code.val
-								== MoveItErrorCode::SUCCESS
-								|| placeActionClient->getResult()->error_code.val
-										== MoveItErrorCode::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE))) {
-			ROS_WARN("  ABORTED: %s", resultState.getText().c_str());
-			grt.result = GraspReturnType::ROBOT_CRASHED;
-			rosTools.clear_octomap();
-			break;
-		} else {
-			ROS_WARN("  Fail: %s (%d): %s", resultState.toString().c_str(), placeActionClient->getResult()->error_code.val, resultState.getText().c_str());
-			grt.result = rosTools.graspResultFromMoveit(placeActionClient->getResult()->error_code);
-			ROS_INFO("###########################");
-			break;
-		}
-		break;
-	}
-
-	if (!isSomethingInGripper()) {
-		rosTools.detach_collision_object();
-	}
-	rosTools.remove_collision_object();
-
-	return grt;
+	return placeObject("", locations, simulate, startPose);
 }
 
 GraspReturnType KatanaModel::placeObject(ObjectShape obj, bool simulate,
 		const string &startPose) {
 	ROS_INFO("### Invoked placeObject (bb) ###");
 
-	GraspReturnType grt;
-
-	if (!pickActionClient) {
-		ROS_ERROR_STREAM("Pick action client not found");
-		grt.result = GraspReturnType::FAIL;
-		return grt;
-	}
-	if (!pickActionClient->isServerConnected()) {
-		ROS_ERROR_STREAM("Pick action server not connected");
-		grt.result = GraspReturnType::FAIL;
-		return grt;
-	}
-
 	vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(obj);
 	rosTools.publish_place_locations_as_markerarray(locations);
 
-	moveit_msgs::PlaceGoal goal = buildPlaceGoal(locations, simulate);
+	return placeObject("", locations, simulate, startPose);
+}
+
+GraspReturnType KatanaModel::placeObject(const string &obj, bool simulate, const string &startPose) {
+    ROS_INFO("### Invoked placeObject (str) ###");
+    ROS_ERROR("placing with surface string not suppported yet!");
+    GraspReturnType grt;
+    grt.result = GraspReturnType::FAIL;
+    return grt;
+}
+
+GraspReturnType KatanaModel::placeObject(const std::string &surface, std::vector<moveit_msgs::PlaceLocation> locations, bool simulate, const std::string &startPose) {
+
+    GraspReturnType grt;
+
+    if (!pickActionClient) {
+        ROS_ERROR_STREAM("Pick action client not found");
+        grt.result = GraspReturnType::FAIL;
+        return grt;
+    }
+    if (!pickActionClient->isServerConnected()) {
+        ROS_ERROR_STREAM("Pick action server not connected");
+        grt.result = GraspReturnType::FAIL;
+        return grt;
+    }
+
+	moveit_msgs::PlaceGoal goal = buildPlaceGoal(surface, locations, simulate);
 
 	for (int i = 0; i < 3; i++) {
 		placeActionClient->sendGoal(goal);
@@ -575,7 +545,11 @@ GraspReturnType KatanaModel::placeObject(ObjectShape obj, bool simulate,
 		ROS_INFO("###########################");
 		if (resultState == SimpleClientGoalState::SUCCEEDED) {
 			ROS_INFO("Place Action succeeded.");
-			grt.point = obj.center;
+			moveit_msgs::PlaceLocation placeLoc = placeActionClient->getResult()->place_location;
+			grt.point.xMeter = placeLoc.place_pose.pose.position.x;
+            grt.point.yMeter = placeLoc.place_pose.pose.position.y;
+            grt.point.zMeter = placeLoc.place_pose.pose.position.z;
+            grt.point.frame = placeLoc.place_pose.header.frame_id;
 			grt.result = GraspReturnType::SUCCESS;
 			ROS_INFO("###########################");
 			break;
@@ -619,7 +593,7 @@ void KatanaModel::attachDefaultObject() {
 	shape.widthMeter = 0.05;
 	shape.depthMeter = 0.05;
 	shape.center.frame = "katana_gripper_tool_frame";
-	rosTools.publish_collision_object(shape, 0.5);
+	rosTools.publish_collision_object(rosTools.getDefaultObjectName(), shape, 0.5);
 
 	vector<string> touchLinks;
 	touchLinks.push_back("katana_gripper_tool_frame");
@@ -700,14 +674,16 @@ void KatanaModel::sensorCallback(const sensor_msgs::JointStatePtr& sensorReading
 	}
 }
 
-moveit_msgs::PlaceGoal KatanaModel::buildPlaceGoal(
+
+
+moveit_msgs::PlaceGoal KatanaModel::buildPlaceGoal(const string &surface,
 		const vector<moveit_msgs::PlaceLocation>& locations, bool simulate) {
 	moveit_msgs::PlaceGoal goal;
 	goal.attached_object_name = rosTools.getDefaultObjectName();
 	goal.allowed_touch_objects.push_back(rosTools.getDefaultObjectName());
 	goal.group_name = groupArm->getName();
 	goal.allowed_planning_time = groupArm->getPlanningTime();
-	goal.support_surface_name = "";
+	goal.support_surface_name = surface;
 	goal.planner_id = "";
 	goal.place_eef = true;
 	goal.place_locations = locations;
@@ -718,6 +694,34 @@ moveit_msgs::PlaceGoal KatanaModel::buildPlaceGoal(
 	goal.planning_options.planning_scene_diff.is_diff = true;
 	goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
 	return goal;
+}
+
+moveit_msgs::PickupGoal KatanaModel::buildPickupGoal(const string &obj,
+        const string &supportSurface, const vector<moveit_msgs::Grasp> &grasps, bool simulate) {
+
+    moveit_msgs::PickupGoal goal;
+    goal.possible_grasps = grasps;
+    goal.target_name = obj;
+    goal.support_surface_name = supportSurface;
+    goal.attached_object_touch_links.push_back("katana_gripper_tool_frame");
+    goal.attached_object_touch_links.push_back("katana_gripper_link");
+    goal.attached_object_touch_links.push_back("katana_gripper_tool_frame");
+    goal.attached_object_touch_links.push_back("katana_l_finger_link");
+    goal.attached_object_touch_links.push_back("katana_r_finger_link");
+    goal.attached_object_touch_links.push_back("katana_base_link");
+    goal.attached_object_touch_links.push_back("katana_motor4_lift_link");
+    goal.attached_object_touch_links.push_back("katana_motor5_wrist_roll_link");
+    goal.group_name = groupArm->getName();
+    goal.end_effector = groupArm->getEndEffector();
+    goal.allowed_planning_time = groupArm->getPlanningTime();
+    goal.planner_id = "";
+    goal.planning_options.plan_only = simulate;
+    goal.planning_options.look_around = false;
+    goal.planning_options.replan = false;
+    goal.planning_options.replan_delay = 2.0;
+    goal.planning_options.planning_scene_diff.is_diff = true;
+    goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
+    return goal;
 }
 
 katana_msgs::JointMovementGoal KatanaModel::buildMovementGoal(const std::string &poseName) {

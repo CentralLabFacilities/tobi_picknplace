@@ -12,6 +12,7 @@
 #include <boost/algorithm/string.hpp>
 
 using namespace std;
+using namespace moveit_msgs;
 
 TransformerTF::TransformerTF():tfListener(tfBuffer) {
 
@@ -88,6 +89,22 @@ bool TransformerTF::transform(const ObjectShape &object, ObjectShape &objectOut,
 	}
 }
 
+bool TransformerTF::transform(const CollisionObject &obj, CollisionObject &objOut, const std::string &to) const {
+    try{
+        CollisionObject myObj = obj;
+        string from = myObj.header.frame_id;
+        boost::algorithm::replace_all(from, "/", "");
+        myObj.header.frame_id = from;
+        ROS_INFO_STREAM("transform " << from << " to " << to);
+        tfBuffer.transform(myObj, objOut, to);
+        return true;
+    } catch (tf2::TransformException &ex) {
+        ROS_ERROR("%s", ex.what());
+        ros::Duration(1.0).sleep();
+        return false;
+    }
+}
+
 bool TransformerTF::transform(const geometry_msgs::PoseStamped &pose,geometry_msgs::PoseStamped &poseOut,  const std::string &to) const {
 	try{
 		geometry_msgs::PoseStamped myPose = pose;
@@ -130,6 +147,10 @@ KDL::Frame gmTransformToKDL(const geometry_msgs::TransformStamped& t) {
 					t.transform.translation.z));
 }
 
+// ##########################
+// geometry_msgs::PoseStamped
+// ##########################
+
 // method to extract timestamp from object
 template<>
 const ros::Time& getTimestamp(const geometry_msgs::PoseStamped& t) {
@@ -168,6 +189,10 @@ void fromMsg(const geometry_msgs::PoseStamped& msg, geometry_msgs::PoseStamped& 
 	out = msg;
 }
 
+// #############################
+// geometry_msgs::Vector3Stamped
+// #############################
+
 // method to extract timestamp from object
 template<>
 const ros::Time& getTimestamp(const geometry_msgs::Vector3Stamped& t) {
@@ -199,5 +224,48 @@ geometry_msgs::Vector3Stamped toMsg(const geometry_msgs::Vector3Stamped& in) {
 }
 void fromMsg(const geometry_msgs::Vector3Stamped& msg, geometry_msgs::Vector3Stamped& out) {
 	out = msg;
+}
+
+// #############################
+// moveit_msgs::CollisionObject
+// #############################
+
+// method to extract timestamp from object
+template<>
+const ros::Time& getTimestamp(const CollisionObject& t) {
+    return t.header.stamp;
+}
+
+// method to extract frame id from object
+template<>
+const std::string& getFrameId(const CollisionObject& t) {
+    return t.header.frame_id;
+}
+
+template<>
+void doTransform(const CollisionObject& t_in, CollisionObject& t_out,
+        const geometry_msgs::TransformStamped& transform) {
+    for (int i = 0; i < t_in.primitive_poses.size(); i++) {
+        KDL::Vector v(t_in.primitive_poses[i].position.x, t_in.primitive_poses[i].position.y, t_in.primitive_poses[i].position.z);
+        KDL::Rotation r = KDL::Rotation::Quaternion(t_in.primitive_poses[i].orientation.x, t_in.primitive_poses[i].orientation.y,
+                t_in.primitive_poses[i].orientation.z, t_in.primitive_poses[i].orientation.w);
+
+        tf2::Stamped<KDL::Frame> v_out = tf2::Stamped<KDL::Frame>(
+                gmTransformToKDL(transform) * KDL::Frame(r, v), transform.header.stamp,
+                transform.header.frame_id);
+        t_out.primitive_poses[i].position.x = v_out.p[0];
+        t_out.primitive_poses[i].position.y = v_out.p[1];
+        t_out.primitive_poses[i].position.z = v_out.p[2];
+        v_out.M.GetQuaternion(t_out.primitive_poses[i].orientation.x, t_out.primitive_poses[i].orientation.y,
+                t_out.primitive_poses[i].orientation.z, t_out.primitive_poses[i].orientation.w);
+        t_out.header.stamp = v_out.stamp_;
+        t_out.header.frame_id = v_out.frame_id_;
+    }
+}
+CollisionObject toMsg(const CollisionObject& in) {
+    return in;
+}
+void fromMsg(const CollisionObject& msg, CollisionObject& out) {
+    out = msg;
 }
 }

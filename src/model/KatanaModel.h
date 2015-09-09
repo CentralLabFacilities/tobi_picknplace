@@ -64,18 +64,21 @@ public:
 	virtual SensorReadings getGripperSensors() const;
 
 	virtual GraspReturnType graspObject(ObjectShape obj, bool simulate, const std::string &startPose="");
+	virtual GraspReturnType graspObject(const std::string &obj, const std::string &surface, bool simulate, const std::string &startPose="");
+	virtual GraspReturnType graspObject(const std::string &obj, const std::string &surface, const std::vector<moveit_msgs::Grasp> &grasps, double tableHeight, bool simulate, const std::string &startPose = "");
+
 	virtual GraspReturnType placeObject(ObjectShape obj, bool simulate, const std::string &startPose="");
 	virtual GraspReturnType placeObject(EefPose obj, bool simulate, const std::string &startPose="");
+	virtual GraspReturnType placeObject(const std::string &surface, bool simulate, const std::string &startPose="");
+	virtual GraspReturnType placeObject(const std::string &surface, std::vector<moveit_msgs::PlaceLocation> placeLocation, bool simulate, const std::string &startPose="");
 
 private:
 	std::vector<ModelListener*> listeners;
 	RosTools rosTools;
-	planning_scene_monitor::CurrentStateMonitorPtr scene;
 
 	ros::NodeHandle nh;
 	moveit::planning_interface::MoveGroup *groupArm;
 	moveit::planning_interface::MoveGroup *groupGripper;
-	moveit::planning_interface::PlanningSceneInterface *planningScene;
 	boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PickupAction> > pickActionClient;
 	boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PlaceAction> > placeActionClient;
 	boost::scoped_ptr<actionlib::SimpleActionClient<katana_msgs::JointMovementAction> > movementActionClient;
@@ -91,15 +94,19 @@ private:
 	mutable boost::mutex sensorMutex;
 	std::map<std::string, short> currentSensorReadings;
 
+
 	void sensorCallback(const sensor_msgs::JointStatePtr& sensorReadings);
 
 	std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(ObjectShape shape);
+	std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(moveit_msgs::CollisionObject shape);
 	std::vector<moveit_msgs::PlaceLocation> generate_place_locations(EefPose obj);
 	std::vector<moveit_msgs::PlaceLocation> generate_place_locations(ObjectShape shape);
 
 	void attachDefaultObject();
-	moveit_msgs::PlaceGoal buildPlaceGoal(const std::vector<moveit_msgs::PlaceLocation>& locations,
-			bool simulate);
+    moveit_msgs::PlaceGoal buildPlaceGoal(const std::string &surface,
+            const std::vector<moveit_msgs::PlaceLocation>& locations, bool simulate);
+    moveit_msgs::PickupGoal buildPickupGoal(const std::string &obj, const std::string &surface,
+            const std::vector<moveit_msgs::Grasp> &grasps, bool simulate);
 	katana_msgs::JointMovementGoal buildMovementGoal(const std::string &poseName);
 
 	template<typename T>

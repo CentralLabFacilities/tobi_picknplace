@@ -7,7 +7,11 @@
 
 #include "RsbInterface.h"
 #include "../model/ModelTypes.h"
+
 #include <boost/bind.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/smart_ptr/make_shared_object.hpp>
+
 #include <ros/ros.h>
 
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
@@ -21,7 +25,6 @@
 #include <rst/geometry/Pose.pb.h>
 #include <rst/geometry/BoundingBox3DFloat.pb.h>
 #include <rst/generic/Dictionary.pb.h>
-#include <boost/smart_ptr/make_shared_object.hpp>
 
 using namespace std;
 using namespace boost;
@@ -261,12 +264,33 @@ public:
 		GraspReturnType grt = listener->requestGraspObject(convert(input), true);
 		return convert(grt);
 	}
+	shared_ptr<Dictionary> isObjectNameGraspable(shared_ptr<string> input) {
+        RSCDEBUG(logger, "Invoked isObjectGraspable");
+        return graspObjectName(input, true);
+    }
 
 	shared_ptr<Dictionary> graspObject(shared_ptr<BoundingBox3DFloat> input) {
 		RSCDEBUG(logger, "Invoked graspObject: " << input->DebugString());
 		GraspReturnType grt = listener->requestGraspObject(convert(input), false);
 		return convert(grt);
 	}
+	shared_ptr<Dictionary> graspObjectName(shared_ptr<string> input) {
+        RSCDEBUG(logger, "Invoked graspObjectName: " << input);
+        return graspObjectName(input, false);
+    }
+	shared_ptr<Dictionary> graspObjectName(shared_ptr<string> input, bool sim) {
+        vector<string> items;
+        boost::algorithm::split(items, *input, boost::algorithm::is_any_of(";,"), boost::algorithm::token_compress_on );
+        GraspReturnType grt;
+        if (items.size() == 0) {
+            grt = listener->requestGraspObject("", "", sim);
+        } else if(items.size() == 1) {
+            grt = listener->requestGraspObject(items[0], "", sim);
+        } else {
+            grt = listener->requestGraspObject(items[0], items[1], sim);
+        }
+        return convert(grt);
+    }
 	shared_ptr<Dictionary> placeObject(shared_ptr<rst::geometry::Pose> input) {
 		RSCDEBUG(logger, "Invoked placeObject");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
@@ -277,6 +301,11 @@ public:
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
 		return convert(grt);
 	}
+	shared_ptr<Dictionary> placeObjectOnSurface(shared_ptr<string> input) {
+        RSCDEBUG(logger, "Invoked placeObject");
+        GraspReturnType grt = listener->requestPlaceObject(*input, false);
+        return convert(grt);
+    }
 	shared_ptr<Dictionary> isObjectPlaceable(shared_ptr<rst::geometry::Pose> input) {
 		RSCDEBUG(logger, "Invoked isObjectPlaceable");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), true);
@@ -450,10 +479,13 @@ void RsbInterface::init() {
 	//d->server->registerMethod("calculateGraspablePose", CREATE_CALLBACK(string, string, echo));
 	//d->server->registerMethod("setObstacles", CREATE_CALLBACK(string, string, echo));
 	d->server->registerMethod("isObjectGraspable", CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, isObjectGraspable));
+	d->server->registerMethod("isObjectNameGraspable", CREATE_CALLBACK_1(string, Dictionary, isObjectNameGraspable));
 	d->server->registerMethod("graspObject", CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, graspObject));
+	d->server->registerMethod("graspObjectName", CREATE_CALLBACK_1(string, Dictionary, graspObjectName));
 	//d->server->registerMethod("graspObjectOrientation", CREATE_CALLBACK(string, string, echo));
 	d->server->registerMethod("placeObjectAt", CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, placeObject));
 	d->server->registerMethod("placeObjectInRegion", CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, placeObjectInRegion));
+	d->server->registerMethod("placeObjectOnSurface", CREATE_CALLBACK_1(string, Dictionary, placeObjectOnSurface));
 	//d->server->registerMethod("placeObjectAtExact", CREATE_CALLBACK(string, string, echo));
 	d->server->registerMethod("isPlaceable", CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, isObjectPlaceable));
 	//d->server->registerMethod("wipingMovement", CREATE_CALLBACK(string, string, echo));

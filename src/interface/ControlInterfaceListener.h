@@ -37,8 +37,10 @@ public:
 	virtual bool requestIsSomethingInGripper() const = 0;
 
 	virtual GraspReturnType requestGraspObject(ObjectShape obj, bool simulate) = 0;
+	virtual GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate) = 0;
 	virtual GraspReturnType requestPlaceObject(EefPose obj, bool simulate) = 0;
 	virtual GraspReturnType requestPlaceObject(ObjectShape obj, bool simulate) = 0;
+	virtual GraspReturnType requestPlaceObject(const std::string &surface, bool simulate) = 0;
 	virtual std::string requestNearestPose() const = 0;
     virtual ArmPoses requestPoses() const = 0;
 };
@@ -62,9 +64,11 @@ public:
 	SensorReadings requestGripperSensors() const{return SensorReadings();}
 	bool requestIsSomethingInGripper() const{return false;}
 
+    GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate){return GraspReturnType();}
 	GraspReturnType requestGraspObject(ObjectShape obj, bool simulate){return GraspReturnType();}
 	GraspReturnType requestPlaceObject(EefPose obj, bool simulate){return GraspReturnType();}
 	GraspReturnType requestPlaceObject(ObjectShape obj, bool simulate){return GraspReturnType();}
+	GraspReturnType requestPlaceObject(const std::string &surface, bool simulate){return GraspReturnType();}
 	std::string requestNearestPose() const{return std::string();}
 	ArmPoses requestPoses() const{return ArmPoses();};
 };

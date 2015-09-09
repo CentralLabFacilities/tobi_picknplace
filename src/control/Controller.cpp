@@ -52,11 +52,18 @@ GraspReturnType Controller::requestGraspObject(ObjectShape obj, bool simulate) {
 	return strategy->graspObject(obj, simulate);
 }
 
+GraspReturnType Controller::requestGraspObject(const string &obj, const string &surface, bool simulate) {
+    return strategy->graspObject(obj, surface, simulate);
+}
+
 GraspReturnType Controller::requestPlaceObject(ObjectShape obj, bool simulate) {
 	return strategy->placeObject(obj, simulate);
 }
 GraspReturnType Controller::requestPlaceObject(EefPose obj, bool simulate) {
 	return strategy->placeObject(obj, simulate);
+}
+GraspReturnType Controller::requestPlaceObject(const string &surface, bool simulate) {
+    return strategy->placeObject(surface, simulate);
 }
 
 void Controller::requestMoveJointAngles(const vector<double>& angle) {

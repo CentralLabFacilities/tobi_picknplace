@@ -23,6 +23,7 @@ RosTools::RosTools() {
 
 	clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
 
+    scene_subscriber = nh.subscribe("planning_scene", 1, &RosTools::sceneCallback, this);
 }
 
 RosTools::~RosTools() {
@@ -70,13 +71,13 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 }
 
 
-void RosTools::publish_collision_object(ObjectShape shape, double sleep_seconds) {
+void RosTools::publish_collision_object(const string &id, ObjectShape shape, double sleep_seconds) {
 
 	ParamReader& params = ParamReader::getParamReader();
 
 	//declare attached_object attribute
 	moveit_msgs::CollisionObject target_object;
-	target_object.id = OBJECT_NAME;
+	target_object.id = id;
 	target_object.header.frame_id = params.frameOriginArm;
 
 	// first remove any leftovers
@@ -84,7 +85,7 @@ void RosTools::publish_collision_object(ObjectShape shape, double sleep_seconds)
 	object_publisher.publish(target_object);
 
 	moveit_msgs::AttachedCollisionObject attached_object;
-	attached_object.object.id = OBJECT_NAME;
+	attached_object.object.id = id;
 	attached_object.object.operation = attached_object.object.REMOVE;
 	object_att_publisher.publish(attached_object);
 
@@ -204,4 +205,22 @@ void RosTools::clear_octomap(double sleep_seconds) {
 
 	ros::WallDuration sleep_time(sleep_seconds);
 	sleep_time.sleep();
+}
+
+void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
+    boost::mutex::scoped_lock lock(sceneMutex);
+    currentPlanningScene = currentScene;
+}
+
+bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj) {
+    boost::mutex::scoped_lock lock(sceneMutex);
+    vector<moveit_msgs::CollisionObject>::iterator colObjIt;
+    for (colObjIt = currentPlanningScene.world.collision_objects.begin();
+            colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
+        if (colObjIt->id == id) {
+            obj = *colObjIt;
+            return true;
+        }
+    }
+    return false;
 }

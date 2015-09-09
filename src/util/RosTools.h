@@ -10,11 +10,27 @@
 #include <ros/ros.h>
 #include <moveit_msgs/Grasp.h>
 #include <moveit_msgs/PlaceLocation.h>
+#include <moveit_msgs/PlanningScene.h>
 #include <moveit/move_group_interface/move_group.h>
 #include "../model/ModelTypes.h"
 #include "TransformerTF.h"
 
 class RosTools {
+private:
+    TransformerTF tfTransformer;
+
+    ros::NodeHandle nh;
+    ros::Publisher grasps_marker;
+    ros::Publisher object_publisher;
+    ros::Publisher object_att_publisher;
+
+    ros::ServiceClient clearOctomapClient;
+
+    ros::Subscriber scene_subscriber;
+
+    mutable boost::mutex sceneMutex;
+    moveit_msgs::PlanningScene currentPlanningScene;
+
 public:
 	RosTools();
 	virtual ~RosTools();
@@ -22,7 +38,7 @@ public:
 	MoveResult moveResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 	GraspReturnType::GraspResult graspResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 
-	void publish_collision_object(ObjectShape shape, double sleep_seconds);
+	void publish_collision_object(const std::string &id, ObjectShape shape, double sleep_seconds);
 	void remove_collision_object();
 	void detach_collision_object();
 	void attach_collision_object();
@@ -34,13 +50,9 @@ public:
 
 	std::string getDefaultObjectName() const;
 
+	bool getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj);
+
 private:
-	TransformerTF tfTransformer;
 
-	ros::NodeHandle nh;
-	ros::Publisher grasps_marker;
-	ros::Publisher object_publisher;
-	ros::Publisher object_att_publisher;
-
-	ros::ServiceClient clearOctomapClient;
+    void sceneCallback(const moveit_msgs::PlanningScene& currentScene);
 };

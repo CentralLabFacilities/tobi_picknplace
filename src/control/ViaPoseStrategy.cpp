@@ -56,6 +56,27 @@ GraspReturnType ViaPoseStrategy::graspObject(ObjectShape obj, bool simulate) {
 	return ret;
 }
 
+GraspReturnType ViaPoseStrategy::graspObject(const string &obj, const std::string &surface, bool simulate) {
+    model->openGripper(false);
+    GraspReturnType ret = model->graspObject(obj, surface, simulate);
+
+    if (ret.result == GraspReturnType::ROBOT_CRASHED) {
+        // recover !!!
+        RSCWARN(logger, "  try to RECOVER !!");
+        if (model->isSomethingInGripper()) {
+            if (moveTo("carry_side")) {
+                ret.result = GraspReturnType::SUCCESS;
+            }
+        } else {
+            if (moveTo("fold_up")) {
+                ret.result = GraspReturnType::COLLISION_HANDLED;
+            }
+        }
+    }
+
+    return ret;
+}
+
 GraspReturnType ViaPoseStrategy::placeObject(ObjectShape obj, bool simulate) {
 	GraspReturnType ret = model->placeObject(obj, simulate);
 
@@ -92,6 +113,25 @@ GraspReturnType ViaPoseStrategy::placeObject(EefPose obj, bool simulate) {
 		}
 	}
 	return ret;
+}
+
+GraspReturnType ViaPoseStrategy::placeObject(const string &surface, bool simulate) {
+    GraspReturnType ret = model->placeObject(surface, simulate);
+
+    if (ret.result == GraspReturnType::ROBOT_CRASHED) {
+        // recover !!!
+        RSCWARN(logger, "  try to RECOVER !!");
+        if (model->isSomethingInGripper()) {
+            if (moveTo("carry_side")) {
+                ret.result = GraspReturnType::COLLISION_HANDLED;
+            }
+        } else {
+            if (moveTo("fold_up")) {
+                ret.result = GraspReturnType::SUCCESS;
+            }
+        }
+    }
+    return ret;
 }
 
 bool ViaPoseStrategy::recoverAndMoveTo(const std::string& poseName) {

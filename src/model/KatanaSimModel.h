@@ -47,8 +47,10 @@ public:
 	virtual SensorReadings getGripperSensors() const;
 
 	virtual GraspReturnType graspObject(ObjectShape obj, bool simulate, const std::string &startPose="");
+	virtual GraspReturnType graspObject(const std::string &obj, const std::string &surface, bool simulate, const std::string &startPose="");
 	virtual GraspReturnType placeObject(ObjectShape obj, bool simulate, const std::string &startPose="");
 	virtual GraspReturnType placeObject(EefPose obj, bool simulate, const std::string &startPose="");
+	virtual GraspReturnType placeObject(const std::string &surface, bool simulate, const std::string &startPose="");
 
 };
 
