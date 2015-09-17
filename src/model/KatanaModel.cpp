@@ -252,15 +252,17 @@ MoveResult KatanaModel::moveTo(const std::string& poseName, bool plan) {
 	}
 
 	if (plan) {
+	    ROS_INFO_STREAM("plan and execute path to: " << poseName);
         groupArm->clearPoseTargets();
         groupArm->setStartStateToCurrentState();
         groupArm->setNamedTarget(poseName);
         return rosTools.moveResultFromMoveit(groupArm->move());
 	} else {
 	    katana_msgs::JointMovementGoal goal = buildMovementGoal(poseName);
+	    ROS_INFO_STREAM("send joint movement goal for pose: " << poseName);
 	    movementActionClient->sendGoal(goal);
         if (!movementActionClient->waitForResult(ros::Duration(10.0))) {
-            ROS_INFO_STREAM("Movement action returned early");
+            ROS_WARN_STREAM("Movement action returned early");
             return OTHER;
         }
         if (movementActionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
