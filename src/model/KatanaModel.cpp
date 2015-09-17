@@ -259,7 +259,7 @@ MoveResult KatanaModel::moveTo(const std::string& poseName, bool plan) {
 	} else {
 	    katana_msgs::JointMovementGoal goal = buildMovementGoal(poseName);
 	    movementActionClient->sendGoal(goal);
-        if (!movementActionClient->waitForResult()) {
+        if (!movementActionClient->waitForResult(ros::Duration(10.0))) {
             ROS_INFO_STREAM("Movement action returned early");
             return OTHER;
         }

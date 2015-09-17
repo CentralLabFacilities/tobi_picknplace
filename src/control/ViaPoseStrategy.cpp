@@ -183,10 +183,12 @@ bool ViaPoseStrategy::moveTo(const std::string& poseName, bool withRecovery) {
             } else {
                 RSCWARN(logger,
                         "!!!WARNING!!!! Starting pose is not a known pose. Planning path to " << currentTargetPose);
-                success = model->moveTo(currentTargetPose, true);
+                bool doPlanning = true;
+                success = model->moveTo(currentTargetPose, doPlanning);
             }
 		} else {
-		    success = model->moveTo(currentTargetPose, false);
+		    bool doPlanning = false;
+		    success = model->moveTo(currentTargetPose, doPlanning);
 		}
 		if (success == SUCCESS) {
 			RSCINFO(logger, "    result: success");
