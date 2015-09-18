@@ -544,8 +544,16 @@ GraspReturnType KatanaModel::placeObject(const std::string &surface, std::vector
 			ROS_INFO_STREAM("Place action returned early");
 		}
 
+		bool isPending = resultState == SimpleClientGoalState::PENDING;
+		bool isAborted = resultState == SimpleClientGoalState::ABORTED;
+		bool isSuccess = resultState == SimpleClientGoalState::SUCCEEDED;
+
+		bool errCodeInvalidGroup = placeActionClient->getResult()->error_code.val == MoveItErrorCode::INVALID_GROUP_NAME;
+		bool errCodeSuccess = placeActionClient->getResult()->error_code.val == MoveItErrorCode::SUCCESS;
+		bool errCodePlanInvalidated = placeActionClient->getResult()->error_code.val == MoveItErrorCode::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE;
+
 		ROS_INFO("###########################");
-		if (resultState == SimpleClientGoalState::SUCCEEDED) {
+		if (isSuccess) {
 			ROS_INFO("Place Action succeeded.");
 			moveit_msgs::PlaceLocation placeLoc = placeActionClient->getResult()->place_location;
 			grt.point.xMeter = placeLoc.place_pose.pose.position.x;
@@ -555,19 +563,13 @@ GraspReturnType KatanaModel::placeObject(const std::string &surface, std::vector
 			grt.result = GraspReturnType::SUCCESS;
 			ROS_INFO("###########################");
 			break;
-		} else if (resultState == SimpleClientGoalState::PENDING
-				&& placeActionClient->getResult()->error_code.val == MoveItErrorCode::INVALID_GROUP_NAME) {
+		} else if (isPending && errCodeInvalidGroup) {
 			ROS_WARN("  PENDING: attached object not preset! Try to fix by attaching default object.");
 			attachDefaultObject();
 			ROS_INFO("###########################");
 			continue;
-		} else if (resultState == SimpleClientGoalState::ABORTED
-				|| (resultState == SimpleClientGoalState::PENDING
-						&& (placeActionClient->getResult()->error_code.val
-								== MoveItErrorCode::SUCCESS
-								|| placeActionClient->getResult()->error_code.val
-										== MoveItErrorCode::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE))) {
-			ROS_WARN("  ABORTED: %s", resultState.getText().c_str());
+		} else if (isAborted || (isPending && (errCodeSuccess || errCodePlanInvalidated))) {
+		    ROS_WARN("  ABORTED: %s (%d): %s", resultState.toString().c_str(), placeActionClient->getResult()->error_code.val, resultState.getText().c_str());
 			grt.result = GraspReturnType::ROBOT_CRASHED;
 			rosTools.clear_octomap();
 			break;
