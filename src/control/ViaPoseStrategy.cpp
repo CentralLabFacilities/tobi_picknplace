@@ -151,23 +151,36 @@ bool ViaPoseStrategy::moveTo(const std::string& poseName, bool withRecovery) {
 	string start = findNearestPose();
 	RSCINFO(logger, "nearest pose: " << start);
 
-	if (poseName == start) {
-	    RSCINFO(logger, "already there yet!");
-	    return true;
-	}
-
-	RSCINFO(logger, "calculate shortest path...");
 	typedef vector<string> Path;
-	Path path = dijkstraPlanner.getShortestPath(start, poseName);
-	if (path.empty()) {
-		RSCWARN(logger, "no path found for start pose: " << start);
-		return false;
+	Path path;
+
+	if (start != poseName) {
+        RSCINFO(logger, "calculate shortest path...");
+        path = dijkstraPlanner.getShortestPath(start, poseName);
+        if (path.empty()) {
+            RSCWARN(logger, "no path found for start pose: " << start);
+            return false;
+        }
+
+        RSCINFO(logger, "Path found:  ");
+        for (Path::iterator pathIt = path.begin(); pathIt != path.end(); ++pathIt) {
+            RSCINFO(logger, " - " << *pathIt);
+        }
 	}
 
-	RSCINFO(logger, "Path found:  ");
-	for (Path::iterator pathIt = path.begin(); pathIt != path.end(); ++pathIt) {
-		RSCINFO(logger, " - " << *pathIt);
-	}
+	if (calcErrorToPose(start) < 0.03) {
+        RSCDEBUG(logger, "Start pose is reached");
+    } else {
+        RSCWARN(logger,
+                "!!!WARNING!!!! Current pose is not a known pose. Planning path to " << start);
+        bool doPlanning = true;
+        RSCDEBUG(logger, "Moving to start pose");
+        MoveResult success = model->moveTo(start, doPlanning);
+        if (success != SUCCESS) {
+            RSCERROR(logger, "Cannot find a plan to starting pose \"" << start << "\"");
+            return false;
+        }
+    }
 
 	bool moveGripper = true;
 	if (model->isSomethingInGripper()) {
@@ -177,26 +190,14 @@ bool ViaPoseStrategy::moveTo(const std::string& poseName, bool withRecovery) {
 
 	// execute path
 	for (Path::iterator pathIt = path.begin(); pathIt != path.end(); ++pathIt) {
-		bool first = pathIt == path.begin();
 		bool last = pathIt == path.end() - 1;
 		string currentTargetPose = *pathIt;
 
 		RSCINFO(logger, "  next pose: " << currentTargetPose);
 		MoveResult success;
-		if (first) {
-		    if (calcErrorToPose(currentTargetPose) < 0.03) {
-                RSCDEBUG(logger, "First Pose is reached");
-                continue;
-            } else {
-                RSCWARN(logger,
-                        "!!!WARNING!!!! Starting pose is not a known pose. Planning path to " << currentTargetPose);
-                bool doPlanning = true;
-                success = model->moveTo(currentTargetPose, doPlanning);
-            }
-		} else {
-		    bool doPlanning = false;
-		    success = model->moveTo(currentTargetPose, doPlanning);
-		}
+        bool doPlanning = false;
+        success = model->moveTo(currentTargetPose, doPlanning);
+
 		if (success == SUCCESS) {
 			RSCINFO(logger, "    result: success");
 		} else if (success == NOPLAN) {
