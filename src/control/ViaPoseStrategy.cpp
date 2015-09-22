@@ -146,10 +146,17 @@ bool ViaPoseStrategy::recoverAndMoveTo(const std::string& poseName) {
 
 bool ViaPoseStrategy::moveTo(const std::string& poseName, bool withRecovery) {
 
+    RSCINFO(logger, "Strategy for moveTo(" << poseName << ")");
 	RSCINFO(logger, "looking for nearest pose...");
 	string start = findNearestPose();
 	RSCINFO(logger, "nearest pose: " << start);
 
+	if (poseName == start) {
+	    RSCINFO(logger, "already there yet!");
+	    return true;
+	}
+
+	RSCINFO(logger, "calculate shortest path...");
 	typedef vector<string> Path;
 	Path path = dijkstraPlanner.getShortestPath(start, poseName);
 	if (path.empty()) {
