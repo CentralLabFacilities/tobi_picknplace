@@ -10,6 +10,7 @@
   <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="--transitions $(arg transitions) $(arg use_sim_args)" output="screen">
     <param name="gripperPositionClosed" value="$(arg gripperPositionClosed)" />
     <param name="gripperPositionOpen" value="0.298" />
+    <param name="graspThroughDistance" value="0.01" />
     <param name="approachDesiredDistance" value="0.10" />
     <param name="approachMinDistance" value="0.05" />
     <param name="liftUpDesiredDistance" value="0.02" />
