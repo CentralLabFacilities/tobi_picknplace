@@ -467,13 +467,19 @@ GraspReturnType KatanaModel::graspObject(const string &obj, const string &surfac
 			ROS_WARN_STREAM("  Grasped no object: nothing in gripper!");
 			grt.result = GraspReturnType::FAIL;
 		}
-	} else if (pickActionClient->getState() == actionlib::SimpleClientGoalState::ABORTED
-			|| (pickActionClient->getState() == SimpleClientGoalState::PENDING
-					&& pickActionClient->getResult()->error_code.val == MoveItErrorCode::SUCCESS)) {
+    } else if (pickActionClient->getState() == SimpleClientGoalState::ABORTED) {
+        ROS_WARN_STREAM("  Pick Action ABORTED (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
+        rosTools.clear_octomap();
+        if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::PLANNING_FAILED) {
+            grt.result = GraspReturnType::FAIL;
+        }
+	} else if (pickActionClient->getState() == SimpleClientGoalState::PENDING) {
 		ROS_WARN_STREAM(
-				"  Pick Action ABORTED (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
-		grt.result = GraspReturnType::ROBOT_CRASHED;
+				"  Pick Action PENDING (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
 		rosTools.clear_octomap();
+		if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::SUCCESS) {
+		    grt.result = GraspReturnType::ROBOT_CRASHED;
+		}
 
 	} else {
 		ROS_WARN_STREAM(

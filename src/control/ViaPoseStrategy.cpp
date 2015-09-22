@@ -59,7 +59,7 @@ GraspReturnType ViaPoseStrategy::graspObject(const string &obj, const std::strin
 
     if (ret.result == GraspReturnType::ROBOT_CRASHED) {
         // recover !!!
-        ROS_WARN_STREAM("  try to RECOVER !!");
+        ROS_WARN_STREAM("Crash detected. Try to RECOVER !!");
         if (model->isSomethingInGripper()) {
             if (moveTo("carry_side")) {
                 ret.result = GraspReturnType::SUCCESS;
