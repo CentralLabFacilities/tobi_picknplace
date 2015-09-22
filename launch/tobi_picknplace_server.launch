@@ -1,38 +1,62 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="transitions" />
-  <arg name="gripperPositionClosed" default="-0.495" />
   <arg name="use_sim" default="false" />
+  <arg name="gripperPositionClosed" default="-0.495" />
+  <arg name="gripperPositionOpen" default="0.298" />
+  <arg name="graspThroughDistance" default="0.02" />
+  <arg name="approachDesiredDistance" default="0.10" />
+  <arg name="approachMinDistance" default="0.05" />
+  <arg name="liftUpDesiredDistance" default="0.02" />
+  <arg name="liftUpMinDistance" default="0.005" />
+  <arg name="retreatDesiredDistance" default="0.07" />
+  <arg name="retreatMinDistance" default="0.03" />
+  <arg name="frameOriginArm" default="katana_base_link" />
+  <arg name="frameOriginGripper" default="katana_gripper_tool_frame" />
+  <arg name="anglePitchInc" default="0.3" /><!-- pi/8 -->
+  <arg name="anglePitchMax" default="0.9" /><!-- pi/4 -->
+  <arg name="angleYawInc" default="0.3" /><!-- pi/8 -->
+  <arg name="angleYawMax" default="0.9" /><!-- pi/4 -->
+  <arg name="transInc" default="0.001" />
+  <arg name="transMax" default="0.0" />
+  <arg name="placeXInc" default="0.015" />
+  <arg name="placeYZInc" default="0.04" />
+  <arg name="placeXMax" default="0.08" />
+  <arg name="placeYMax" default="0.10" />
+  <arg name="placeZMax" default="0.17" />
+  <arg name="heightSkipTop" default="0.005" />
+  <arg name="heightSkipBottom" default="0.05" />
+  <arg name="heightInc" default="0.01" />
 
   <arg unless="$(arg use_sim)" name="use_sim_args" value="" />
   <arg     if="$(arg use_sim)" name="use_sim_args" value="--sim" />
 
   <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="--transitions $(arg transitions) $(arg use_sim_args)" output="screen">
-    <param name="gripperPositionClosed" value="$(arg gripperPositionClosed)" />
-    <param name="gripperPositionOpen" value="0.298" />
-    <param name="graspThroughDistance" value="0.01" />
-    <param name="approachDesiredDistance" value="0.10" />
-    <param name="approachMinDistance" value="0.05" />
-    <param name="liftUpDesiredDistance" value="0.02" />
-    <param name="liftUpMinDistance" value="0.005" />
-    <param name="retreatDesiredDistance" value="0.07" />
-    <param name="retreatMinDistance" value="0.03" />
-    <param name="frameOriginArm" value="katana_base_link" />
-    <param name="frameOriginGripper" value="katana_gripper_tool_frame" />
-    <param name="anglePitchInc" value="0.3" /><!-- pi/8 -->
-    <param name="anglePitchMax" value="0.9" /><!-- pi/4 -->
-    <param name="angleYawInc" value="0.3" /><!-- pi/8 -->
-    <param name="angleYawMax" value="0.9" /><!-- pi/4 -->
-    <param name="transInc" value="0.001" />
-    <param name="transMax" value="0.0" />
-    <param name="placeXInc" value="0.015" />
-    <param name="placeYZInc" value="0.04" />
-    <param name="placeXMax" value="0.08" />
-    <param name="placeYMax" value="0.10" />
-    <param name="placeZMax" value="0.17" />
-    <param name="heightSkipTop" value="0.005" />
-    <param name="heightSkipBottom" value="0.05" />
-    <param name="heightInc" value="0.01" />
+    <param name="gripperPositionClosed"   value="$(arg gripperPositionClosed)" />
+    <param name="gripperPositionOpen"     value="$(arg gripperPositionOpen)" />
+    <param name="graspThroughDistance"    value="$(arg graspThroughDistance)" />
+    <param name="approachDesiredDistance" value="$(arg approachDesiredDistance)" />
+    <param name="approachMinDistance"     value="$(arg approachMinDistance)" />
+    <param name="liftUpDesiredDistance"   value="$(arg liftUpDesiredDistance)" />
+    <param name="liftUpMinDistance"       value="$(arg liftUpMinDistance)" />
+    <param name="retreatDesiredDistance"  value="$(arg retreatDesiredDistance)" />
+    <param name="retreatMinDistance"      value="$(arg retreatMinDistance)" />
+    <param name="frameOriginArm"          value="$(arg frameOriginArm)" />
+    <param name="frameOriginGripper"      value="$(arg frameOriginGripper)" />
+    <param name="anglePitchInc"           value="$(arg anglePitchInc)" />
+    <param name="anglePitchMax"           value="$(arg anglePitchMax)" />
+    <param name="angleYawInc"             value="$(arg angleYawInc)" />
+    <param name="angleYawMax"             value="$(arg angleYawMax)" />
+    <param name="transInc"                value="$(arg transInc)" />
+    <param name="transMax"                value="$(arg transMax)" />
+    <param name="placeXInc"               value="$(arg placeXInc)" />
+    <param name="placeYZInc"              value="$(arg placeYZInc)" />
+    <param name="placeXMax"               value="$(arg placeXMax)" />
+    <param name="placeYMax"               value="$(arg placeYMax)" />
+    <param name="placeZMax"               value="$(arg placeZMax)" />
+    <param name="heightSkipTop"           value="$(arg heightSkipTop)" />
+    <param name="heightSkipBottom"        value="$(arg heightSkipBottom)" />
+    <param name="heightInc"               value="$(arg heightInc)" />
   </node>
 
 </launch>
