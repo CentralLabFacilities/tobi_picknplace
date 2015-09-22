@@ -11,7 +11,6 @@
 #include <string>
 #include <sstream>
 #include "Transition.h"
-#include <rsc/logging/Logger.h>
 
 class ReaderException: public std::exception {
 public:
@@ -31,5 +30,4 @@ public:
 
 	std::vector<Transition> read(const std::string &filePath);
 private:
-	static rsc::logging::LoggerPtr logger;
 };

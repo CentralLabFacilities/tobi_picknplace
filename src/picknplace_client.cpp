@@ -39,8 +39,6 @@ options_description desc("Allowed options");
 variables_map vm;
 rsb::patterns::RemoteServerPtr remoteServer;
 
-rsc::logging::LoggerPtr logger = rsc::logging::Logger::getLogger("picknplace.RsbRemoteClient");
-
 void callServerMethod(int argc, char* argv[]) {
 
     try {
@@ -488,7 +486,7 @@ int main(int argc, char **argv) {
         callServerMethod(argc, argv);
 
     } catch (rsb::Exception& e) {
-        RSCERROR(logger, "failed to connect to Server: " << e.what());
+        cerr << "failed to connect to Server: " << e.what();
     }
 
 	// Wait here so incoming method calls can be processed.

@@ -17,7 +17,6 @@
 #include "../util/Transition.h"
 #include "ControlStrategy.h"
 
-#include <rsc/logging/Logger.h>
 
 class Controller: public ControlInterfaceListener, ModelListener {
 public:
@@ -57,6 +56,5 @@ private:
 	ControlStrategy::Ptr strategy;
 	std::vector<ControlInterface::Ptr> controlInterfaces;
 
-	static rsc::logging::LoggerPtr logger;
 };
 

@@ -8,15 +8,13 @@
 #include "Dijkstra.h"
 #include <iostream>
 #include <sstream>
-#include <log4cxx/log4cxx.h>
+#include <ros/console.h>
 
 using namespace std;
-using namespace log4cxx;
 
 const double max_weight = std::numeric_limits<double>::infinity();
 
 int DijkstraAlgorithm::idCounter = 0;
-LoggerPtr DijkstraAlgorithm::logger = Logger::getLogger("DijkstraAlgorithm");
 
 list<int> DijkstraAlgorithm::getShortestPathTo(int vertex,
 		const vector<int> &previous) {
@@ -65,13 +63,13 @@ void DijkstraAlgorithm::computePaths(int source,
 
 vector<string> DijkstraAlgorithm::getShortestPath(const string &source,
 		const string &target) {
-	LOG4CXX_DEBUG(logger, "calculating shortest path " << source << " -> " << target);
+    ROS_DEBUG_STREAM("calculating shortest path " << source << " -> " << target);
 	if (mappingNameId.count(source) == 0) {
-		LOG4CXX_ERROR(logger, "source \"" << source << "\" is not part of the graph!");
+	    ROS_ERROR_STREAM("source \"" << source << "\" is not part of the graph!");
 		return vector<string>();
 	}
 	if (mappingNameId.count(target) == 0) {
-		LOG4CXX_ERROR(logger, "target \"" << target << "\" is not part of the graph!");
+	    ROS_ERROR_STREAM("target \"" << target << "\" is not part of the graph!");
 		return vector<string>();
 	}
 	int sourceId = mappingNameId[source];
@@ -88,7 +86,7 @@ vector<string> DijkstraAlgorithm::getShortestPath(const string &source,
 		path.push_back(mappingIdName[*it]);
 	}
 	ss << endl;
-	LOG4CXX_DEBUG(logger, ss.str());
+	ROS_DEBUG_STREAM(ss.str());
 	return path;
 }
 

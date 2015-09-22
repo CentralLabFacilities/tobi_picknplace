@@ -10,12 +10,10 @@
 #include <iostream>
 #include <exception>
 #include <boost/algorithm/string.hpp>
+#include <ros/console.h>
 #include "TransitionReader.h"
 
 using namespace std;
-
-rsc::logging::LoggerPtr TransitionsReader::logger = rsc::logging::Logger::getLogger(
-		"picknplace.TransitionsReader");
 
 TransitionsReader::TransitionsReader() {
 }
@@ -36,7 +34,7 @@ vector<Transition> TransitionsReader::read(const std::string &filename) {
 			ss << "Malformatted line in " << filename << " : \"" << str << "\". Expected Format: \"<posename>:<posename>:<weight>\"";
 			ReaderException exception;
 			exception.msg = ss.str();
-			RSCERROR(logger, ss.str());
+			ROS_ERROR_STREAM(ss.str());
 			throw exception;
 		}
 		Transition t;

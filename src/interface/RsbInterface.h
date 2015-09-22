@@ -9,7 +9,6 @@
 
 #include "ControlInterface.h"
 
-#include <rsc/logging/Logger.h>
 
 class RsbInterface: public ControlInterface {
 public:

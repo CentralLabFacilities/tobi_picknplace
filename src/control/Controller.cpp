@@ -9,9 +9,6 @@
 
 using namespace std;
 
-rsc::logging::LoggerPtr Controller::logger = rsc::logging::Logger::getLogger(
-		"picknplace.Controller");
-
 Controller::Controller(const Model::Ptr& model, const ControlStrategy::Ptr &strategy) :
 		katana(model), strategy(strategy) {
 }

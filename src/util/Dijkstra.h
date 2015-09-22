@@ -12,7 +12,6 @@
 #include <utility>
 #include <algorithm>
 #include <iterator>
-#include <log4cxx/logger.h>
 
 struct Neighbor {
 	int target;
@@ -50,7 +49,6 @@ private:
 	AdjacencyList adjacency_list;
 
 	static int idCounter;
-	static log4cxx::LoggerPtr logger;
 	std::map<std::string, int> mappingNameId;
 	std::map<int, std::string> mappingIdName;
 };

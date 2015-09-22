@@ -10,7 +10,6 @@
 #include "ControlStrategy.h"
 #include "../util/Dijkstra.h"
 
-#include <rsc/logging/Logger.h>
 
 class ViaPoseStrategy: public ControlStrategy {
 public:
@@ -34,5 +33,4 @@ private:
 	DijkstraAlgorithm dijkstraPlanner;
 	Model::Ptr model;
 
-	static rsc::logging::LoggerPtr logger;
 };

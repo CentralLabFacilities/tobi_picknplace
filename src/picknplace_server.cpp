@@ -54,12 +54,15 @@ int main(int argc, char **argv) {
 		cout << desc << endl;
 	}
 
-	rsc::logging::Logger::getLogger("picknplace")->setLevel(rsc::logging::Logger::LEVEL_INFO);
-	if (vm.count("debug")) {
-		rsc::logging::Logger::getLogger("picknplace")->setLevel(rsc::logging::Logger::LEVEL_DEBUG);
-	}
-
 	ros::init(argc, argv, "tobi_picknplace_server");
+
+    ros::console::Level level = ros::console::levels::Info;
+    if (vm.count("debug")) {
+        level = ros::console::levels::Debug;
+    }
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, level) ) {
+        ros::console::notifyLoggerLevelsChanged();
+    }
 
 	Model::Ptr katana;
 	if (vm.count("sim")) {

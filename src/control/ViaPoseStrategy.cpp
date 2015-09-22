@@ -17,9 +17,6 @@ const double ERROR_THRESHOLD = 100;
 
 const string RECOVER_POSE = "via_default";
 
-rsc::logging::LoggerPtr ViaPoseStrategy::logger = rsc::logging::Logger::getLogger(
-		"picknplace.ViaPoseStrategy");
-
 ViaPoseStrategy::ViaPoseStrategy(const Model::Ptr& model) :
 		model(model) {
 }
@@ -29,7 +26,7 @@ ViaPoseStrategy::~ViaPoseStrategy() {
 
 void ViaPoseStrategy::setTransitions(const std::vector<Transition>& transitions) {
 	for (int i = 0; i < transitions.size(); i++) {
-		RSCDEBUG(logger, "Add transition: " << transitions[i].source << " -> " << transitions[i].target<< " (w: " << transitions[i].weight << ")");
+		ROS_DEBUG_STREAM("Add transition: " << transitions[i].source << " -> " << transitions[i].target<< " (w: " << transitions[i].weight << ")");
 		Edge e(transitions[i].source, transitions[i].target, transitions[i].weight);
 		dijkstraPlanner.addEdge(e);
 	}
@@ -41,7 +38,7 @@ GraspReturnType ViaPoseStrategy::graspObject(ObjectShape obj, bool simulate) {
 
 	if (ret.result == GraspReturnType::ROBOT_CRASHED) {
 		// recover !!!
-		RSCWARN(logger, "  try to RECOVER !!");
+		ROS_WARN_STREAM("  try to RECOVER !!");
 		if (model->isSomethingInGripper()) {
 			if (moveTo("carry_side")) {
 				ret.result = GraspReturnType::SUCCESS;
@@ -62,7 +59,7 @@ GraspReturnType ViaPoseStrategy::graspObject(const string &obj, const std::strin
 
     if (ret.result == GraspReturnType::ROBOT_CRASHED) {
         // recover !!!
-        RSCWARN(logger, "  try to RECOVER !!");
+        ROS_WARN_STREAM("  try to RECOVER !!");
         if (model->isSomethingInGripper()) {
             if (moveTo("carry_side")) {
                 ret.result = GraspReturnType::SUCCESS;
@@ -82,7 +79,7 @@ GraspReturnType ViaPoseStrategy::placeObject(ObjectShape obj, bool simulate) {
 
 	if (ret.result == GraspReturnType::ROBOT_CRASHED) {
 		// recover !!!
-		RSCWARN(logger, "  try to RECOVER !!");
+		ROS_WARN_STREAM("  try to RECOVER !!");
 		if (model->isSomethingInGripper()) {
 			if (moveTo("carry_side")) {
 				ret.result = GraspReturnType::COLLISION_HANDLED;
@@ -101,7 +98,7 @@ GraspReturnType ViaPoseStrategy::placeObject(EefPose obj, bool simulate) {
 
 	if (ret.result == GraspReturnType::ROBOT_CRASHED) {
 		// recover !!!
-		RSCWARN(logger, "  try to RECOVER !!");
+		ROS_WARN_STREAM("  try to RECOVER !!");
 		if (model->isSomethingInGripper()) {
 			if (moveTo("carry_side")) {
 				ret.result = GraspReturnType::COLLISION_HANDLED;
@@ -120,7 +117,7 @@ GraspReturnType ViaPoseStrategy::placeObject(const string &surface, bool simulat
 
     if (ret.result == GraspReturnType::ROBOT_CRASHED) {
         // recover !!!
-        RSCWARN(logger, "  try to RECOVER !!");
+        ROS_WARN_STREAM("  try to RECOVER !!");
         if (model->isSomethingInGripper()) {
             if (moveTo("carry_side")) {
                 ret.result = GraspReturnType::COLLISION_HANDLED;
@@ -136,7 +133,7 @@ GraspReturnType ViaPoseStrategy::placeObject(const string &surface, bool simulat
 
 bool ViaPoseStrategy::recoverAndMoveTo(const std::string& poseName) {
 
-	RSCINFO(logger, "  recover to pose: " << RECOVER_POSE);
+	ROS_INFO_STREAM("  recover to pose: " << RECOVER_POSE);
 	MoveResult success = model->moveTo(RECOVER_POSE);
 	if (success != SUCCESS) {
 		return false;
@@ -146,45 +143,45 @@ bool ViaPoseStrategy::recoverAndMoveTo(const std::string& poseName) {
 
 bool ViaPoseStrategy::moveTo(const std::string& poseName, bool withRecovery) {
 
-    RSCINFO(logger, "Strategy for moveTo(" << poseName << ")");
-	RSCINFO(logger, "looking for nearest pose...");
+    ROS_INFO_STREAM("Strategy for moveTo(" << poseName << ")");
+	ROS_INFO_STREAM("looking for nearest pose...");
 	string start = findNearestPose();
-	RSCINFO(logger, "nearest pose: " << start);
+	ROS_INFO_STREAM("nearest pose: " << start);
 
 	typedef vector<string> Path;
 	Path path;
 
 	if (start != poseName) {
-        RSCINFO(logger, "calculate shortest path...");
+        ROS_INFO_STREAM("calculate shortest path...");
         path = dijkstraPlanner.getShortestPath(start, poseName);
         if (path.empty()) {
-            RSCWARN(logger, "no path found for start pose: " << start);
+            ROS_WARN_STREAM("no path found for start pose: " << start);
             return false;
         }
 
-        RSCINFO(logger, "Path found:  ");
+        ROS_INFO_STREAM("Path found:  ");
         for (Path::iterator pathIt = path.begin(); pathIt != path.end(); ++pathIt) {
-            RSCINFO(logger, " - " << *pathIt);
+            ROS_INFO_STREAM(" - " << *pathIt);
         }
 	}
 
 	if (calcErrorToPose(start) < 0.03) {
-        RSCDEBUG(logger, "Start pose is reached");
+        ROS_DEBUG_STREAM("Start pose is reached");
     } else {
-        RSCWARN(logger,
+        ROS_WARN_STREAM(
                 "!!!WARNING!!!! Current pose is not a known pose. Planning path to " << start);
         bool doPlanning = true;
-        RSCDEBUG(logger, "Moving to start pose");
+        ROS_DEBUG_STREAM("Moving to start pose");
         MoveResult success = model->moveTo(start, doPlanning);
         if (success != SUCCESS) {
-            RSCERROR(logger, "Cannot find a plan to starting pose \"" << start << "\"");
+            ROS_ERROR_STREAM("Cannot find a plan to starting pose \"" << start << "\"");
             return false;
         }
     }
 
 	bool moveGripper = true;
 	if (model->isSomethingInGripper()) {
-		RSCWARN(logger, "Something is in gripper. We dont move the gripper-joint");
+		ROS_WARN_STREAM("Something is in gripper. We dont move the gripper-joint");
 		moveGripper = false;
 	}
 
@@ -193,37 +190,37 @@ bool ViaPoseStrategy::moveTo(const std::string& poseName, bool withRecovery) {
 		bool last = pathIt == path.end() - 1;
 		string currentTargetPose = *pathIt;
 
-		RSCINFO(logger, "  next pose: " << currentTargetPose);
+		ROS_INFO_STREAM("  next pose: " << currentTargetPose);
 		MoveResult success;
         bool doPlanning = false;
         success = model->moveTo(currentTargetPose, doPlanning);
 
 		if (success == SUCCESS) {
-			RSCINFO(logger, "    result: success");
+			ROS_INFO_STREAM("    result: success");
 		} else if (success == NOPLAN) {
-			RSCINFO(logger, "    result: no plan");
+			ROS_INFO_STREAM("    result: no plan");
 			if (last) {
 				return false;
 			}
-			RSCINFO(logger, "  skip pose");
+			ROS_INFO_STREAM("  skip pose");
 		} else if (success == ENV_CHANGE) {
-			RSCINFO(logger, "    result: env change");
-			RSCINFO(logger, "  try again");
+			ROS_INFO_STREAM("    result: env change");
+			ROS_INFO_STREAM("  try again");
 			pathIt--;
 			continue;
 		} else if (success == CRASH) {
-			RSCINFO(logger, "    result: crash");
+			ROS_INFO_STREAM("    result: crash");
 			if (last) {
 				return false;
 			}
 			if (withRecovery) {
-				RSCINFO(logger, "  recover from crash");
+				ROS_INFO_STREAM("  recover from crash");
 				return recoverAndMoveTo(poseName);
 			} else {
 				return false;
 			}
 		} else {
-			RSCINFO(logger, "    result: other");
+			ROS_INFO_STREAM("    result: other");
 			return false;
 		}
 	}
@@ -239,10 +236,10 @@ string ViaPoseStrategy::findNearestPose() const {
 	ArmPoses rememberedPoses = model->getRememberedPoses();
 
 	ArmPoses::iterator it;
-	RSCDEBUG(logger, "Poses we know: " << rememberedPoses.size());
+	ROS_DEBUG_STREAM("Poses we know: " << rememberedPoses.size());
 	for (it = rememberedPoses.begin(); it != rememberedPoses.end(); ++it) {
 		double squareError = calcErrorToPose(it->first);
-		RSCDEBUG(logger, "square error to " << it->first << ": " << squareError);
+		ROS_DEBUG_STREAM("square error to " << it->first << ": " << squareError);
 		if (lowestError > squareError) {
 			lowestError = squareError;
 			if (lowestError <= ERROR_THRESHOLD) {
@@ -258,7 +255,7 @@ double ViaPoseStrategy::calcErrorToPose(const std::string& pose) const {
 
 	ArmPoses rememberedPoses = model->getRememberedPoses();
 	if (!rememberedPoses.count(pose)) {
-		RSCERROR(logger, "Named pose is unknown: " << pose);
+		ROS_ERROR_STREAM("Named pose is unknown: " << pose);
 		return numeric_limits<double>::max();
 	}
 
@@ -273,7 +270,7 @@ double ViaPoseStrategy::calcErrorToPose(const std::string& pose) const {
 	squareError += pow(angles["katana_motor2_lift_joint"] - joints["katana_motor2_lift_joint"], 2) * 2;
 	squareError += pow(angles["katana_motor3_lift_joint"] - joints["katana_motor3_lift_joint"], 2) * 1;
 	squareError /= 3;
-	RSCDEBUG(logger, "Error to Pose: " << pose << " is: " << squareError);
+	ROS_DEBUG_STREAM("Error to Pose: " << pose << " is: " << squareError);
 	return squareError;
 
 }

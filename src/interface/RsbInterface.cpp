@@ -15,7 +15,6 @@
 #include <ros/ros.h>
 
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
-#include <rsc/logging/Logger.h>
 #include <rsb/Factory.h>
 #include <rsb/patterns/LocalServer.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
@@ -83,27 +82,25 @@ public:
 	virtual ~Private() {
 	}
 
-	static rsc::logging::LoggerPtr logger;
 	LocalServerPtr server;
 	ControlInterfaceListener* listener;
 
 	shared_ptr<JointAngles> listAngles() {
-		RSCDEBUG(logger, "Invoked ListAngles");
+		ROS_DEBUG_STREAM("Invoked ListAngles");
 		map<string, double> joints = listener->requestJointAngles();
 
 		shared_ptr<JointAngles> angles(new JointAngles());
 		for (map<string, double>::iterator i = joints.begin(); i != joints.end(); ++i) {
 			angles->add_angles(i->second);
-			RSCDEBUG(logger, "joint " << i->first << " with value " << i->second);
+			ROS_DEBUG_STREAM("joint " << i->first << " with value " << i->second);
 		}
 		return angles;
 	}
 
 	shared_ptr<void> moveJoints(shared_ptr<JointAngles> input) {
-		RSCDEBUG(logger, "Invoked moveJoints");
+		ROS_DEBUG_STREAM("Invoked moveJoints");
 		if (listener->requestNumJoints() != input->angles_size()) {
-			RSCERROR(logger,
-					"Size in MoveJoints: " << input->angles_size() << "does not match armSize: " << listener->requestNumJoints());
+			ROS_ERROR_STREAM("Size in MoveJoints: " << input->angles_size() << "does not match armSize: " << listener->requestNumJoints());
 		} else {
 			vector<double> angles;
 			for (int i = 0; i < input->angles_size(); i++) {
@@ -117,72 +114,72 @@ public:
 
 	shared_ptr<bool> goTo(shared_ptr<rst::geometry::Pose> input, bool linear, bool orientation) {
 		shared_ptr<bool> sucess(new bool(true));
-		RSCDEBUG(logger, "Invoked gotToLinear");
+		ROS_DEBUG_STREAM("Invoked gotToLinear");
 		try {
 			*sucess = listener->requestMoveTo(convert(input), linear, orientation);
 		} catch (std::exception& e) {
 			*sucess = false;
-			RSCERROR(logger, e.what());
+			ROS_ERROR_STREAM(e.what());
 			return sucess;
 		}
 		return sucess;
 	}
 
 	shared_ptr<bool> goToLinear(shared_ptr<rst::geometry::Pose> input) {
-		RSCDEBUG(logger, "Invoked gotToLinear");
+		ROS_DEBUG_STREAM("Invoked gotToLinear");
 		return goTo(input, true, false);
 	}
 
 	shared_ptr<bool> goToNonLinear(shared_ptr<rst::geometry::Pose> input) {
-		RSCDEBUG(logger, "Invoked gotToNonLinear");
+		ROS_DEBUG_STREAM("Invoked gotToNonLinear");
 		return goTo(input, false, false);
 	}
 
 	shared_ptr<bool> goToLinearOrient(shared_ptr<rst::geometry::Pose> input) {
-		RSCDEBUG(logger, "Invoked gotToLinearOrient");
+		ROS_DEBUG_STREAM("Invoked gotToLinearOrient");
 		return goTo(input, true, true);
 	}
 
 	shared_ptr<bool> goToNonLinearOrient(shared_ptr<rst::geometry::Pose> input) {
-		RSCDEBUG(logger, "Invoked gotToNonLinearOrient");
+		ROS_DEBUG_STREAM("Invoked gotToNonLinearOrient");
 		return goTo(input, false, true);
 	}
 
 	shared_ptr<rst::geometry::Pose> getPosition() {
-		RSCDEBUG(logger, "Invoked getPosition");
+		ROS_DEBUG_STREAM("Invoked getPosition");
 		EefPose position = listener->requestEefPose();
 		shared_ptr<rst::geometry::Pose> poseOut = convert(position);
-		RSCDEBUG(logger, "Received following pose: " << poseOut->DebugString());
+		ROS_DEBUG_STREAM("Received following pose: " << poseOut->DebugString());
 		return poseOut;
 	}
 
 	shared_ptr<void> openGripper() {
-		RSCDEBUG(logger, "Invoked openGripper");
+		ROS_DEBUG_STREAM("Invoked openGripper");
 		listener->requestOpenGripper(false);
 		return shared_ptr<void>();
 	}
 
 	shared_ptr<void> openGripperWhenTouching() {
-		RSCDEBUG(logger, "Invoked openGripperWhenTouching");
+		ROS_DEBUG_STREAM("Invoked openGripperWhenTouching");
 		listener->requestOpenGripper(true);
 		return shared_ptr<void>();
 	}
         
         
         shared_ptr<std::string> findNearestPose() {
-		RSCDEBUG(logger, "Invoked findNearestPose");
+		ROS_DEBUG_STREAM("Invoked findNearestPose");
 		std::string ret = listener->requestNearestPose();
 		return boost::make_shared<std::string>(ret.c_str());
 	}
         
 	shared_ptr<void> closeGripper() {
-		RSCDEBUG(logger, "Invoked closeGripper");
+		ROS_DEBUG_STREAM("Invoked closeGripper");
 		listener->requestCloseGripper(false);
 		return shared_ptr<void>();
 	}
 
 	shared_ptr<void> closeGripperByForce() {
-		RSCDEBUG(logger, "Invoked closeGripperByForce");
+		ROS_DEBUG_STREAM("Invoked closeGripperByForce");
 		listener->requestCloseGripper(true);
 		return shared_ptr<void>();
 	}
@@ -190,19 +187,19 @@ public:
         
 
 	shared_ptr<void> motorsOn() {
-		RSCDEBUG(logger, "Invoked motorsOn");
+		ROS_DEBUG_STREAM("Invoked motorsOn");
 		listener->requestMotorsOn();
 		return shared_ptr<void>();
 	}
 	shared_ptr<void> motorsOff() {
-		RSCDEBUG(logger, "Invoked motorsOff");
+		ROS_DEBUG_STREAM("Invoked motorsOff");
 		listener->requestMotorsOff();
 		return shared_ptr<void>();
 	}
 
 	shared_ptr<bool> isSomethingInGripper() {
 		shared_ptr<bool> success(new bool(true));
-		RSCDEBUG(logger, "Invoked isSomethingInGripper");
+		ROS_DEBUG_STREAM("Invoked isSomethingInGripper");
 		if (!listener->requestIsSomethingInGripper()) {
 			*success = false;
 		}
@@ -210,13 +207,13 @@ public:
 	}
 
 	shared_ptr<Dictionary> getGripperSensors() {
-		RSCDEBUG(logger, "Invoked getGripperSensors");
+		ROS_DEBUG_STREAM("Invoked getGripperSensors");
 		map<string, short> sensorValues = listener->requestGripperSensors();
 		return convert(sensorValues);
 	}
 
 	shared_ptr<Dictionary> listPoses() {
-		RSCDEBUG(logger, "Invoked listPoses");
+		ROS_DEBUG_STREAM("Invoked listPoses");
 
 		shared_ptr<Dictionary> output(new rst::generic::Dictionary());
 
@@ -235,7 +232,7 @@ public:
 			key->set_key(poseName);
 			key->mutable_value()->set_type(rst::generic::Value_Type_ARRAY);
 
-			RSCDEBUG(logger, "Adding Pose %s" << poseName);
+			ROS_DEBUG_STREAM("Adding Pose %s" << poseName);
 
 			//set the angle of the actions
 			newVal = key->mutable_value()->mutable_array()->Add();
@@ -253,29 +250,29 @@ public:
 
 	shared_ptr<bool> setPose(shared_ptr<string> input) {
 		shared_ptr<bool> success(new bool(false));
-		RSCDEBUG(logger, "Invoked setPose");
+		ROS_DEBUG_STREAM("Invoked setPose");
 		*success = listener->requestMoveTo(*input);
 		return success;
 	}
 
 	shared_ptr<Dictionary> isObjectGraspable(shared_ptr<BoundingBox3DFloat> input) {
 		ObjectShape objectToGrasp;
-		RSCDEBUG(logger, "Invoked isObjectGraspable");
+		ROS_DEBUG_STREAM("Invoked isObjectGraspable");
 		GraspReturnType grt = listener->requestGraspObject(convert(input), true);
 		return convert(grt);
 	}
 	shared_ptr<Dictionary> isObjectNameGraspable(shared_ptr<string> input) {
-        RSCDEBUG(logger, "Invoked isObjectGraspable");
+        ROS_DEBUG_STREAM("Invoked isObjectGraspable");
         return graspObjectName(input, true);
     }
 
 	shared_ptr<Dictionary> graspObject(shared_ptr<BoundingBox3DFloat> input) {
-		RSCDEBUG(logger, "Invoked graspObject: " << input->DebugString());
+		ROS_DEBUG_STREAM("Invoked graspObject: " << input->DebugString());
 		GraspReturnType grt = listener->requestGraspObject(convert(input), false);
 		return convert(grt);
 	}
 	shared_ptr<Dictionary> graspObjectName(shared_ptr<string> input) {
-        RSCDEBUG(logger, "Invoked graspObjectName: " << input);
+        ROS_DEBUG_STREAM("Invoked graspObjectName: " << input);
         return graspObjectName(input, false);
     }
 	shared_ptr<Dictionary> graspObjectName(shared_ptr<string> input, bool sim) {
@@ -292,27 +289,27 @@ public:
         return convert(grt);
     }
 	shared_ptr<Dictionary> placeObject(shared_ptr<rst::geometry::Pose> input) {
-		RSCDEBUG(logger, "Invoked placeObject");
+		ROS_DEBUG_STREAM("Invoked placeObject");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
 		return convert(grt);
 	}
 	shared_ptr<Dictionary> placeObjectInRegion(shared_ptr<BoundingBox3DFloat> input) {
-		RSCDEBUG(logger, "Invoked placeObject");
+		ROS_DEBUG_STREAM("Invoked placeObject");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
 		return convert(grt);
 	}
 	shared_ptr<Dictionary> placeObjectOnSurface(shared_ptr<string> input) {
-        RSCDEBUG(logger, "Invoked placeObject");
+        ROS_DEBUG_STREAM("Invoked placeObject");
         GraspReturnType grt = listener->requestPlaceObject(*input, false);
         return convert(grt);
     }
 	shared_ptr<Dictionary> isObjectPlaceable(shared_ptr<rst::geometry::Pose> input) {
-		RSCDEBUG(logger, "Invoked isObjectPlaceable");
+		ROS_DEBUG_STREAM("Invoked isObjectPlaceable");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), true);
 		return convert(grt);
 	}
 	shared_ptr<string> echo(shared_ptr<string> input) {
-		RSCDEBUG(logger, "Echo: " << *input);
+		ROS_DEBUG_STREAM("Echo: " << *input);
 		return input;
 	}
 
@@ -362,7 +359,7 @@ public:
 			key->set_key(i->first);
 			key->mutable_value()->set_type(rst::generic::Value_Type_INT);
 			key->mutable_value()->set_int_(i->second);
-			RSCDEBUG(logger, i->first << " is " << i->second);
+			ROS_DEBUG_STREAM(i->first << " is " << i->second);
 		}
 		return output;
 	}
@@ -378,7 +375,7 @@ public:
 		pose.rotation.qz = input->rotation().qz();
 		pose.rotation.frame = input->rotation().frame_id();
 		pose.frame = input->translation().frame_id();
-		RSCDEBUG(logger, "frame pose: " << pose.frame);
+		ROS_DEBUG_STREAM("frame pose: " << pose.frame);
 		return pose;
 	}
 
@@ -409,9 +406,6 @@ public:
 	}
 };
 
-rsc::logging::LoggerPtr RsbInterface::Private::logger = rsc::logging::Logger::getLogger(
-		"picknplace.RsbInterface");
-
 RsbInterface::RsbInterface(const string &serverScope) :
 		serverScope(serverScope), d(new Private()) {
 	init();
@@ -440,7 +434,7 @@ void RsbInterface::removeListener() {
 
 void RsbInterface::init() {
 
-	RSCDEBUG(d->logger, "registering methods");
+	ROS_DEBUG_STREAM("registering methods");
 
 	// add converters
 	converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(rst::geometry::Pose));
