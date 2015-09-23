@@ -480,13 +480,16 @@ GraspReturnType KatanaModel::graspObject(const string &obj, const string &surfac
 		if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::SUCCESS) {
 		    grt.result = GraspReturnType::ROBOT_CRASHED;
 		}
-
 	} else {
 		ROS_WARN_STREAM(
 				"  Pick Action failed: " << pickActionClient->getState().toString() << " (" << pickActionClient->getResult()->error_code.val  << "): " << pickActionClient->getState().getText());
 		grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
 	}
 	ROS_INFO("###########################");
+
+	if (grt.result == GraspReturnType::NO_RESULT) {
+	    grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
+	}
 
 	rosTools.remove_collision_object();
 
