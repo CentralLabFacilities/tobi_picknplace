@@ -542,6 +542,8 @@ GraspReturnType KatanaModel::placeObject(const std::string &surface, std::vector
         grt.result = GraspReturnType::FAIL;
         return grt;
     }
+    
+    rosTools.clear_octomap();
 
 	moveit_msgs::PlaceGoal goal = buildPlaceGoal(surface, locations, simulate);
 
