@@ -7,8 +7,7 @@
 
 #include "control/Controller.h"
 #include "control/ViaPoseStrategy.h"
-#include "model/KatanaModel.h"
-#include "model/KatanaSimModel.h"
+#include "model/ModelFactory.h"
 #include "interface/RsbInterface.h"
 #include "interface/ViewInterface.h"
 #include <boost/program_options.hpp>
@@ -64,15 +63,9 @@ int main(int argc, char **argv) {
         ros::console::notifyLoggerLevelsChanged();
     }
 
-	Model::Ptr katana;
-	if (vm.count("sim")) {
-		katana = Model::Ptr(new KatanaSimModel());
-	} else {
-		KatanaModel::Ptr model(new KatanaModel());
-		katana = model;
-	}
+	Model::Ptr model = ModelFactory::create("h2r5"); //todo: anpassen
 
-	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(katana));
+	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));
 	if (vm.count("transitions")) {
 		TransitionsReader reader;
 		vector<Transition> t = reader.read(vm["transitions"].as<string>());
@@ -82,7 +75,7 @@ int main(int argc, char **argv) {
 	RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
 	ViewInterface::Ptr viewInterface(new ViewInterface());
 
-	Controller controller(katana, strategy);
+	Controller controller(model, strategy);
 	controller.addControlInterface(rsbInterface);
 	controller.addControlInterface(viewInterface);
 

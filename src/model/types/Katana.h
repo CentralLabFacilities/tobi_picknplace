@@ -16,25 +16,19 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
-#include <moveit_msgs/Grasp.h>
-#include <moveit_msgs/PickupAction.h>
-#include <moveit_msgs/PlaceAction.h>
 #include <katana_msgs/JointMovementAction.h>
-#include <actionlib/server/simple_action_server.h>
-#include <actionlib/client/simple_action_client.h>
 #include <sensor_msgs/JointState.h>
 
-#include "Model.h"
-#include "GraspGenerator.h"
-#include "../util/TransformerTF.h"
-#include "../util/RosTools.h"
+#include "../Model.h"
 
-class KatanaModel: public Model {
+#define KATANA_NAME "katana"
+
+class Katana: public Model {
 public:
-	typedef boost::shared_ptr<KatanaModel> Ptr;
+	typedef boost::shared_ptr<Katana> Ptr;
 
-	KatanaModel();
-	virtual ~KatanaModel();
+	Katana();
+	virtual ~Katana();
 
 	void addListener(ModelListener* listener);
 	void removeListener(ModelListener* listener);
@@ -53,7 +47,6 @@ public:
 	virtual void motorsOn();
 	virtual void motorsOff();
 
-	virtual EefPose getEefPose() const;
 	virtual ArmPoses getRememberedPoses() const;
 	virtual ArmPose getRememberedPose(const std::string &name) const;
 	virtual MoveResult moveTo(const EefPose &pose, bool linear, bool orientation);
@@ -73,20 +66,15 @@ public:
 	virtual GraspReturnType placeObject(const std::string &surface, std::vector<moveit_msgs::PlaceLocation> placeLocation, bool simulate, const std::string &startPose="");
 
 private:
-	std::vector<ModelListener*> listeners;
-	RosTools rosTools;
 
 	ros::NodeHandle nh;
-	moveit::planning_interface::MoveGroup *groupArm;
+
 	moveit::planning_interface::MoveGroup *groupGripper;
 	boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PickupAction> > pickActionClient;
 	boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PlaceAction> > placeActionClient;
 	boost::scoped_ptr<actionlib::SimpleActionClient<katana_msgs::JointMovementAction> > movementActionClient;
 
 	ros::Subscriber sensor_subscriber;
-
-	GraspGenerator graspGenerator;
-	TransformerTF tfTransformer;
 
 	geometry_msgs::PoseStamped lastGraspPose;
 	double lastHeightAboveTable;
@@ -97,8 +85,6 @@ private:
 
 	void sensorCallback(const sensor_msgs::JointStatePtr& sensorReadings);
 
-	std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(ObjectShape shape);
-	std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(moveit_msgs::CollisionObject shape);
 	std::vector<moveit_msgs::PlaceLocation> generate_place_locations(EefPose obj);
 	std::vector<moveit_msgs::PlaceLocation> generate_place_locations(ObjectShape shape);
 

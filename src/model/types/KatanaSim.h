@@ -10,14 +10,16 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
-#include "Model.h"
+#include "../Model.h"
 
-class KatanaSimModel: public Model {
+#define KATANA_SIM_NAME "katana_sim"
+
+class KatanaSim: public Model {
 public:
-	typedef boost::shared_ptr<KatanaSimModel> Ptr;
+	typedef boost::shared_ptr<KatanaSim> Ptr;
 
-	KatanaSimModel();
-	virtual ~KatanaSimModel();
+	KatanaSim();
+	virtual ~KatanaSim();
 
 	void addListener(ModelListener* listener);
 	void removeListener(ModelListener* listener);

@@ -1,14 +1,11 @@
 /*
- * KatanaModel.cpp
+ * Katana.cpp
  *
  *  Created on: Apr 29, 2015
  *      Author: lziegler
  */
 
-#include "KatanaModel.h"
-
-#include "../util/TransformerTF.h"
-#include "../util/ParamReader.h"
+#include "Katana.h"
 
 #include <ros/ros.h>
 #include <moveit/move_group_pick_place_capability/capability_names.h>
@@ -26,7 +23,7 @@ using namespace moveit::planning_interface;
 
 static const double DEFAULT_PLACE_HEIGHT = 0.15;
 
-KatanaModel::KatanaModel(): lastHeightAboveTable(0.0) {
+Katana::Katana(): lastHeightAboveTable(0.0) {
 
 	groupArm = new moveit::planning_interface::MoveGroup("arm");
 	groupArm->setPlanningTime(120.0);
@@ -38,10 +35,10 @@ KatanaModel::KatanaModel(): lastHeightAboveTable(0.0) {
 	groupArm->setGoalPositionTolerance(0.02);  //m
 	groupArm->setGoalOrientationTolerance(0.5); //rad
 
-	groupGripper = new moveit::planning_interface::MoveGroup("gripper");
-	groupGripper->startStateMonitor();
+	groupEe = new moveit::planning_interface::MoveGroup("gripper");
+	groupEe->startStateMonitor();
 
-	sensor_subscriber = nh.subscribe("sensor_states", 1, &KatanaModel::sensorCallback, this);
+	sensor_subscriber = nh.subscribe("sensor_states", 1, &Katana::sensorCallback, this);
 
 	pickActionClient.reset(
 			new actionlib::SimpleActionClient<moveit_msgs::PickupAction>(nh,
@@ -60,104 +57,50 @@ KatanaModel::KatanaModel(): lastHeightAboveTable(0.0) {
 	ROS_INFO("KatanaModel: connected");
 }
 
-KatanaModel::~KatanaModel() {
+Katana::~Katana() {
 	delete groupArm;
 }
 
-void KatanaModel::addListener(ModelListener* listener) {
-	listeners.push_back(listener);
-}
+void Katana::setJointAngle(const string &joint, double angle) {
 
-void KatanaModel::removeListener(ModelListener* listener) {
-	vector<ModelListener*>::iterator i;
-	for (i = listeners.begin(); i != listeners.end(); ++i) {
-		if (listener == *i) {
-			listeners.erase(i);
-			return;
-		}
-	}
-}
-
-map<string, double> KatanaModel::getJointAngles() const {
-	ROS_DEBUG("Invoked getJointAngles");
-	map<string, double> jointAngles;
-	vector<string> jointNames = groupArm->getJoints();
-	vector<double> jointValues = groupArm->getCurrentJointValues();
-	for (int i = 0; i < jointNames.size(); i++) {
-	    jointAngles[jointNames[i]] = jointValues[i];
-	}
-	return jointAngles;
-}
-
-vector<string> KatanaModel::getJointNames() const {
-    ROS_DEBUG("Invoked getJointNames");
-    return groupArm->getJoints();
-}
-
-void KatanaModel::setJointAngle(const string &joint, double angle) {
-	ROS_INFO("### Invoked setJointAngle ###");
-
-	if (!isSomethingInGripper()) {
+	if (!isSomethingInGripper())
 		rosTools.detach_collision_object();
-	}
 
-	groupArm->clearPoseTargets();
-	groupArm->setStartStateToCurrentState();
-	groupArm->setJointValueTarget(joint, angle);
-	groupArm->move();
+	Model::setJointAngle(joint, angle);
 }
 
-void KatanaModel::setJointAngles(const map<string, double> &angles) {
-	ROS_INFO("### Invoked setJointAngles ###");
+void Katana::setJointAngles(const map<string, double> &angles) {
 
-	if (!isSomethingInGripper()) {
+    if (!isSomethingInGripper())
 		rosTools.detach_collision_object();
-	}
 
-	groupArm->clearPoseTargets();
-	groupArm->setStartStateToCurrentState();
-	for (map<string, double>::const_iterator i = angles.begin(); i != angles.end(); ++i) {
-		groupArm->setJointValueTarget(i->first, i->second);
-	}
-	groupArm->move();
+	Model::setJointAngles(angles);
 }
 
-void KatanaModel::setJointAngles(const vector<double> &angles) {
-    ROS_INFO("### Invoked setJointAngles ###");
-    vector<string> joints = groupArm->getJoints();
-    if (angles.size() < 0 || angles.size() > joints.size()) {
-        ROS_ERROR("Requested number of joints wrong! (%i)", (int )angles.size());
-        return;
-    }
+void Katana::setJointAngles(const vector<double> &angles) {
 
-    if (!isSomethingInGripper()) {
+    if (!isSomethingInGripper())
         rosTools.detach_collision_object();
-    }
 
-    groupArm->clearPoseTargets();
-    groupArm->setStartStateToCurrentState();
-    for (int i = 0; i < angles.size(); i++) {
-        groupArm->setJointValueTarget(joints[i], angles[i]);
-    }
-    groupArm->move();
+    Model::setJointAngles(angles);
 }
 
-int KatanaModel::getNumJoints() const {
+int Katana::getNumJoints() const {
 	ROS_DEBUG("Invoked getNumJoints");
 	return groupArm->getJoints().size();
 }
 
-void KatanaModel::openGripper(bool withSensors) {
+void Katana::openGripper(bool withSensors) {
 	ROS_INFO("### Invoked openGripper ###");
 	moveToGripper(ParamReader::getParamReader().gripperPositionOpen, withSensors);
 }
 
-void KatanaModel::closeGripper(bool withSensors) {
+void Katana::closeGripper(bool withSensors) {
 	ROS_INFO("### Invoked closeGripper ###");
 	moveToGripper(ParamReader::getParamReader().gripperPositionClosed, withSensors);
 }
 
-void KatanaModel::moveToGripper(double target, bool withSensors) {
+void Katana::moveToGripper(double target, bool withSensors) {
 	ROS_DEBUG("### Invoked moveToGripper ###");
 	string actionName = "gripper_grasp_posture_controller";
 	if (withSensors) {
@@ -182,69 +125,27 @@ void KatanaModel::moveToGripper(double target, bool withSensors) {
 	}
 }
 
-void KatanaModel::motorsOn() {
+void Katana::motorsOn() {
 	ROS_INFO("Invoked motorsOn");
 	std_srvs::Empty empty;
 	nh.serviceClient<std_srvs::Empty>("switch_motors_on").call(empty.request, empty.response);
 }
 
-void KatanaModel::motorsOff() {
+void Katana::motorsOff() {
 	ROS_INFO("Invoked motorsOff");
 	std_srvs::Empty empty;
 	nh.serviceClient<std_srvs::Empty>("switch_motors_off").call(empty.request, empty.response);
 }
 
-EefPose KatanaModel::getEefPose() const {
-	ROS_DEBUG("Invoked getEefPose");
-	EefPose pose;
-	geometry_msgs::PoseStamped ps = groupArm->getCurrentPose();
-
-	ROS_INFO_STREAM("getEefPose() 1: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
-
-	tfTransformer.transform(ps, ps, ParamReader::getParamReader().frameOriginArm);
-
-	ROS_INFO_STREAM("getEefPose() 2: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
-
-	pose.translation.xMeter = ps.pose.position.x;
-	pose.translation.yMeter = ps.pose.position.y;
-	pose.translation.zMeter = ps.pose.position.z;
-	pose.rotation.qw = ps.pose.orientation.w;
-	pose.rotation.qx = ps.pose.orientation.x;
-	pose.rotation.qy = ps.pose.orientation.y;
-	pose.rotation.qz = ps.pose.orientation.z;
-	pose.frame = ParamReader::getParamReader().frameOriginArm;
-	return pose;
-}
-
-MoveResult KatanaModel::moveTo(const EefPose& pose, bool linear, bool orientation) {
-	ROS_INFO("### Invoked moveTo (pose) ###");
-
+MoveResult Katana::moveTo(const EefPose& pose, bool linear, bool orientation) {
 	if (!isSomethingInGripper()) {
 		rosTools.detach_collision_object();
 	}
 
-	groupArm->clearPoseTargets();
-	groupArm->setStartStateToCurrentState();
-
-	if (orientation) {
-		geometry_msgs::Pose p;
-		p.position.x = pose.translation.xMeter;
-		p.position.y = pose.translation.yMeter;
-		p.position.z = pose.translation.zMeter;
-		p.orientation.w = pose.rotation.qw;
-		p.orientation.x = pose.rotation.qx;
-		p.orientation.y = pose.rotation.qy;
-		p.orientation.z = pose.rotation.qz;
-		groupArm->setPoseTarget(p);
-	} else {
-		groupArm->setPositionTarget(pose.translation.xMeter, pose.translation.yMeter,
-				pose.translation.zMeter);
-	}
-
-	return rosTools.moveResultFromMoveit(groupArm->move());
+	return Model::moveTo(pose, linear, orientation);
 }
 
-MoveResult KatanaModel::moveTo(const std::string& poseName, bool plan) {
+MoveResult Katana::moveTo(const std::string& poseName, bool plan) {
 	ROS_INFO("### Invoked moveTo (string) ###");
 
 	if (!isSomethingInGripper()) {
@@ -273,39 +174,9 @@ MoveResult KatanaModel::moveTo(const std::string& poseName, bool plan) {
 	}
 }
 
-
-ArmPoses KatanaModel::getRememberedPoses() const {
-	ROS_DEBUG("Invoked getRememberedPoses");
-	string planningGroup = groupArm->getName();
-	const robot_model::JointModelGroup* jmg =
-			groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(planningGroup);
-	vector<string> names = jmg->getDefaultStateNames();
-	ArmPoses poses;
-	for (vector<string>::iterator it = names.begin(); it != names.end(); it++) {
-		string name = *it;
-		map<string, double> angles;
-		jmg->getVariableDefaultPositions(name, angles);
-		poses[name] = angles;
-	}
-	ROS_DEBUG("poses %d, names %d", (int )poses.size(), (int )names.size());
-	return poses;
-}
-
-ArmPose KatanaModel::getRememberedPose(const std::string &name) const {
-    const robot_model::JointModelGroup* jmg =
-                groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(groupArm->getName());
-    map<string, double> angles;
-    jmg->getVariableDefaultPositions(name, angles);
-    return angles;
-}
-
-void KatanaModel::stop() const {
-	groupArm->stop();
-}
-
-bool KatanaModel::isSomethingInGripper() const {
+bool Katana::isSomethingInGripper() const {
 	ROS_DEBUG("### Invoked isSomethingInGripper ###");
-	vector<double> fingerJointAngles = groupGripper->getCurrentJointValues();
+	vector<double> fingerJointAngles = groupEe->getCurrentJointValues();
 	if (fingerJointAngles.empty()) {
 		ROS_ERROR("Cannot read finger joint angles");
 		return false;
@@ -359,23 +230,13 @@ bool KatanaModel::isSomethingInGripper() const {
 	return (force && !gripperClosed);
 }
 
-map<string, short> KatanaModel::getGripperSensors() const {
+map<string, short> Katana::getGripperSensors() const {
 	ROS_DEBUG("Invoked getGripperSensors");
 	boost::mutex::scoped_lock lock(sensorMutex);
 	return currentSensorReadings;
 }
 
-std::vector<moveit_msgs::Grasp> KatanaModel::generate_grasps_angle_trans(ObjectShape shape) {
-	tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameOriginArm);
-	return graspGenerator.generate_grasps_angle_trans(shape.center.xMeter, shape.center.yMeter, shape.center.zMeter, shape.heightMeter);
-}
-
-std::vector<moveit_msgs::Grasp> KatanaModel::generate_grasps_angle_trans(moveit_msgs::CollisionObject shape) {
-    tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameOriginArm);
-    return graspGenerator.generate_grasps_angle_trans(shape.primitive_poses[0].position.x, shape.primitive_poses[0].position.y, shape.primitive_poses[0].position.z, shape.primitives[0].dimensions[0]);
-}
-
-GraspReturnType KatanaModel::graspObject(ObjectShape obj, bool simulate, const string &startPose) {
+GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate, const string &startPose) {
 
 	ROS_INFO("### Invoked graspObject(ObjectShape) ###");
 
@@ -402,7 +263,7 @@ GraspReturnType KatanaModel::graspObject(ObjectShape obj, bool simulate, const s
     return graspObject(objId, "", grasps, tableHeightArmFrame, simulate, startPose);
 }
 
-GraspReturnType KatanaModel::graspObject(const string &obj, const string &surface, bool simulate, const string &startPose) {
+GraspReturnType Katana::graspObject(const string &obj, const string &surface, bool simulate, const string &startPose) {
 
 	ROS_INFO("### Invoked graspObject(string) ###");
 
@@ -426,7 +287,7 @@ GraspReturnType KatanaModel::graspObject(const string &obj, const string &surfac
 	return graspObject(obj, surface, grasps, tableHeightArmCoords, simulate, startPose);
 }
 
-GraspReturnType KatanaModel::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
+GraspReturnType Katana::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
 
     GraspReturnType grt;
 
@@ -500,7 +361,7 @@ GraspReturnType KatanaModel::graspObject(const string &obj, const string &surfac
 	return grt;
 }
 
-GraspReturnType KatanaModel::placeObject(EefPose obj, bool simulate,
+GraspReturnType Katana::placeObject(EefPose obj, bool simulate,
 		const string &startPose) {
 	ROS_INFO("### Invoked placeObject ###");
 
@@ -510,7 +371,7 @@ GraspReturnType KatanaModel::placeObject(EefPose obj, bool simulate,
 	return placeObject("", locations, simulate, startPose);
 }
 
-GraspReturnType KatanaModel::placeObject(ObjectShape obj, bool simulate,
+GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
 		const string &startPose) {
 	ROS_INFO("### Invoked placeObject (bb) ###");
 
@@ -520,7 +381,7 @@ GraspReturnType KatanaModel::placeObject(ObjectShape obj, bool simulate,
 	return placeObject("", locations, simulate, startPose);
 }
 
-GraspReturnType KatanaModel::placeObject(const string &obj, bool simulate, const string &startPose) {
+GraspReturnType Katana::placeObject(const string &obj, bool simulate, const string &startPose) {
     ROS_INFO("### Invoked placeObject (str) ###");
     ROS_ERROR("placing with surface string not suppported yet!");
     GraspReturnType grt;
@@ -528,7 +389,7 @@ GraspReturnType KatanaModel::placeObject(const string &obj, bool simulate, const
     return grt;
 }
 
-GraspReturnType KatanaModel::placeObject(const std::string &surface, std::vector<moveit_msgs::PlaceLocation> locations, bool simulate, const std::string &startPose) {
+GraspReturnType Katana::placeObject(const std::string &surface, std::vector<moveit_msgs::PlaceLocation> locations, bool simulate, const std::string &startPose) {
 
     GraspReturnType grt;
 
@@ -601,7 +462,7 @@ GraspReturnType KatanaModel::placeObject(const std::string &surface, std::vector
 	return grt;
 }
 
-void KatanaModel::attachDefaultObject() {
+void Katana::attachDefaultObject() {
 	ROS_INFO("Publishing default object!");
 	ObjectShape shape;
 	shape.heightMeter = 0.05;
@@ -620,7 +481,7 @@ void KatanaModel::attachDefaultObject() {
 	touchLinks.push_back("katana_motor4_lift_link");
 	touchLinks.push_back("katana_motor5_wrist_roll_link");
 
-	groupGripper->attachObject(rosTools.getDefaultObjectName(), "katana_gripper_tool_frame", touchLinks);
+	groupEe->attachObject(rosTools.getDefaultObjectName(), "katana_gripper_tool_frame", touchLinks);
 
 	ros::spinOnce();
 	ros::WallDuration sleep_time(1);
@@ -628,7 +489,7 @@ void KatanaModel::attachDefaultObject() {
 }
 
 
-std::vector<moveit_msgs::PlaceLocation> KatanaModel::generate_place_locations(
+std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 		EefPose obj) {
 
 	tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameOriginArm);
@@ -653,7 +514,7 @@ std::vector<moveit_msgs::PlaceLocation> KatanaModel::generate_place_locations(
 
 }
 
-std::vector<moveit_msgs::PlaceLocation> KatanaModel::generate_place_locations(
+std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 		ObjectShape obj) {
 
 	tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameOriginArm);
@@ -680,7 +541,7 @@ std::vector<moveit_msgs::PlaceLocation> KatanaModel::generate_place_locations(
 }
 
 
-void KatanaModel::sensorCallback(const sensor_msgs::JointStatePtr& sensorReadings) {
+void Katana::sensorCallback(const sensor_msgs::JointStatePtr& sensorReadings) {
 	boost::mutex::scoped_lock lock(sensorMutex);
 	for (int i = 0; i < sensorReadings->name.size(); i++) {
 		string sensor = sensorReadings->name[i];
@@ -691,7 +552,7 @@ void KatanaModel::sensorCallback(const sensor_msgs::JointStatePtr& sensorReading
 
 
 
-moveit_msgs::PlaceGoal KatanaModel::buildPlaceGoal(const string &surface,
+moveit_msgs::PlaceGoal Katana::buildPlaceGoal(const string &surface,
 		const vector<moveit_msgs::PlaceLocation>& locations, bool simulate) {
 	moveit_msgs::PlaceGoal goal;
 	goal.attached_object_name = rosTools.getDefaultObjectName();
@@ -711,7 +572,7 @@ moveit_msgs::PlaceGoal KatanaModel::buildPlaceGoal(const string &surface,
 	return goal;
 }
 
-moveit_msgs::PickupGoal KatanaModel::buildPickupGoal(const string &obj,
+moveit_msgs::PickupGoal Katana::buildPickupGoal(const string &obj,
         const string &supportSurface, const vector<moveit_msgs::Grasp> &grasps, bool simulate) {
 
     moveit_msgs::PickupGoal goal;
@@ -739,7 +600,7 @@ moveit_msgs::PickupGoal KatanaModel::buildPickupGoal(const string &obj,
     return goal;
 }
 
-katana_msgs::JointMovementGoal KatanaModel::buildMovementGoal(const std::string &poseName) {
+katana_msgs::JointMovementGoal Katana::buildMovementGoal(const std::string &poseName) {
     ArmPose pose = getRememberedPose(poseName);
     katana_msgs::JointMovementGoal goal;
     for (ArmPose::iterator i = pose.begin(); i != pose.end(); ++i) {

@@ -11,7 +11,6 @@
 
 #include "../interface/ControlInterface.h"
 #include "../interface/ControlInterfaceListener.h"
-#include "../model/KatanaModel.h"
 #include "../model/ModelListener.h"
 #include "../util/Dijkstra.h"
 #include "../util/Transition.h"
@@ -52,7 +51,7 @@ public:
 	ArmPoses requestPoses() const;
 
 private:
-	Model::Ptr katana;
+	Model::Ptr model;
 	ControlStrategy::Ptr strategy;
 	std::vector<ControlInterface::Ptr> controlInterfaces;
 
