@@ -53,6 +53,8 @@ private:
 
     RosTools rosTools;
 
+    ros::Publisher target_publisher; //todo: put in rostools
+
     ros::NodeHandle nh;
 
     boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PickupAction> > pickActionClient;

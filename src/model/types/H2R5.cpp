@@ -48,6 +48,10 @@ H2R5::H2R5(): lastHeightAboveTable(0.0) {
     waitForAction(pickActionClient, ros::Duration(0, 0), move_group::PICKUP_ACTION);
     waitForAction(placeActionClient, ros::Duration(0, 0), move_group::PLACE_ACTION);
 
+    string output_scope = "/meka_roscontrol/left_hand_position_trajectory_controller/command";
+    printf("> sending targets on '%s'\n", output_scope.c_str());
+    target_publisher = nh.advertise<trajectory_msgs::JointTrajectory>(output_scope, 100);
+
     ROS_INFO("H2R5Model: connected");
 
 }
@@ -73,12 +77,43 @@ MoveResult H2R5::moveTo(const std::string& poseName, bool plan) {
 
 void H2R5::openGripper(bool withSensors = false) {
     ROS_INFO("### Invoked openGripper ###");
-    //todo: stub
+
+    trajectory_msgs::JointTrajectory msg;
+    msg.joint_names.push_back("left_hand_j2");
+    msg.joint_names.push_back("left_hand_j3");
+    msg.joint_names.push_back("left_hand_j4");
+
+    trajectory_msgs::JointTrajectoryPoint p;
+    p.positions.push_back(0.0);
+    p.positions.push_back(0.0);
+    p.positions.push_back(0.0);
+
+    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+
+    msg.points.push_back(p);
+
+    target_publisher.publish(msg);
+
 }
 
 void H2R5::closeGripper(bool withSensors = false) {
     ROS_INFO("### Invoked closeGripper ###");
-    //todo: stub
+
+    trajectory_msgs::JointTrajectory msg;
+    msg.joint_names.push_back("left_hand_j2");
+    msg.joint_names.push_back("left_hand_j3");
+    msg.joint_names.push_back("left_hand_j4");
+
+    trajectory_msgs::JointTrajectoryPoint p;
+    p.positions.push_back(143 * M_PI / 180.0);
+    p.positions.push_back(143 * M_PI / 180.0);
+    p.positions.push_back(143 * M_PI / 180.0);
+
+    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+
+    msg.points.push_back(p);
+
+    target_publisher.publish(msg);
 }
 
 GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate, const string &startPose) {

@@ -11,8 +11,8 @@
   <arg name="liftUpMinDistance" default="0.005" />
   <arg name="retreatDesiredDistance" default="0.07" />
   <arg name="retreatMinDistance" default="0.03" />
-  <arg name="frameOriginArm" default="katana_base_link" />
-  <arg name="frameOriginGripper" default="katana_gripper_tool_frame" />
+  <arg name="frameOriginArm" default="base_link" />
+  <arg name="frameOriginGripper" default="palm_left" />
   <arg name="anglePitchInc" default="0.3" /><!-- pi/8 -->
   <arg name="anglePitchMax" default="0.9" /><!-- pi/4 -->
   <arg name="angleYawInc" default="0.3" /><!-- pi/8 -->
