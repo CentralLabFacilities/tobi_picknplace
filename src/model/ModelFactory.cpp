@@ -8,8 +8,10 @@
 #include "ModelFactory.h"
 
 #include "types/H2R5.h"
+#ifdef USE_KATANA
 #include "types/Katana.h"
 #include "types/KatanaSim.h"
+#endif //USE_KATANA
 
 Model::Ptr ModelFactory::create(std::string const &type) {
 
