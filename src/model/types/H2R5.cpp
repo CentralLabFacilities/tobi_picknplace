@@ -27,6 +27,9 @@ H2R5::H2R5() {
 
     lastHeightAboveTable = 0.0;
 
+    touchlinks.push_back("wrist_LEFT");
+    touchlinks.push_back("w_differential_LEFT");
+    touchlinks.push_back("handmount_LEFT");
     touchlinks.push_back("palm_left");
     touchlinks.push_back("thumb0_left");
     touchlinks.push_back("thumb1_left");
