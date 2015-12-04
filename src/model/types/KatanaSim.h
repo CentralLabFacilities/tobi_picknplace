@@ -31,8 +31,8 @@ public:
     virtual void setJointAngles(const std::vector<double> &angles);
 	virtual int getNumJoints() const;
 
-	virtual void openGripper(bool withSensors);
-	virtual void closeGripper(bool withSensors);
+	virtual void openEef(bool withSensors);
+	virtual void closeEef(bool withSensors);
 	virtual void moveToGripper(double target, bool withSensors);
 
 	virtual void motorsOn();

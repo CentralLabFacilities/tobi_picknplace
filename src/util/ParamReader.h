@@ -17,6 +17,16 @@ public:
 
 	static ParamReader& getParamReader();
 
+	std::string model;
+
+    std::string groupArm;
+    std::string groupEef;
+
+    std::string frameOriginArm;
+    std::string frameOriginGripper;
+
+    std::string eefCmdScope;
+
 	double gripperPositionClosed;
 	double gripperPositionOpen;
 
@@ -33,9 +43,6 @@ public:
 	double retreatMinDistance;
 
 	double graspThroughDistance;
-
-	std::string frameOriginArm;
-	std::string frameOriginGripper;
 
 	double anglePitchInc;
 	double anglePitchMax;

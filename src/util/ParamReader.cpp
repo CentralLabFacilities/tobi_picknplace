@@ -9,6 +9,18 @@
 
 using namespace std;
 
+static const string MODEL = "katana";
+
+static const string GROUP_ARM = "left_arm";
+static const string GROUP_END_EFFECTOR = "left_hand";
+
+static const string FRAME_ORIGIN_ARM = "base_link";
+static const string FRAME_ORIGIN_GRIPPER = "left_palm";
+
+static const string EEF_CMD_SCOPE = "/meka_roscontrol/left_hand_position_trajectory_controller/command";
+
+// KATANA SPECIFIC todo: organize in another way
+
 static const double APPROACH_DESIRED_DISTANCE = 0.10;
 static const double APPROACH_MIN_DISTANCE = 0.05;
 
@@ -25,9 +37,6 @@ static const double GRIPPER_POSITION_OPEN = 0.298;
 
 static const int GRIPPER_THRESHOLD_FORCE = 130;
 static const int GRIPPER_THRESHOLD_DISTANCE = 130;
-
-static const string FRAME_ORIGIN_ARM = "katana_base_link";
-static const string FRAME_ORIGIN_GRIPPER = "katana_gripper_tool_frame";
 
 static const double ANGLE_PITCH_INC = M_PI / 16;
 static const double ANGLE_PITCH_MAX = M_PI / 16; //2
@@ -57,6 +66,16 @@ static const double PLACE_AT_ANGLE_YAW_MAX = M_PI / 16;
 
 ParamReader::ParamReader():private_nh_("~") {
 
+    private_nh_.param("model", model, MODEL);
+
+    private_nh_.param("groupArm", groupArm, GROUP_ARM);
+    private_nh_.param("groupEe", groupEef, GROUP_END_EFFECTOR);
+
+	private_nh_.param("frameOriginArm", frameOriginArm, FRAME_ORIGIN_ARM);
+	private_nh_.param("frameOriginGripper", frameOriginGripper, FRAME_ORIGIN_GRIPPER);
+
+	private_nh_.param("eefCmdScope", eefCmdScope, EEF_CMD_SCOPE);
+
 	private_nh_.param("gripperPositionClosed", gripperPositionClosed, GRIPPER_POSITION_CLOSED);
 	private_nh_.param("gripperPositionOpen", gripperPositionOpen, GRIPPER_POSITION_OPEN);
 
@@ -73,9 +92,6 @@ ParamReader::ParamReader():private_nh_("~") {
 	private_nh_.param("retreatMinDistance", retreatMinDistance, RETREAT_MIN_DISTANCE);
 
 	private_nh_.param("graspThroughDistance", graspThroughDistance, GRASP_THROUGH_DISTANCE);
-
-	private_nh_.param("frameOriginArm", frameOriginArm, FRAME_ORIGIN_ARM);
-	private_nh_.param("frameOriginGripper", frameOriginGripper, FRAME_ORIGIN_GRIPPER);
 
 	private_nh_.param("anglePitchInc", anglePitchInc, ANGLE_PITCH_INC);
 	private_nh_.param("anglePitchMax", anglePitchMax, ANGLE_PITCH_MAX);

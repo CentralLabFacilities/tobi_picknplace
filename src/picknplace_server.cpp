@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 		("debug", "debug mode") //
 		("sim", "simulation mode") //
 		("transitions,t", value<string>(), "file describing possible transitions")  // transitions
+		("model,m", value<string>(), "the effector model to use. Available options: katana, h2r5") //which model to use
 				;
 
 		store(
@@ -63,7 +64,13 @@ int main(int argc, char **argv) {
         ros::console::notifyLoggerLevelsChanged();
     }
 
-	Model::Ptr model = ModelFactory::create("h2r5"); //todo: anpassen
+    if (!vm.count("model")) {
+        cerr << "No model specified. Use --model <MODELNAME>. Exiting.." << endl;
+        ros::shutdown();
+        return 0;
+    }
+
+	Model::Ptr model = ModelFactory::create(vm["model"].as<string>());
 
 	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));
 	if (vm.count("transitions")) {

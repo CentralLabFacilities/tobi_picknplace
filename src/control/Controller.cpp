@@ -76,11 +76,11 @@ map<string, double> Controller::requestJointAngles() const {
 }
 
 void Controller::requestOpenGripper(bool withSensors) {
-	model->openGripper(withSensors);
+	model->openEef(withSensors);
 }
 
 void Controller::requestCloseGripper(bool withSensors) {
-	model->closeGripper(withSensors);
+	model->closeEef(withSensors);
 }
 
 void Controller::requestMotorsOn() {

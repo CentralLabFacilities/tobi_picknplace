@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="transitions" />
+  <arg name="model" default="h2r5" />  
+  <arg name="frameOriginArm" default="base_link" />
+  <arg name="frameOriginGripper" default="palm_left" />
+  <arg name="groupArm" default="left_arm" />
+  <arg name="groupEe" default="left_hand" />
+  <arg name="transitions" default="" />
   <arg name="use_sim" default="false" />
   <arg name="gripperPositionClosed" default="-0.495" />
   <arg name="gripperPositionOpen" default="0.298" />
@@ -11,8 +16,6 @@
   <arg name="liftUpMinDistance" default="0.005" />
   <arg name="retreatDesiredDistance" default="0.07" />
   <arg name="retreatMinDistance" default="0.03" />
-  <arg name="frameOriginArm" default="base_link" />
-  <arg name="frameOriginGripper" default="palm_left" />
   <arg name="anglePitchInc" default="0.3" /><!-- pi/8 -->
   <arg name="anglePitchMax" default="0.9" /><!-- pi/4 -->
   <arg name="angleYawInc" default="0.3" /><!-- pi/8 -->
@@ -30,8 +33,13 @@
 
   <arg unless="$(arg use_sim)" name="use_sim_args" value="" />
   <arg     if="$(arg use_sim)" name="use_sim_args" value="--sim" />
-
-  <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="--transitions $(arg transitions) $(arg use_sim_args)" output="screen">
+    
+  <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="-m $(arg model) -t $(arg transitions) $(arg use_sim_args)" output="screen">
+    <param name="model"                   value="$(arg model)" />  
+    <param name="frameOriginArm"          value="$(arg frameOriginArm)" />
+    <param name="frameOriginGripper"      value="$(arg frameOriginGripper)" />
+    <param name="groupArm"                value="$(arg groupArm)" />
+    <param name="groupEe"                 value="$(arg groupEe)" />
     <param name="gripperPositionClosed"   value="$(arg gripperPositionClosed)" />
     <param name="gripperPositionOpen"     value="$(arg gripperPositionOpen)" />
     <param name="graspThroughDistance"    value="$(arg graspThroughDistance)" />
@@ -41,8 +49,6 @@
     <param name="liftUpMinDistance"       value="$(arg liftUpMinDistance)" />
     <param name="retreatDesiredDistance"  value="$(arg retreatDesiredDistance)" />
     <param name="retreatMinDistance"      value="$(arg retreatMinDistance)" />
-    <param name="frameOriginArm"          value="$(arg frameOriginArm)" />
-    <param name="frameOriginGripper"      value="$(arg frameOriginGripper)" />
     <param name="anglePitchInc"           value="$(arg anglePitchInc)" />
     <param name="anglePitchMax"           value="$(arg anglePitchMax)" />
     <param name="angleYawInc"             value="$(arg angleYawInc)" />

@@ -26,7 +26,6 @@
 #include <rst/generic/Dictionary.pb.h>
 
 using namespace std;
-using namespace boost;
 
 using namespace rsb;
 using namespace rsb::patterns;
@@ -85,11 +84,11 @@ public:
 	LocalServerPtr server;
 	ControlInterfaceListener* listener;
 
-	shared_ptr<JointAngles> listAngles() {
+	boost::shared_ptr<JointAngles> listAngles() {
 		ROS_DEBUG_STREAM("Invoked ListAngles");
 		map<string, double> joints = listener->requestJointAngles();
 
-		shared_ptr<JointAngles> angles(new JointAngles());
+		boost::shared_ptr<JointAngles> angles(new JointAngles());
 		for (map<string, double>::iterator i = joints.begin(); i != joints.end(); ++i) {
 			angles->add_angles(i->second);
 			ROS_DEBUG_STREAM("joint " << i->first << " with value " << i->second);
@@ -97,7 +96,7 @@ public:
 		return angles;
 	}
 
-	shared_ptr<void> moveJoints(shared_ptr<JointAngles> input) {
+	boost::shared_ptr<void> moveJoints(boost::shared_ptr<JointAngles> input) {
 		ROS_DEBUG_STREAM("Invoked moveJoints");
 		if (listener->requestNumJoints() != input->angles_size()) {
 			ROS_ERROR_STREAM("Size in MoveJoints: " << input->angles_size() << "does not match armSize: " << listener->requestNumJoints());
@@ -109,11 +108,11 @@ public:
 			}
 			listener->requestMoveJointAngles(angles);
 		}
-		return shared_ptr<void>();
+		return boost::shared_ptr<void>();
 	}
 
-	shared_ptr<bool> goTo(shared_ptr<rst::geometry::Pose> input, bool linear, bool orientation) {
-		shared_ptr<bool> sucess(new bool(true));
+	boost::shared_ptr<bool> goTo(boost::shared_ptr<rst::geometry::Pose> input, bool linear, bool orientation) {
+		boost::shared_ptr<bool> sucess(new bool(true));
 		ROS_DEBUG_STREAM("Invoked gotToLinear");
 		try {
 			*sucess = listener->requestMoveTo(convert(input), linear, orientation);
@@ -125,80 +124,80 @@ public:
 		return sucess;
 	}
 
-	shared_ptr<bool> goToLinear(shared_ptr<rst::geometry::Pose> input) {
+	boost::shared_ptr<bool> goToLinear(boost::shared_ptr<rst::geometry::Pose> input) {
 		ROS_DEBUG_STREAM("Invoked gotToLinear");
 		return goTo(input, true, false);
 	}
 
-	shared_ptr<bool> goToNonLinear(shared_ptr<rst::geometry::Pose> input) {
+	boost::shared_ptr<bool> goToNonLinear(boost::shared_ptr<rst::geometry::Pose> input) {
 		ROS_DEBUG_STREAM("Invoked gotToNonLinear");
 		return goTo(input, false, false);
 	}
 
-	shared_ptr<bool> goToLinearOrient(shared_ptr<rst::geometry::Pose> input) {
+	boost::shared_ptr<bool> goToLinearOrient(boost::shared_ptr<rst::geometry::Pose> input) {
 		ROS_DEBUG_STREAM("Invoked gotToLinearOrient");
 		return goTo(input, true, true);
 	}
 
-	shared_ptr<bool> goToNonLinearOrient(shared_ptr<rst::geometry::Pose> input) {
+	boost::shared_ptr<bool> goToNonLinearOrient(boost::shared_ptr<rst::geometry::Pose> input) {
 		ROS_DEBUG_STREAM("Invoked gotToNonLinearOrient");
 		return goTo(input, false, true);
 	}
 
-	shared_ptr<rst::geometry::Pose> getPosition() {
+	boost::shared_ptr<rst::geometry::Pose> getPosition() {
 		ROS_DEBUG_STREAM("Invoked getPosition");
 		EefPose position = listener->requestEefPose();
-		shared_ptr<rst::geometry::Pose> poseOut = convert(position);
+		boost::shared_ptr<rst::geometry::Pose> poseOut = convert(position);
 		ROS_DEBUG_STREAM("Received following pose: " << poseOut->DebugString());
 		return poseOut;
 	}
 
-	shared_ptr<void> openGripper() {
+	boost::shared_ptr<void> openGripper() {
 		ROS_DEBUG_STREAM("Invoked openGripper");
 		listener->requestOpenGripper(false);
-		return shared_ptr<void>();
+		return boost::shared_ptr<void>();
 	}
 
-	shared_ptr<void> openGripperWhenTouching() {
+	boost::shared_ptr<void> openGripperWhenTouching() {
 		ROS_DEBUG_STREAM("Invoked openGripperWhenTouching");
 		listener->requestOpenGripper(true);
-		return shared_ptr<void>();
+		return boost::shared_ptr<void>();
 	}
         
         
-        shared_ptr<std::string> findNearestPose() {
+        boost::shared_ptr<std::string> findNearestPose() {
 		ROS_DEBUG_STREAM("Invoked findNearestPose");
 		std::string ret = listener->requestNearestPose();
 		return boost::make_shared<std::string>(ret.c_str());
 	}
         
-	shared_ptr<void> closeGripper() {
+	boost::shared_ptr<void> closeGripper() {
 		ROS_DEBUG_STREAM("Invoked closeGripper");
 		listener->requestCloseGripper(false);
-		return shared_ptr<void>();
+		return boost::shared_ptr<void>();
 	}
 
-	shared_ptr<void> closeGripperByForce() {
+	boost::shared_ptr<void> closeGripperByForce() {
 		ROS_DEBUG_STREAM("Invoked closeGripperByForce");
 		listener->requestCloseGripper(true);
-		return shared_ptr<void>();
+		return boost::shared_ptr<void>();
 	}
         
         
 
-	shared_ptr<void> motorsOn() {
+	boost::shared_ptr<void> motorsOn() {
 		ROS_DEBUG_STREAM("Invoked motorsOn");
 		listener->requestMotorsOn();
-		return shared_ptr<void>();
+		return boost::shared_ptr<void>();
 	}
-	shared_ptr<void> motorsOff() {
+	boost::shared_ptr<void> motorsOff() {
 		ROS_DEBUG_STREAM("Invoked motorsOff");
 		listener->requestMotorsOff();
-		return shared_ptr<void>();
+		return boost::shared_ptr<void>();
 	}
 
-	shared_ptr<bool> isSomethingInGripper() {
-		shared_ptr<bool> success(new bool(true));
+	boost::shared_ptr<bool> isSomethingInGripper() {
+		boost::shared_ptr<bool> success(new bool(true));
 		ROS_DEBUG_STREAM("Invoked isSomethingInGripper");
 		if (!listener->requestIsSomethingInGripper()) {
 			*success = false;
@@ -206,16 +205,16 @@ public:
 		return success;
 	}
 
-	shared_ptr<Dictionary> getGripperSensors() {
+	boost::shared_ptr<Dictionary> getGripperSensors() {
 		ROS_DEBUG_STREAM("Invoked getGripperSensors");
 		map<string, short> sensorValues = listener->requestGripperSensors();
 		return convert(sensorValues);
 	}
 
-	shared_ptr<Dictionary> listPoses() {
+	boost::shared_ptr<Dictionary> listPoses() {
 		ROS_DEBUG_STREAM("Invoked listPoses");
 
-		shared_ptr<Dictionary> output(new rst::generic::Dictionary());
+		boost::shared_ptr<Dictionary> output(new rst::generic::Dictionary());
 
 		rst::generic::Value* newVal;
 		KeyValuePair* key;
@@ -248,34 +247,34 @@ public:
 		return output;
 	}
 
-	shared_ptr<bool> setPose(shared_ptr<string> input) {
-		shared_ptr<bool> success(new bool(false));
+	boost::shared_ptr<bool> setPose(boost::shared_ptr<string> input) {
+		boost::shared_ptr<bool> success(new bool(false));
 		ROS_DEBUG_STREAM("Invoked setPose");
 		*success = listener->requestMoveTo(*input);
 		return success;
 	}
 
-	shared_ptr<Dictionary> isObjectGraspable(shared_ptr<BoundingBox3DFloat> input) {
+	boost::shared_ptr<Dictionary> isObjectGraspable(boost::shared_ptr<BoundingBox3DFloat> input) {
 		ObjectShape objectToGrasp;
 		ROS_DEBUG_STREAM("Invoked isObjectGraspable");
 		GraspReturnType grt = listener->requestGraspObject(convert(input), true);
 		return convert(grt);
 	}
-	shared_ptr<Dictionary> isObjectNameGraspable(shared_ptr<string> input) {
+	boost::shared_ptr<Dictionary> isObjectNameGraspable(boost::shared_ptr<string> input) {
         ROS_DEBUG_STREAM("Invoked isObjectGraspable");
         return graspObjectName(input, true);
     }
 
-	shared_ptr<Dictionary> graspObject(shared_ptr<BoundingBox3DFloat> input) {
+	boost::shared_ptr<Dictionary> graspObject(boost::shared_ptr<BoundingBox3DFloat> input) {
 		ROS_DEBUG_STREAM("Invoked graspObject: " << input->DebugString());
 		GraspReturnType grt = listener->requestGraspObject(convert(input), false);
 		return convert(grt);
 	}
-	shared_ptr<Dictionary> graspObjectName(shared_ptr<string> input) {
+	boost::shared_ptr<Dictionary> graspObjectName(boost::shared_ptr<string> input) {
         ROS_DEBUG_STREAM("Invoked graspObjectName: " << input);
         return graspObjectName(input, false);
     }
-	shared_ptr<Dictionary> graspObjectName(shared_ptr<string> input, bool sim) {
+	boost::shared_ptr<Dictionary> graspObjectName(boost::shared_ptr<string> input, bool sim) {
         vector<string> items;
         boost::algorithm::split(items, *input, boost::algorithm::is_any_of(";,"), boost::algorithm::token_compress_on );
         GraspReturnType grt;
@@ -288,32 +287,32 @@ public:
         }
         return convert(grt);
     }
-	shared_ptr<Dictionary> placeObject(shared_ptr<rst::geometry::Pose> input) {
+	boost::shared_ptr<Dictionary> placeObject(boost::shared_ptr<rst::geometry::Pose> input) {
 		ROS_DEBUG_STREAM("Invoked placeObject");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
 		return convert(grt);
 	}
-	shared_ptr<Dictionary> placeObjectInRegion(shared_ptr<BoundingBox3DFloat> input) {
+	boost::shared_ptr<Dictionary> placeObjectInRegion(boost::shared_ptr<BoundingBox3DFloat> input) {
 		ROS_DEBUG_STREAM("Invoked placeObject");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
 		return convert(grt);
 	}
-	shared_ptr<Dictionary> placeObjectOnSurface(shared_ptr<string> input) {
+	boost::shared_ptr<Dictionary> placeObjectOnSurface(boost::shared_ptr<string> input) {
         ROS_DEBUG_STREAM("Invoked placeObject");
         GraspReturnType grt = listener->requestPlaceObject(*input, false);
         return convert(grt);
     }
-	shared_ptr<Dictionary> isObjectPlaceable(shared_ptr<rst::geometry::Pose> input) {
+	boost::shared_ptr<Dictionary> isObjectPlaceable(boost::shared_ptr<rst::geometry::Pose> input) {
 		ROS_DEBUG_STREAM("Invoked isObjectPlaceable");
 		GraspReturnType grt = listener->requestPlaceObject(convert(input), true);
 		return convert(grt);
 	}
-	shared_ptr<string> echo(shared_ptr<string> input) {
+	boost::shared_ptr<string> echo(boost::shared_ptr<string> input) {
 		ROS_DEBUG_STREAM("Echo: " << *input);
 		return input;
 	}
 
-	shared_ptr<Dictionary> convert(const GraspReturnType &grt) {
+	boost::shared_ptr<Dictionary> convert(const GraspReturnType &grt) {
 		boost::shared_ptr<rst::generic::Dictionary> output(new rst::generic::Dictionary());
 		rst::generic::KeyValuePair* key;
 
@@ -344,9 +343,9 @@ public:
 		return output;
 	}
 
-	shared_ptr<Dictionary> convert(const map<string, short> &readings) {
+	boost::shared_ptr<Dictionary> convert(const map<string, short> &readings) {
 
-		shared_ptr<Dictionary> output(new Dictionary());
+		boost::shared_ptr<Dictionary> output(new Dictionary());
 
 		KeyValuePair* key = output->mutable_entries()->Add();
 		key->set_key("TimeStamp");
@@ -363,7 +362,7 @@ public:
 		}
 		return output;
 	}
-	EefPose convert(shared_ptr<rst::geometry::Pose> input) {
+	EefPose convert(boost::shared_ptr<rst::geometry::Pose> input) {
 		EefPose pose;
 		pose.translation.xMeter = input->translation().x();
 		pose.translation.yMeter = input->translation().y();
@@ -379,7 +378,7 @@ public:
 		return pose;
 	}
 
-	shared_ptr<Pose> convert(const EefPose &input) {
+	boost::shared_ptr<Pose> convert(const EefPose &input) {
 		boost::shared_ptr<rst::geometry::Pose> retPose(new rst::geometry::Pose());
 		retPose->mutable_translation()->set_x(input.translation.xMeter);
 		retPose->mutable_translation()->set_y(input.translation.yMeter);
@@ -393,7 +392,7 @@ public:
 		return retPose;
 	}
 
-	ObjectShape convert(shared_ptr<BoundingBox3DFloat> input) {
+	ObjectShape convert(boost::shared_ptr<BoundingBox3DFloat> input) {
 		ObjectShape objectToGrasp;
 		objectToGrasp.widthMeter = input->width();
 		objectToGrasp.heightMeter = input->height();

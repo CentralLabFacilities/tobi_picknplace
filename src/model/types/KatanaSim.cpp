@@ -47,11 +47,11 @@ int KatanaSim::getNumJoints() const {
 	return -1;
 }
 
-void KatanaSim::openGripper(bool withSensors) {
+void KatanaSim::openEef(bool withSensors) {
 	ROS_INFO("Invoked openGripper");
 }
 
-void KatanaSim::closeGripper(bool withSensors) {
+void KatanaSim::closeEef(bool withSensors) {
 	ROS_INFO("Invoked closeGripper");
 }
 

@@ -23,9 +23,27 @@ using namespace moveit::planning_interface;
 
 static const double DEFAULT_PLACE_HEIGHT = 0.15;
 
-H2R5::H2R5(): lastHeightAboveTable(0.0) {
+H2R5::H2R5() {
 
-    groupArm = new moveit::planning_interface::MoveGroup("left_arm"); //todo: param
+    lastHeightAboveTable = 0.0;
+
+    touchlinks.push_back("palm_left");
+    touchlinks.push_back("thumb0_left");
+    touchlinks.push_back("thumb1_left");
+    touchlinks.push_back("thumb2_left");
+    touchlinks.push_back("index0_left");
+    touchlinks.push_back("index1_left");
+    touchlinks.push_back("index2_left");
+    touchlinks.push_back("ring0_left");
+    touchlinks.push_back("ring1_left");
+    touchlinks.push_back("ring2_left");
+    touchlinks.push_back("pinky0_left");
+    touchlinks.push_back("pinky1_left");
+    touchlinks.push_back("pinky2_left");
+
+    frame = "palm_left";
+
+    groupArm = new moveit::planning_interface::MoveGroup(ParamReader::getParamReader().groupArm);
     groupArm->setPlanningTime(120.0);
     groupArm->startStateMonitor();
 
@@ -35,8 +53,12 @@ H2R5::H2R5(): lastHeightAboveTable(0.0) {
     groupArm->setGoalPositionTolerance(0.02);  //m
     groupArm->setGoalOrientationTolerance(0.5); //rad
 
-    groupEe = new moveit::planning_interface::MoveGroup("left_hand"); //todo: param
+    groupEe = new moveit::planning_interface::MoveGroup(ParamReader::getParamReader().groupEef);
     groupEe->startStateMonitor();
+
+    for(vector<string>::const_iterator it = groupEe->getActiveJoints().begin(); it != groupEe->getActiveJoints().end(); ++it) {
+        printf("active joint '%s'\n", it->c_str());
+    }
 
     pickActionClient.reset(
             new actionlib::SimpleActionClient<moveit_msgs::PickupAction>(nh,
@@ -48,7 +70,7 @@ H2R5::H2R5(): lastHeightAboveTable(0.0) {
     waitForAction(pickActionClient, ros::Duration(0, 0), move_group::PICKUP_ACTION);
     waitForAction(placeActionClient, ros::Duration(0, 0), move_group::PLACE_ACTION);
 
-    string output_scope = "/meka_roscontrol/left_hand_position_trajectory_controller/command";
+    string output_scope = ParamReader::getParamReader().eefCmdScope;
     printf("> sending targets on '%s'\n", output_scope.c_str());
     target_publisher = nh.advertise<trajectory_msgs::JointTrajectory>(output_scope, 100);
 
@@ -75,15 +97,19 @@ MoveResult H2R5::moveTo(const std::string& poseName, bool plan) {
     }
 }
 
-void H2R5::openGripper(bool withSensors = false) {
+void H2R5::openEef(bool withSensors = false) {
     ROS_INFO("### Invoked openGripper ###");
 
     trajectory_msgs::JointTrajectory msg;
+    msg.joint_names.push_back("left_hand_j0");
+    msg.joint_names.push_back("left_hand_j1");
     msg.joint_names.push_back("left_hand_j2");
     msg.joint_names.push_back("left_hand_j3");
     msg.joint_names.push_back("left_hand_j4");
 
     trajectory_msgs::JointTrajectoryPoint p;
+    p.positions.push_back(0.0);
+    p.positions.push_back(0.0);
     p.positions.push_back(0.0);
     p.positions.push_back(0.0);
     p.positions.push_back(0.0);
@@ -96,15 +122,19 @@ void H2R5::openGripper(bool withSensors = false) {
 
 }
 
-void H2R5::closeGripper(bool withSensors = false) {
+void H2R5::closeEef(bool withSensors = false) {
     ROS_INFO("### Invoked closeGripper ###");
 
     trajectory_msgs::JointTrajectory msg;
+    msg.joint_names.push_back("left_hand_j0");
+    msg.joint_names.push_back("left_hand_j1");
     msg.joint_names.push_back("left_hand_j2");
     msg.joint_names.push_back("left_hand_j3");
     msg.joint_names.push_back("left_hand_j4");
 
     trajectory_msgs::JointTrajectoryPoint p;
+    p.positions.push_back(0.0);
+    p.positions.push_back(0.0);
     p.positions.push_back(143 * M_PI / 180.0);
     p.positions.push_back(143 * M_PI / 180.0);
     p.positions.push_back(143 * M_PI / 180.0);
@@ -140,7 +170,7 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate, const string &
     tfTransformer.transform(obj, objArmFrame, ParamReader::getParamReader().frameOriginArm);
     double tableHeightArmFrame = objArmFrame.center.xMeter - objArmFrame.heightMeter / 2.0;
 
-    return graspObject(objId, "", grasps, tableHeightArmFrame, simulate, startPose);
+    return Model::graspObject(objId, "", grasps, tableHeightArmFrame, simulate, startPose);
 }
 
 GraspReturnType H2R5::graspObject(const string &obj, const string &surface, bool simulate, const string &startPose) {
@@ -164,81 +194,7 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface, bool
     vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(collisionObject);
     rosTools.publish_grasps_as_markerarray(grasps);
 
-    return graspObject(obj, surface, grasps, tableHeightArmCoords, simulate, startPose);
-}
-
-GraspReturnType H2R5::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
-
-    GraspReturnType grt;
-
-    if (!pickActionClient) {
-        ROS_ERROR_STREAM("Pick action client not found");
-        grt.result = GraspReturnType::FAIL;
-        return grt;
-    }
-    if (!pickActionClient->isServerConnected()) {
-        ROS_ERROR_STREAM("Pick action server not connected");
-        grt.result = GraspReturnType::FAIL;
-        return grt;
-    }
-
-    moveit_msgs::PickupGoal goal = buildPickupGoal(obj, surface, grasps, simulate);
-
-    pickActionClient->sendGoal(goal);
-    if (!pickActionClient->waitForResult()) {
-        ROS_INFO_STREAM("Pickup action returned early");
-    }
-
-    ROS_INFO("###########################");
-    if (pickActionClient->getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        ROS_INFO("Pick Action succeeded. (err_code: %d, state: %s)", pickActionClient->getResult()->error_code.val, pickActionClient->getState().toString().c_str());
-
-        if (simulate || isSomethingInGripper()) {
-            moveit_msgs::Grasp resultGrasp = pickActionClient->getResult()->grasp;
-            grt.point.xMeter = resultGrasp.grasp_pose.pose.position.x;
-            grt.point.yMeter = resultGrasp.grasp_pose.pose.position.y;
-            grt.point.zMeter = resultGrasp.grasp_pose.pose.position.z;
-            grt.point.frame = resultGrasp.grasp_pose.header.frame_id;
-            lastGraspPose = resultGrasp.grasp_pose;
-
-            lastHeightAboveTable = resultGrasp.grasp_pose.pose.position.x - tableHeightArmCoords;
-            grt.result = GraspReturnType::SUCCESS;
-            ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
-        } else {
-            ROS_WARN_STREAM("  Grasped no object: nothing in gripper!");
-            grt.result = GraspReturnType::FAIL;
-        }
-    } else if (pickActionClient->getState() == SimpleClientGoalState::ABORTED) {
-        ROS_WARN_STREAM("  Pick Action ABORTED (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
-        rosTools.clear_octomap();
-        if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::PLANNING_FAILED) {
-            grt.result = GraspReturnType::FAIL;
-        }
-    } else if (pickActionClient->getState() == SimpleClientGoalState::PENDING) {
-        ROS_WARN_STREAM(
-                "  Pick Action PENDING (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
-        rosTools.clear_octomap();
-        if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::SUCCESS) {
-            grt.result = GraspReturnType::ROBOT_CRASHED;
-        }
-    } else {
-        ROS_WARN_STREAM(
-                "  Pick Action failed: " << pickActionClient->getState().toString() << " (" << pickActionClient->getResult()->error_code.val  << "): " << pickActionClient->getState().getText());
-        grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
-    }
-    ROS_INFO("###########################");
-
-    if (grt.result == GraspReturnType::NO_RESULT) {
-        grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
-    }
-
-    rosTools.remove_collision_object();
-
-    if (grt.result != GraspReturnType::SUCCESS) {
-        rosTools.detach_collision_object();
-    }
-
-    return grt;
+    return Model::graspObject(obj, surface, grasps, tableHeightArmCoords, simulate, startPose);
 }
 
 GraspReturnType H2R5::placeObject(EefPose obj, bool simulate,
@@ -248,7 +204,7 @@ GraspReturnType H2R5::placeObject(EefPose obj, bool simulate,
     vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(obj);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return placeObject("", locations, simulate, startPose);
+    return Model::placeObject("", locations, simulate, startPose);
 }
 
 GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
@@ -258,7 +214,7 @@ GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
     vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(obj);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return placeObject("", locations, simulate, startPose);
+    return Model::placeObject("", locations, simulate, startPose);
 }
 
 GraspReturnType H2R5::placeObject(const string &obj, bool simulate, const string &startPose) {
@@ -268,111 +224,6 @@ GraspReturnType H2R5::placeObject(const string &obj, bool simulate, const string
     grt.result = GraspReturnType::FAIL;
     return grt;
 }
-
-GraspReturnType H2R5::placeObject(const std::string &surface, std::vector<moveit_msgs::PlaceLocation> locations, bool simulate, const std::string &startPose) {
-
-    GraspReturnType grt;
-
-    if (!pickActionClient) {
-        ROS_ERROR_STREAM("Pick action client not found");
-        grt.result = GraspReturnType::FAIL;
-        return grt;
-    }
-    if (!pickActionClient->isServerConnected()) {
-        ROS_ERROR_STREAM("Pick action server not connected");
-        grt.result = GraspReturnType::FAIL;
-        return grt;
-    }
-
-    rosTools.clear_octomap();
-
-    moveit_msgs::PlaceGoal goal = buildPlaceGoal(surface, locations, simulate);
-
-    for (int i = 0; i < 3; i++) {
-        placeActionClient->sendGoal(goal);
-        SimpleClientGoalState resultState = placeActionClient->getState();
-
-        if (!placeActionClient->waitForResult()) {
-            ROS_INFO_STREAM("Place action returned early");
-        }
-
-        bool isPending = resultState == SimpleClientGoalState::PENDING;
-        bool isAborted = resultState == SimpleClientGoalState::ABORTED;
-        bool isSuccess = resultState == SimpleClientGoalState::SUCCEEDED;
-
-        bool errCodeInvalidGroup = placeActionClient->getResult()->error_code.val == MoveItErrorCode::INVALID_GROUP_NAME;
-        bool errCodeSuccess = placeActionClient->getResult()->error_code.val == MoveItErrorCode::SUCCESS;
-        bool errCodePlanInvalidated = placeActionClient->getResult()->error_code.val == MoveItErrorCode::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE;
-
-        ROS_INFO("###########################");
-        if (isSuccess) {
-            ROS_INFO("Place Action succeeded.");
-            moveit_msgs::PlaceLocation placeLoc = placeActionClient->getResult()->place_location;
-            grt.point.xMeter = placeLoc.place_pose.pose.position.x;
-            grt.point.yMeter = placeLoc.place_pose.pose.position.y;
-            grt.point.zMeter = placeLoc.place_pose.pose.position.z;
-            grt.point.frame = placeLoc.place_pose.header.frame_id;
-            grt.result = GraspReturnType::SUCCESS;
-            ROS_INFO("###########################");
-            break;
-        } else if (isPending && errCodeInvalidGroup) {
-            ROS_WARN("  PENDING: attached object not preset! Try to fix by attaching default object.");
-            attachDefaultObject();
-            ROS_INFO("###########################");
-            continue;
-        } else if (isAborted || (isPending && (errCodeSuccess || errCodePlanInvalidated))) {
-            ROS_WARN("  ABORTED: %s (%d): %s", resultState.toString().c_str(), placeActionClient->getResult()->error_code.val, resultState.getText().c_str());
-            grt.result = GraspReturnType::ROBOT_CRASHED;
-            rosTools.clear_octomap();
-            break;
-        } else {
-            ROS_WARN("  Fail: %s (%d): %s", resultState.toString().c_str(), placeActionClient->getResult()->error_code.val, resultState.getText().c_str());
-            grt.result = rosTools.graspResultFromMoveit(placeActionClient->getResult()->error_code);
-            ROS_INFO("###########################");
-            break;
-        }
-        break;
-    }
-
-    if (!isSomethingInGripper()) {
-        rosTools.detach_collision_object();
-    }
-    rosTools.remove_collision_object();
-
-    return grt;
-}
-
-void H2R5::attachDefaultObject() {
-    ROS_INFO("Publishing default object!");
-    ObjectShape shape;
-    shape.heightMeter = 0.05;
-    shape.widthMeter = 0.05;
-    shape.depthMeter = 0.05;
-    shape.center.frame = "palm_left";
-    rosTools.publish_collision_object(rosTools.getDefaultObjectName(), shape, 0.5);
-
-    vector<string> touchLinks;
-    touchLinks.push_back("palm_left");
-    touchLinks.push_back("thumb0_left");
-    touchLinks.push_back("thumb1_left");
-    touchLinks.push_back("thumb2_left");
-    touchLinks.push_back("index0_left");
-    touchLinks.push_back("index1_left");
-    touchLinks.push_back("index2_left");
-    touchLinks.push_back("ring0_left");
-    touchLinks.push_back("ring1_left");
-    touchLinks.push_back("ring2_left");
-    touchLinks.push_back("pinky0_left");
-    touchLinks.push_back("pinky1_left");
-    touchLinks.push_back("pinky2_left");
-
-    groupEe->attachObject(rosTools.getDefaultObjectName(), "palm_left", touchLinks);
-
-    ros::spinOnce();
-    ros::WallDuration sleep_time(1);
-    sleep_time.sleep();
-}
-
 
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         EefPose obj) {
@@ -425,55 +276,13 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
 
 }
 
-moveit_msgs::PlaceGoal H2R5::buildPlaceGoal(const string &surface,
-        const vector<moveit_msgs::PlaceLocation>& locations, bool simulate) {
-    moveit_msgs::PlaceGoal goal;
-    goal.attached_object_name = rosTools.getDefaultObjectName();
-    goal.allowed_touch_objects.push_back(rosTools.getDefaultObjectName());
-    goal.group_name = groupArm->getName();
-    goal.allowed_planning_time = groupArm->getPlanningTime();
-    goal.support_surface_name = surface;
-    goal.planner_id = "";
-    goal.place_eef = true;
-    goal.place_locations = locations;
-    goal.planning_options.plan_only = simulate;
-    goal.planning_options.look_around = false;
-    goal.planning_options.replan = false;
-    goal.planning_options.replan_delay = 2.0;
-    goal.planning_options.planning_scene_diff.is_diff = true;
-    goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
-    return goal;
+std::vector<moveit_msgs::Grasp> H2R5::generate_grasps_angle_trans(ObjectShape shape) {
+    tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameOriginArm);
+    return graspGenerator.generate_grasps_angle_trans(shape.center.xMeter, shape.center.yMeter, shape.center.zMeter, shape.heightMeter);
 }
 
-moveit_msgs::PickupGoal H2R5::buildPickupGoal(const string &obj,
-        const string &supportSurface, const vector<moveit_msgs::Grasp> &grasps, bool simulate) {
-
-    moveit_msgs::PickupGoal goal;
-    goal.possible_grasps = grasps;
-    goal.target_name = obj;
-    goal.support_surface_name = supportSurface;
-    goal.attached_object_touch_links.push_back("palm_left");
-    goal.attached_object_touch_links.push_back("thumb0_left");
-    goal.attached_object_touch_links.push_back("thumb1_left");
-    goal.attached_object_touch_links.push_back("thumb2_left");
-    goal.attached_object_touch_links.push_back("index0_left");
-    goal.attached_object_touch_links.push_back("index1_left");
-    goal.attached_object_touch_links.push_back("index2_left");
-    goal.attached_object_touch_links.push_back("ring0_left");
-    goal.attached_object_touch_links.push_back("ring1_left");
-    goal.attached_object_touch_links.push_back("ring2_left");
-    goal.attached_object_touch_links.push_back("pinky0_left");
-    goal.attached_object_touch_links.push_back("pinky1_left");
-    goal.attached_object_touch_links.push_back("pinky2_left");
-    goal.group_name = groupArm->getName();
-    goal.end_effector = groupArm->getEndEffector();
-    goal.allowed_planning_time = groupArm->getPlanningTime();
-    goal.planner_id = "";
-    goal.planning_options.plan_only = simulate;
-    goal.planning_options.look_around = false;
-    goal.planning_options.replan = false;
-    goal.planning_options.replan_delay = 2.0;
-    goal.planning_options.planning_scene_diff.is_diff = true;
-    goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
-    return goal;
+std::vector<moveit_msgs::Grasp> H2R5::generate_grasps_angle_trans(moveit_msgs::CollisionObject shape) {
+    tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameOriginArm);
+    return graspGenerator.generate_grasps_angle_trans(shape.primitive_poses[0].position.x, shape.primitive_poses[0].position.y, shape.primitive_poses[0].position.z, shape.primitives[0].dimensions[0]);
 }
+
