@@ -34,7 +34,7 @@
   <arg unless="$(arg use_sim)" name="use_sim_args" value="" />
   <arg     if="$(arg use_sim)" name="use_sim_args" value="--sim" />
     
-  <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="-m $(arg model) -t $(arg transitions) $(arg use_sim_args)" output="screen">
+  <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="--model $(arg model) --transitions $(arg transitions) $(arg use_sim_args)" output="screen">
     <param name="model"                   value="$(arg model)" />  
     <param name="frameOriginArm"          value="$(arg frameOriginArm)" />
     <param name="frameOriginGripper"      value="$(arg frameOriginGripper)" />

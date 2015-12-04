@@ -47,6 +47,7 @@ H2R5::H2R5() {
     groupArm->setPlanningTime(120.0);
     groupArm->startStateMonitor();
 
+    groupArm->setPlannerId("RRTConnectkConfigDefault");
     groupArm->setPoseReferenceFrame(ParamReader::getParamReader().frameOriginArm);
 
     groupArm->setGoalJointTolerance(0.01); //rad

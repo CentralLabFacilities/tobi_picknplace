@@ -166,6 +166,8 @@ EefPose Model::getEefPose() const {
 
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
 
+    //ROS_DEBUG("Trying to pick object %s on %s (height: %.3f).", obj, surface, tableHeightArmCoords);
+
     GraspReturnType grt;
 
     if (!pickActionClient) {

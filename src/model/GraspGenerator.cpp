@@ -255,6 +255,7 @@ std::vector<moveit_msgs::PlaceLocation> GraspGenerator::generate_place_locations
 	return locations;
 }
 
+//todo: h2r5
 moveit_msgs::PlaceLocation GraspGenerator::build_place_location(tf::Transform t) {
 	ParamReader& params = ParamReader::getParamReader();
 	static int j = 0;
@@ -276,22 +277,25 @@ moveit_msgs::PlaceLocation GraspGenerator::build_place_location(tf::Transform t)
 	g.id = boost::lexical_cast<std::string>(j);
 	g.allowed_touch_objects.push_back("target_object");
 
-	g.pre_place_approach.direction.vector.x = -1.0;
-	g.pre_place_approach.direction.header.frame_id = params.frameOriginArm;
-//	g.pre_place_approach.min_distance = approachMinDistance;
-	g.pre_place_approach.min_distance = 0.01;
-	g.pre_place_approach.desired_distance = params.approachDesiredDistance;
+	if(ParamReader::getParamReader().model == "katana") {
 
-	g.post_place_retreat.direction.vector.x = -1.0;
-	g.post_place_retreat.direction.header.frame_id = params.frameOriginGripper;
-	g.post_place_retreat.min_distance = params.retreatMinDistance;
-	g.post_place_retreat.desired_distance = params.retreatDesiredDistance;
+        g.pre_place_approach.direction.vector.x = -1.0;
+        g.pre_place_approach.direction.header.frame_id = params.frameOriginArm;
+    //	g.pre_place_approach.min_distance = approachMinDistance;
+        g.pre_place_approach.min_distance = 0.01;
+        g.pre_place_approach.desired_distance = params.approachDesiredDistance;
 
-	g.post_place_posture.joint_names.push_back("katana_l_finger_joint");
-	g.post_place_posture.joint_names.push_back("katana_r_finger_joint");
-	g.post_place_posture.points.resize(1);
-	g.post_place_posture.points[0].positions.push_back(params.gripperPositionOpen);
-	g.post_place_posture.points[0].positions.push_back(params.gripperPositionOpen);
+        g.post_place_retreat.direction.vector.x = -1.0;
+        g.post_place_retreat.direction.header.frame_id = params.frameOriginGripper;
+        g.post_place_retreat.min_distance = params.retreatMinDistance;
+        g.post_place_retreat.desired_distance = params.retreatDesiredDistance;
+
+        g.post_place_posture.joint_names.push_back("katana_l_finger_joint");
+        g.post_place_posture.joint_names.push_back("katana_r_finger_joint");
+        g.post_place_posture.points.resize(1);
+        g.post_place_posture.points[0].positions.push_back(params.gripperPositionOpen);
+        g.post_place_posture.points[0].positions.push_back(params.gripperPositionOpen);
+	}
 
 	j++;
 	return g;
@@ -322,33 +326,81 @@ moveit_msgs::Grasp GraspGenerator::build_grasp(tf::Transform t) {
 
 	grasp.id = boost::lexical_cast<std::string>(i);
 
-	// direction: towards object
-	grasp.pre_grasp_approach.direction.vector.x = 1.0;
-	grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
-	grasp.pre_grasp_approach.direction.header.frame_id = params.frameOriginGripper;
-	grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
-	grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
+	if(ParamReader::getParamReader().model == "h2r5") {
+	    // direction: towards object
+        grasp.pre_grasp_approach.direction.vector.x = -1.0;
+        grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
+        grasp.pre_grasp_approach.direction.header.frame_id = params.frameOriginGripper;
+        grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
+        grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
 
-	// direction: lift up
-	grasp.post_grasp_retreat.direction.vector.x = 1.0;
-	grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
-	grasp.post_grasp_retreat.direction.header.frame_id = params.frameOriginArm;
-	grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
-	grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
+        // direction: lift up
+        grasp.post_grasp_retreat.direction.vector.z = 1.0;
+        grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
+        grasp.post_grasp_retreat.direction.header.frame_id = params.frameOriginArm;
+        grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
+        grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
 
-	// open gripper before approaching
-	grasp.pre_grasp_posture.joint_names.push_back("katana_l_finger_joint");
-	grasp.pre_grasp_posture.joint_names.push_back("katana_r_finger_joint");
-	grasp.pre_grasp_posture.points.resize(1);
-	grasp.pre_grasp_posture.points[0].positions.push_back(params.gripperPositionOpen);
-	grasp.pre_grasp_posture.points[0].positions.push_back(params.gripperPositionOpen);
+        //todo: params
+        // open gripper before approaching
+        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j0");
+        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j1");
+        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j2");
+        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j3");
+        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j4");
 
-	// close gripper when reached
-	grasp.grasp_posture.joint_names.push_back("katana_l_finger_joint");
-	grasp.grasp_posture.joint_names.push_back("katana_r_finger_joint");
-	grasp.grasp_posture.points.resize(1);
-	grasp.grasp_posture.points[0].positions.push_back(params.gripperPositionClosed);
-	grasp.grasp_posture.points[0].positions.push_back(params.gripperPositionClosed);
+        grasp.pre_grasp_posture.points.resize(1);
+        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
+        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
+        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
+        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
+        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
+
+        // close gripper when reached
+        grasp.grasp_posture.joint_names.push_back("left_hand_j0");
+        grasp.grasp_posture.joint_names.push_back("left_hand_j1");
+        grasp.grasp_posture.joint_names.push_back("left_hand_j2");
+        grasp.grasp_posture.joint_names.push_back("left_hand_j3");
+        grasp.grasp_posture.joint_names.push_back("left_hand_j4");
+
+        grasp.grasp_posture.points.resize(1);
+        grasp.grasp_posture.points[0].positions.push_back(0.0);
+        grasp.grasp_posture.points[0].positions.push_back(0.0);
+        grasp.grasp_posture.points[0].positions.push_back(143 * M_PI / 180.0);
+        grasp.grasp_posture.points[0].positions.push_back(143 * M_PI / 180.0);
+        grasp.grasp_posture.points[0].positions.push_back(143 * M_PI / 180.0);
+
+	}
+
+	if(ParamReader::getParamReader().model == "katana") {
+        // direction: towards object
+        grasp.pre_grasp_approach.direction.vector.x = 1.0;
+        grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
+        grasp.pre_grasp_approach.direction.header.frame_id = params.frameOriginGripper;
+        grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
+        grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
+
+        // direction: lift up
+        grasp.post_grasp_retreat.direction.vector.x = 1.0;
+        grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
+        grasp.post_grasp_retreat.direction.header.frame_id = params.frameOriginArm;
+        grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
+        grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
+
+	    // open gripper before approaching
+        grasp.pre_grasp_posture.joint_names.push_back("katana_l_finger_joint");
+        grasp.pre_grasp_posture.joint_names.push_back("katana_r_finger_joint");
+        grasp.pre_grasp_posture.points.resize(1);
+        grasp.pre_grasp_posture.points[0].positions.push_back(params.gripperPositionOpen);
+        grasp.pre_grasp_posture.points[0].positions.push_back(params.gripperPositionOpen);
+
+        // close gripper when reached
+        grasp.grasp_posture.joint_names.push_back("katana_l_finger_joint");
+        grasp.grasp_posture.joint_names.push_back("katana_r_finger_joint");
+        grasp.grasp_posture.points.resize(1);
+        grasp.grasp_posture.points[0].positions.push_back(params.gripperPositionClosed);
+        grasp.grasp_posture.points[0].positions.push_back(params.gripperPositionClosed);
+	}
 
 	i++;
 	return grasp;
