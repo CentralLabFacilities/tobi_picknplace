@@ -45,7 +45,7 @@ H2R5::H2R5() {
     boost::to_upper(substr); //modified in-place!
     touchlinks.push_back("wrist_" + substr);
     touchlinks.push_back("w_differential_" + substr);
-    touchlinks.push_back("handmount_LEFT" + substr);
+    touchlinks.push_back("handmount_" + substr);
 
     frame = ParamReader::getParamReader().frameGripper;
 
@@ -116,7 +116,7 @@ void H2R5::openEef(bool withSensors = false) {
     trajectory_msgs::JointTrajectory msg;
     trajectory_msgs::JointTrajectoryPoint p;
 
-    for (uint i = 0; i <= groupEe->getActiveJoints().size(); i++) {
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
         msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
         p.positions.push_back(pos_open.at(i));
     }
@@ -136,7 +136,7 @@ void H2R5::closeEef(bool withSensors = false) {
     trajectory_msgs::JointTrajectory msg;
     trajectory_msgs::JointTrajectoryPoint p;
 
-    for (uint i = 0; i <= groupEe->getActiveJoints().size(); i++) {
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
         msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
         p.positions.push_back(pos_closed.at(i));
     }

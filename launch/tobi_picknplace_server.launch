@@ -20,7 +20,7 @@
     <param name="groupEe"                 value="$(arg groupEe)" />
     <param name="plannerId"               value="$(arg plannerId)" />
     <rosparam file="$(find tobi_picknplace)/config/h2r5.yaml" command="load" />
-    <--rosparam file="$(find tobi_picknplace)/config/katana.yaml" command="load" /->
+    <!--rosparam file="$(find tobi_picknplace)/config/katana.yaml" command="load" /-->
   </node>
 
 </launch>
