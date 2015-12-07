@@ -46,7 +46,7 @@ Katana::Katana() {
 	groupArm->setPlanningTime(120.0);
 	groupArm->startStateMonitor();
         
-    groupArm->setPoseReferenceFrame(ParamReader::getParamReader().frameOriginArm);
+    groupArm->setPoseReferenceFrame(ParamReader::getParamReader().frameArm);
 
     //todo: params
 	groupArm->setGoalJointTolerance(0.01); //rad
@@ -110,12 +110,12 @@ int Katana::getNumJoints() const {
 
 void Katana::openEef(bool withSensors) {
 	ROS_INFO("### Invoked openGripper ###");
-	moveToGripper(ParamReader::getParamReader().gripperPositionOpen, withSensors);
+	moveToGripper(ParamReader::getParamReader().eefPosOpen.at(0), withSensors);
 }
 
 void Katana::closeEef(bool withSensors) {
 	ROS_INFO("### Invoked closeGripper ###");
-	moveToGripper(ParamReader::getParamReader().gripperPositionClosed, withSensors);
+	moveToGripper(ParamReader::getParamReader().eefPosClosed.at(0), withSensors);
 }
 
 void Katana::moveToGripper(double target, bool withSensors) {
@@ -241,8 +241,8 @@ bool Katana::isSomethingInGripper() const {
 //			|| currentSensorReadings.at("katana_l_inside_far_distance_sensor")
 //					< GRIPPER_THRESHOLD_DISTANCE;
 
-	bool gripperClosed = fabs(fingerJointAngles[0] - ParamReader::getParamReader().gripperPositionClosed) < 0.05;
-	bool gripperNearClosed = fabs(fingerJointAngles[0] - ParamReader::getParamReader().gripperPositionClosed) < 0.15;
+	bool gripperClosed = fabs(fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed) < 0.05;
+	bool gripperNearClosed = fabs(fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed) < 0.15;
 
 //	return (force && !gripperClosed) || (distance && !gripperNearClosed);
 	return (force && !gripperClosed);
@@ -275,7 +275,7 @@ GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate, const string
 	rosTools.publish_grasps_as_markerarray(grasps);
 	
 	ObjectShape objArmFrame;
-    tfTransformer.transform(obj, objArmFrame, ParamReader::getParamReader().frameOriginArm);
+    tfTransformer.transform(obj, objArmFrame, ParamReader::getParamReader().frameArm);
     double tableHeightArmFrame = objArmFrame.center.xMeter - objArmFrame.heightMeter / 2.0;
 
     return Model::graspObject(objId, "", grasps, tableHeightArmFrame, simulate, startPose);
@@ -296,7 +296,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface, bo
     }
 
     moveit_msgs::CollisionObject collisionObjectArmCoords;
-    tfTransformer.transform(collisionObject, collisionObjectArmCoords, ParamReader::getParamReader().frameOriginArm);
+    tfTransformer.transform(collisionObject, collisionObjectArmCoords, ParamReader::getParamReader().frameArm);
     double tableHeightArmCoords = collisionObjectArmCoords.primitive_poses[0].position.x - collisionObjectArmCoords.primitives[0].dimensions[0] / 2.0;
 
 	vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(collisionObject);
@@ -337,7 +337,7 @@ GraspReturnType Katana::placeObject(const string &obj, bool simulate, const stri
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 		EefPose obj) {
 
-	tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameOriginArm);
+	tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameArm);
 
 	ROS_INFO_STREAM(
 			"generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
@@ -362,7 +362,7 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 		ObjectShape obj) {
 
-	tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameOriginArm);
+	tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameArm);
 
 	ROS_INFO_STREAM(
 			"generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
@@ -386,12 +386,12 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 }
 
 std::vector<moveit_msgs::Grasp> Katana::generate_grasps_angle_trans(ObjectShape shape) {
-    tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameOriginArm);
+    tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameArm);
     return graspGenerator.generate_grasps_angle_trans(shape.center.xMeter, shape.center.yMeter, shape.center.zMeter, shape.heightMeter);
 }
 
 std::vector<moveit_msgs::Grasp> Katana::generate_grasps_angle_trans(moveit_msgs::CollisionObject shape) {
-    tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameOriginArm);
+    tfTransformer.transform(shape, shape, ParamReader::getParamReader().frameArm);
     return graspGenerator.generate_grasps_angle_trans(shape.primitive_poses[0].position.x, shape.primitive_poses[0].position.y, shape.primitive_poses[0].position.z, shape.primitives[0].dimensions[0]);
 }
 

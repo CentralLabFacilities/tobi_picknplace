@@ -22,13 +22,16 @@ public:
     std::string groupArm;
     std::string groupEef;
 
-    std::string frameOriginArm;
-    std::string frameOriginGripper;
+    std::string frameArm;
+    std::string frameGripper;
 
     std::string eefCmdScope;
 
-	double gripperPositionClosed;
-	double gripperPositionOpen;
+    std::string plannerId;
+    int planningTime;
+
+	std::vector<double> eefPosClosed;
+	std::vector<double> eefPosOpen;
 
 	int gripperThresholdForce;
 	int gripperThresholdDistance;

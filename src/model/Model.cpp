@@ -44,6 +44,12 @@ int Model::getNumJoints() const {
     return groupArm->getJoints().size();
 }
 
+vector<string> Model::getEefJointNames() const {
+    ROS_DEBUG("Invoked getJointNames");
+
+    return groupEe->getActiveJoints();
+}
+
 map<string, double> Model::getJointAngles() const {
     ROS_DEBUG("Invoked getJointAngles");
 
@@ -149,7 +155,7 @@ EefPose Model::getEefPose() const {
 
     ROS_INFO_STREAM("getEefPose() 1: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
 
-    tfTransformer.transform(ps, ps, ParamReader::getParamReader().frameOriginArm);
+    tfTransformer.transform(ps, ps, ParamReader::getParamReader().frameArm);
 
     ROS_INFO_STREAM("getEefPose() 2: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
 
@@ -160,7 +166,7 @@ EefPose Model::getEefPose() const {
     pose.rotation.qx = ps.pose.orientation.x;
     pose.rotation.qy = ps.pose.orientation.y;
     pose.rotation.qz = ps.pose.orientation.z;
-    pose.frame = ParamReader::getParamReader().frameOriginArm;
+    pose.frame = ParamReader::getParamReader().frameArm;
     return pose;
 }
 
@@ -322,7 +328,7 @@ moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
     goal.group_name = groupArm->getName();
     goal.allowed_planning_time = groupArm->getPlanningTime();
     goal.support_surface_name = surface;
-    goal.planner_id = "";
+    goal.planner_id = ParamReader::getParamReader().plannerId;
     goal.place_eef = true;
     goal.place_locations = locations;
     goal.planning_options.plan_only = simulate;
@@ -349,7 +355,7 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
     goal.group_name = groupArm->getName();
     goal.end_effector = groupArm->getEndEffector();
     goal.allowed_planning_time = groupArm->getPlanningTime();
-    goal.planner_id = "";
+    goal.planner_id = ParamReader::getParamReader().plannerId;
     goal.planning_options.plan_only = simulate;
     goal.planning_options.look_around = false;
     goal.planning_options.replan = false;

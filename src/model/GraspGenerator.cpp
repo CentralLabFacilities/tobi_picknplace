@@ -29,7 +29,7 @@ std::vector<moveit_msgs::Grasp> GraspGenerator::generate_grasps_angle_trans(doub
 
 	ParamReader& params = ParamReader::getParamReader();
 
-	ROS_INFO_NAMED("GraspGenerator", "Generate grasps at %.3f,%.3f,%.3f (frame: %s) - h:%.3f", x, y, z, params.frameOriginArm.c_str(), height);
+	ROS_INFO_NAMED("GraspGenerator", "Generate grasps at %.3f,%.3f,%.3f (frame: %s) - h:%.3f", x, y, z, params.frameArm.c_str(), height);
 
 	std::vector<moveit_msgs::Grasp> grasps;
 
@@ -115,7 +115,7 @@ std::vector<moveit_msgs::PlaceLocation> GraspGenerator::generate_placeloc_angle_
 
 	ParamReader& params = ParamReader::getParamReader();
 
-	ROS_INFO_NAMED("GraspGenerator", "Generate place locations at %.3f,%.3f,%.3f (frame: %s)", x, y, z, params.frameOriginArm.c_str());
+	ROS_INFO_NAMED("GraspGenerator", "Generate place locations at %.3f,%.3f,%.3f (frame: %s)", x, y, z, params.frameArm.c_str());
 
 	std::vector<moveit_msgs::PlaceLocation> placelocs;
 
@@ -183,7 +183,7 @@ std::vector<moveit_msgs::PlaceLocation> GraspGenerator::generate_place_locations
 	ParamReader& params = ParamReader::getParamReader();
 
 	ROS_INFO_NAMED("GraspGenerator", "Generate place locations at %.3f,%.3f,%.3f (frame: %s) orientation: %.3f,%.3f,%.3f,%.3f,", x, y, z,
-			params.frameOriginArm.c_str(), targetOrientation.x(), targetOrientation.y(), targetOrientation.z(), targetOrientation.w());
+			params.frameArm.c_str(), targetOrientation.x(), targetOrientation.y(), targetOrientation.z(), targetOrientation.w());
 
 	std::vector<moveit_msgs::PlaceLocation> locations;
 	// x: up
@@ -220,7 +220,7 @@ std::vector<moveit_msgs::PlaceLocation> GraspGenerator::generate_place_locations
 	ParamReader& params = ParamReader::getParamReader();
 
 	ROS_INFO_NAMED("GraspGenerator", "Generate place locations at %.3f,%.3f,%.3f (frame: %s) orientation: %.3f,%.3f,%.3f,%.3f whd: %.3f,%.3f,%.3f", x, y, z,
-			params.frameOriginArm.c_str(), targetOrientation.x(), targetOrientation.y(), targetOrientation.z(), targetOrientation.w(), w, h, d);
+			params.frameArm.c_str(), targetOrientation.x(), targetOrientation.y(), targetOrientation.z(), targetOrientation.w(), w, h, d);
 
 	std::vector<moveit_msgs::PlaceLocation> locations;
 	// x: up
@@ -262,7 +262,7 @@ moveit_msgs::PlaceLocation GraspGenerator::build_place_location(tf::Transform t)
 	ROS_DEBUG_NAMED("GraspGenerator", "Build place location at %.3f,%.3f,%.3f orientation: %.3f,%.3f,%.3f,%.3f", t.getOrigin().x(),t.getOrigin().y(), t.getOrigin().z(), t.getRotation().x(), t.getRotation().y(), t.getRotation().z(), t.getRotation().w());
 
 	geometry_msgs::PoseStamped p;
-	p.header.frame_id = params.frameOriginArm;
+	p.header.frame_id = params.frameArm;
 	p.header.stamp = ros::Time::now();
 
 	// orientation
@@ -280,21 +280,21 @@ moveit_msgs::PlaceLocation GraspGenerator::build_place_location(tf::Transform t)
 	if(ParamReader::getParamReader().model == "katana") {
 
         g.pre_place_approach.direction.vector.x = -1.0;
-        g.pre_place_approach.direction.header.frame_id = params.frameOriginArm;
+        g.pre_place_approach.direction.header.frame_id = params.frameArm;
     //	g.pre_place_approach.min_distance = approachMinDistance;
         g.pre_place_approach.min_distance = 0.01;
         g.pre_place_approach.desired_distance = params.approachDesiredDistance;
 
         g.post_place_retreat.direction.vector.x = -1.0;
-        g.post_place_retreat.direction.header.frame_id = params.frameOriginGripper;
+        g.post_place_retreat.direction.header.frame_id = params.frameGripper;
         g.post_place_retreat.min_distance = params.retreatMinDistance;
         g.post_place_retreat.desired_distance = params.retreatDesiredDistance;
 
         g.post_place_posture.joint_names.push_back("katana_l_finger_joint");
         g.post_place_posture.joint_names.push_back("katana_r_finger_joint");
         g.post_place_posture.points.resize(1);
-        g.post_place_posture.points[0].positions.push_back(params.gripperPositionOpen);
-        g.post_place_posture.points[0].positions.push_back(params.gripperPositionOpen);
+        g.post_place_posture.points[0].positions.push_back(params.eefPosOpen.at(0));
+        g.post_place_posture.points[0].positions.push_back(params.eefPosOpen.at(0));
 	}
 
 	j++;
@@ -319,7 +319,7 @@ moveit_msgs::Grasp GraspGenerator::build_grasp(tf::Transform t) {
 	pose.pose.position.y = origin.m_floats[1];
 	pose.pose.position.z = origin.m_floats[2];
 
-	pose.header.frame_id = params.frameOriginArm;
+	pose.header.frame_id = params.frameArm;
 	pose.header.stamp = ros::Time::now();
 
 	grasp.grasp_pose = pose;
@@ -328,47 +328,59 @@ moveit_msgs::Grasp GraspGenerator::build_grasp(tf::Transform t) {
 
 	if(ParamReader::getParamReader().model == "h2r5") {
 	    // direction: towards object
-        grasp.pre_grasp_approach.direction.vector.x = -1.0;
+        grasp.pre_grasp_approach.direction.vector.x = 1.0;
         grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
-        grasp.pre_grasp_approach.direction.header.frame_id = params.frameOriginGripper;
+        grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
         grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
         grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
 
         // direction: lift up
-        grasp.post_grasp_retreat.direction.vector.z = 1.0;
+        grasp.post_grasp_retreat.direction.vector.x = -1.0;
         grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
-        grasp.post_grasp_retreat.direction.header.frame_id = params.frameOriginArm;
+        grasp.post_grasp_retreat.direction.header.frame_id = params.frameGripper;
         grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
         grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
 
-        //todo: params
-        // open gripper before approaching
-        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j0");
-        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j1");
-        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j2");
-        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j3");
-        grasp.pre_grasp_posture.joint_names.push_back("left_hand_j4");
+        vector<double> pos_open = ParamReader::getParamReader().eefPosOpen;
+        trajectory_msgs::JointTrajectory msg;
+        trajectory_msgs::JointTrajectoryPoint p;
 
-        grasp.pre_grasp_posture.points.resize(1);
-        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
-        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
-        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
-        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
-        grasp.pre_grasp_posture.points[0].positions.push_back(0.0);
+        // open gripper before approaching
+        msg.joint_names.push_back("left_hand_j0");
+        msg.joint_names.push_back("left_hand_j1");
+        msg.joint_names.push_back("left_hand_j2");
+        msg.joint_names.push_back("left_hand_j3");
+        msg.joint_names.push_back("left_hand_j4");
+
+        for (const double &i : pos_open)
+            p.positions.push_back(pos_open.at(i));
+
+        p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+
+        msg.points.push_back(p);
+
+        grasp.pre_grasp_posture = msg;
 
         // close gripper when reached
-        grasp.grasp_posture.joint_names.push_back("left_hand_j0");
-        grasp.grasp_posture.joint_names.push_back("left_hand_j1");
-        grasp.grasp_posture.joint_names.push_back("left_hand_j2");
-        grasp.grasp_posture.joint_names.push_back("left_hand_j3");
-        grasp.grasp_posture.joint_names.push_back("left_hand_j4");
+        vector<double> pos_closed = ParamReader::getParamReader().eefPosClosed;
+        trajectory_msgs::JointTrajectory msg_close;
+        trajectory_msgs::JointTrajectoryPoint p_close;
 
-        grasp.grasp_posture.points.resize(1);
-        grasp.grasp_posture.points[0].positions.push_back(0.0);
-        grasp.grasp_posture.points[0].positions.push_back(0.0);
-        grasp.grasp_posture.points[0].positions.push_back(143 * M_PI / 180.0);
-        grasp.grasp_posture.points[0].positions.push_back(143 * M_PI / 180.0);
-        grasp.grasp_posture.points[0].positions.push_back(143 * M_PI / 180.0);
+        // open gripper before approaching
+        msg_close.joint_names.push_back("left_hand_j0");
+        msg_close.joint_names.push_back("left_hand_j1");
+        msg_close.joint_names.push_back("left_hand_j2");
+        msg_close.joint_names.push_back("left_hand_j3");
+        msg_close.joint_names.push_back("left_hand_j4");
+
+        for (const double &i : pos_closed)
+            p_close.positions.push_back(pos_closed.at(i));
+
+        p_close.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+
+        msg_close.points.push_back(p_close);
+
+        grasp.grasp_posture = msg_close;
 
 	}
 
@@ -376,14 +388,14 @@ moveit_msgs::Grasp GraspGenerator::build_grasp(tf::Transform t) {
         // direction: towards object
         grasp.pre_grasp_approach.direction.vector.x = 1.0;
         grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
-        grasp.pre_grasp_approach.direction.header.frame_id = params.frameOriginGripper;
+        grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
         grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
         grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
 
         // direction: lift up
         grasp.post_grasp_retreat.direction.vector.x = 1.0;
         grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
-        grasp.post_grasp_retreat.direction.header.frame_id = params.frameOriginArm;
+        grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm;
         grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
         grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
 
@@ -391,15 +403,15 @@ moveit_msgs::Grasp GraspGenerator::build_grasp(tf::Transform t) {
         grasp.pre_grasp_posture.joint_names.push_back("katana_l_finger_joint");
         grasp.pre_grasp_posture.joint_names.push_back("katana_r_finger_joint");
         grasp.pre_grasp_posture.points.resize(1);
-        grasp.pre_grasp_posture.points[0].positions.push_back(params.gripperPositionOpen);
-        grasp.pre_grasp_posture.points[0].positions.push_back(params.gripperPositionOpen);
+        grasp.pre_grasp_posture.points[0].positions.push_back(params.eefPosOpen.at(0));
+        grasp.pre_grasp_posture.points[0].positions.push_back(params.eefPosOpen.at(0));
 
         // close gripper when reached
         grasp.grasp_posture.joint_names.push_back("katana_l_finger_joint");
         grasp.grasp_posture.joint_names.push_back("katana_r_finger_joint");
         grasp.grasp_posture.points.resize(1);
-        grasp.grasp_posture.points[0].positions.push_back(params.gripperPositionClosed);
-        grasp.grasp_posture.points[0].positions.push_back(params.gripperPositionClosed);
+        grasp.grasp_posture.points[0].positions.push_back(params.eefPosClosed.at(0));
+        grasp.grasp_posture.points[0].positions.push_back(params.eefPosClosed.at(0));
 	}
 
 	i++;

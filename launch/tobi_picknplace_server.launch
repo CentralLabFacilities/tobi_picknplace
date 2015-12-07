@@ -1,68 +1,26 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="model" default="h2r5" />  
-  <arg name="frameOriginArm" default="base_link" />
-  <arg name="frameOriginGripper" default="palm_left" />
+  <arg name="frameArm" default="base_link" />
+  <arg name="frameGripper" default="palm_left" />
   <arg name="groupArm" default="left_arm" />
   <arg name="groupEe" default="left_hand" />
+  <arg name="plannerId" default="RRTConnectkConfigDefault" />
   <arg name="transitions" default="" />
   <arg name="use_sim" default="false" />
-  <arg name="gripperPositionClosed" default="-0.495" />
-  <arg name="gripperPositionOpen" default="0.298" />
-  <arg name="graspThroughDistance" default="0.02" />
-  <arg name="approachDesiredDistance" default="0.10" />
-  <arg name="approachMinDistance" default="0.05" />
-  <arg name="liftUpDesiredDistance" default="0.02" />
-  <arg name="liftUpMinDistance" default="0.005" />
-  <arg name="retreatDesiredDistance" default="0.07" />
-  <arg name="retreatMinDistance" default="0.03" />
-  <arg name="anglePitchInc" default="0.3" /><!-- pi/8 -->
-  <arg name="anglePitchMax" default="0.9" /><!-- pi/4 -->
-  <arg name="angleYawInc" default="0.3" /><!-- pi/8 -->
-  <arg name="angleYawMax" default="0.9" /><!-- pi/4 -->
-  <arg name="transInc" default="0.001" />
-  <arg name="transMax" default="0.0" />
-  <arg name="placeXInc" default="0.015" />
-  <arg name="placeYZInc" default="0.04" />
-  <arg name="placeXMax" default="0.08" />
-  <arg name="placeYMax" default="0.10" />
-  <arg name="placeZMax" default="0.17" />
-  <arg name="heightSkipTop" default="0.005" />
-  <arg name="heightSkipBottom" default="0.05" />
-  <arg name="heightInc" default="0.01" />
 
   <arg unless="$(arg use_sim)" name="use_sim_args" value="" />
   <arg     if="$(arg use_sim)" name="use_sim_args" value="--sim" />
     
   <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="--model $(arg model) --transitions $(arg transitions) $(arg use_sim_args)" output="screen">
     <param name="model"                   value="$(arg model)" />  
-    <param name="frameOriginArm"          value="$(arg frameOriginArm)" />
-    <param name="frameOriginGripper"      value="$(arg frameOriginGripper)" />
+    <param name="frameArm"                value="$(arg frameArm)" />
+    <param name="frameGripper"            value="$(arg frameGripper)" />
     <param name="groupArm"                value="$(arg groupArm)" />
     <param name="groupEe"                 value="$(arg groupEe)" />
-    <param name="gripperPositionClosed"   value="$(arg gripperPositionClosed)" />
-    <param name="gripperPositionOpen"     value="$(arg gripperPositionOpen)" />
-    <param name="graspThroughDistance"    value="$(arg graspThroughDistance)" />
-    <param name="approachDesiredDistance" value="$(arg approachDesiredDistance)" />
-    <param name="approachMinDistance"     value="$(arg approachMinDistance)" />
-    <param name="liftUpDesiredDistance"   value="$(arg liftUpDesiredDistance)" />
-    <param name="liftUpMinDistance"       value="$(arg liftUpMinDistance)" />
-    <param name="retreatDesiredDistance"  value="$(arg retreatDesiredDistance)" />
-    <param name="retreatMinDistance"      value="$(arg retreatMinDistance)" />
-    <param name="anglePitchInc"           value="$(arg anglePitchInc)" />
-    <param name="anglePitchMax"           value="$(arg anglePitchMax)" />
-    <param name="angleYawInc"             value="$(arg angleYawInc)" />
-    <param name="angleYawMax"             value="$(arg angleYawMax)" />
-    <param name="transInc"                value="$(arg transInc)" />
-    <param name="transMax"                value="$(arg transMax)" />
-    <param name="placeXInc"               value="$(arg placeXInc)" />
-    <param name="placeYZInc"              value="$(arg placeYZInc)" />
-    <param name="placeXMax"               value="$(arg placeXMax)" />
-    <param name="placeYMax"               value="$(arg placeYMax)" />
-    <param name="placeZMax"               value="$(arg placeZMax)" />
-    <param name="heightSkipTop"           value="$(arg heightSkipTop)" />
-    <param name="heightSkipBottom"        value="$(arg heightSkipBottom)" />
-    <param name="heightInc"               value="$(arg heightInc)" />
+    <param name="plannerId"               value="$(arg plannerId)" />
+    <rosparam file="$(find tobi_picknplace)/config/h2r5.yaml" command="load" />
+    <--rosparam file="$(find tobi_picknplace)/config/katana.yaml" command="load" /->
   </node>
 
 </launch>

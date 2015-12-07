@@ -78,7 +78,7 @@ void RosTools::publish_collision_object(const string &id, ObjectShape shape, dou
 	//declare attached_object attribute
 	moveit_msgs::CollisionObject target_object;
 	target_object.id = id;
-	target_object.header.frame_id = params.frameOriginArm;
+	target_object.header.frame_id = params.frameArm;
 
 	// first remove any leftovers
 	target_object.operation = target_object.REMOVE;
@@ -91,7 +91,7 @@ void RosTools::publish_collision_object(const string &id, ObjectShape shape, dou
 
 	ros::spinOnce();
 
-	tfTransformer.transform(shape, shape, params.frameOriginArm);
+	tfTransformer.transform(shape, shape, params.frameArm);
 
 	geometry_msgs::Pose pose;
 	pose.orientation.w = 1.0;
@@ -110,11 +110,11 @@ void RosTools::publish_collision_object(const string &id, ObjectShape shape, dou
 	target_object.primitives.push_back(primitive);
 	target_object.primitive_poses.push_back(pose);
 	target_object.operation = target_object.ADD;
-	target_object.header.frame_id = params.frameOriginArm;
+	target_object.header.frame_id = params.frameArm;
 	object_publisher.publish(target_object);
 
 	ROS_INFO("Publish collision object at %.3f,%.3f,%.3f (frame: %s) - h:%.3f w:%.3f d:%.3f",
-			pose.position.x, pose.position.y, pose.position.z, params.frameOriginArm.c_str(),
+			pose.position.x, pose.position.y, pose.position.z, params.frameArm.c_str(),
 			shape.heightMeter, shape.widthMeter, shape.depthMeter);
 
 	ros::spinOnce();
@@ -129,7 +129,7 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
 	for (std::vector<moveit_msgs::Grasp>::iterator it = grasps.begin(); it != grasps.end(); ++it) {
 		visualization_msgs::Marker marker;
 		marker.header.stamp = ros::Time::now();
-		marker.header.frame_id = ParamReader::getParamReader().frameOriginArm;
+		marker.header.frame_id = ParamReader::getParamReader().frameArm;
 		marker.id = i;
 		marker.type = marker.ARROW;
 		marker.ns = "graspmarker";
@@ -154,7 +154,7 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
 	for (std::vector<moveit_msgs::PlaceLocation>::iterator it = loc.begin(); it != loc.end(); ++it) {
 		visualization_msgs::Marker marker;
 		marker.header.stamp = ros::Time::now();
-		marker.header.frame_id = ParamReader::getParamReader().frameOriginArm;
+		marker.header.frame_id = ParamReader::getParamReader().frameArm;
 		marker.id = i;
 		marker.type = marker.ARROW;
 		marker.ns = "placemarker";
@@ -175,7 +175,7 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
 void RosTools::remove_collision_object() {
 	moveit_msgs::CollisionObject target_object;
 	target_object.id = OBJECT_NAME;
-	target_object.header.frame_id = ParamReader::getParamReader().frameOriginArm;
+	target_object.header.frame_id = ParamReader::getParamReader().frameArm;
 	target_object.operation = target_object.REMOVE;
 	object_publisher.publish(target_object);
 }

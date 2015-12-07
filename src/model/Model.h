@@ -38,6 +38,7 @@ public:
 
     virtual int getNumJoints() const;
     virtual std::vector<std::string> getJointNames() const;
+    virtual std::vector<std::string> getEefJointNames() const;
     virtual std::map<std::string, double> getJointAngles() const;
     virtual void setJointAngle(const std::string &joint, double angle);
     virtual void setJointAngles(const std::map<std::string, double> &angle);
