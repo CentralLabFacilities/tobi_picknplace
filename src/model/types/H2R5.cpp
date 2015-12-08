@@ -24,7 +24,8 @@ using namespace moveit::planning_interface;
 
 static const double DEFAULT_PLACE_HEIGHT = 0.15;
 
-H2R5::H2R5(): Model() {
+H2R5::H2R5() :
+        Model() {
 
     string group = ParamReader::getParamReader().groupArm;
     string substr;
@@ -65,40 +66,13 @@ MoveResult H2R5::moveTo(const std::string& poseName, bool plan) {
 void H2R5::openEef(bool withSensors = false) {
     ROS_INFO("### Invoked openGripper ###");
 
-    vector<double> pos_open = ParamReader::getParamReader().eefPosOpen;
-    trajectory_msgs::JointTrajectory msg;
-    trajectory_msgs::JointTrajectoryPoint p;
-
-    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-        p.positions.push_back(pos_open.at(i));
-    }
-
-    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
-
-    msg.points.push_back(p);
-
-    target_publisher.publish(msg);
-
+    target_publisher.publish(generate_open_eef_msg());
 }
 
 void H2R5::closeEef(bool withSensors = false) {
     ROS_INFO("### Invoked closeGripper ###");
 
-    vector<double> pos_closed = ParamReader::getParamReader().eefPosClosed;
-    trajectory_msgs::JointTrajectory msg;
-    trajectory_msgs::JointTrajectoryPoint p;
-
-    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-        p.positions.push_back(pos_closed.at(i));
-    }
-
-    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
-
-    msg.points.push_back(p);
-
-    target_publisher.publish(msg);
+    target_publisher.publish(generate_close_eef_msg());
 }
 
 GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
@@ -124,7 +98,7 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
     vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(obj);
 
     //fill up with pre and post grasp postures, model specific!
-    for(moveit_msgs::Grasp &i : grasps)
+    for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
 
     rosTools.publish_grasps_as_markerarray(grasps);
@@ -276,6 +250,41 @@ std::vector<moveit_msgs::Grasp> H2R5::generate_grasps_angle_trans(
             shape.primitives[0].dimensions[0]);
 }
 
+//todo: generalize
+trajectory_msgs::JointTrajectory H2R5::generate_close_eef_msg() {
+    trajectory_msgs::JointTrajectory msg;
+    trajectory_msgs::JointTrajectoryPoint p;
+
+    vector<double> pos_close = ParamReader::getParamReader().eefPosClosed;
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+       msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+       p.positions.push_back(pos_close.at(i));
+    }
+
+    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+
+    msg.points.push_back(p);
+
+    return msg;
+}
+
+trajectory_msgs::JointTrajectory H2R5::generate_open_eef_msg() {
+    trajectory_msgs::JointTrajectory msg;
+    trajectory_msgs::JointTrajectoryPoint p;
+
+    vector<double> pos_open = ParamReader::getParamReader().eefPosOpen;
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+        p.positions.push_back(pos_open.at(i));
+    }
+
+    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+
+    msg.points.push_back(p);
+
+    return msg;
+}
+
 void H2R5::fillGrasp(moveit_msgs::Grasp& grasp) {
 
     ParamReader& params = ParamReader::getParamReader();
@@ -287,40 +296,15 @@ void H2R5::fillGrasp(moveit_msgs::Grasp& grasp) {
     grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
 
     // direction: lift up
-    grasp.post_grasp_retreat.direction.vector.y = -1.0;
+    grasp.post_grasp_retreat.direction.vector.z = 1.0;
     grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
-    grasp.post_grasp_retreat.direction.header.frame_id = params.frameGripper;
+    grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; //base_link!
     grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
     grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
 
-    vector<double> pos_open = params.eefPosOpen;
-    vector<double> pos_closed = params.eefPosClosed;
-    trajectory_msgs::JointTrajectory msg_open;
-    trajectory_msgs::JointTrajectoryPoint p_open;
-    trajectory_msgs::JointTrajectory msg_close;
-    trajectory_msgs::JointTrajectoryPoint p_close;
-
-    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-        msg_open.joint_names.push_back(groupEe->getActiveJoints().at(i));
-        p_open.positions.push_back(pos_open.at(i));
-        msg_close.joint_names.push_back(groupEe->getActiveJoints().at(i));
-        p_close.positions.push_back(pos_closed.at(i));
-    }
-
-    p_open.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
-    p_close.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
-    msg_open.points.push_back(p_open);
-    msg_close.points.push_back(p_close);
-
     // open on approach and close when reached
-    grasp.pre_grasp_posture = msg_open;
-    grasp.grasp_posture = msg_close;
-
-
-
-
-
-
+    grasp.pre_grasp_posture = generate_open_eef_msg();
+    grasp.grasp_posture = generate_close_eef_msg();
 
 }
 

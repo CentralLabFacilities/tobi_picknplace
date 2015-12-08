@@ -60,4 +60,7 @@ private:
     std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(
             moveit_msgs::CollisionObject shape);
 
+    trajectory_msgs::JointTrajectory generate_close_eef_msg();
+    trajectory_msgs::JointTrajectory generate_open_eef_msg();
+
 };
