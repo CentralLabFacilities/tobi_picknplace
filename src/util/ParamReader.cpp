@@ -25,6 +25,12 @@ static const int PLANNING_TIME = 120;
 static const vector<double> EEF_POSITION_CLOSED = {-0.495};
 static const vector<double> EEF_POSITION_OPEN = {0.298};
 
+static const vector<string> TOUCH_LINKS = {};
+
+static const double GOAL_JOINT_TOLERANCE = 0.01;
+static const double GOAL_POSITION_TOLERANCE = 0.02;
+static const double GOAL_ORIENTATION_TOLERANCE = 0.5;
+
 // KATANA SPECIFIC todo: organize in another way
 
 static const double APPROACH_DESIRED_DISTANCE = 0.10;
@@ -85,6 +91,12 @@ ParamReader::ParamReader():private_nh_("~") {
 
 	private_nh_.param("eefPosClosed", eefPosClosed, EEF_POSITION_CLOSED);
 	private_nh_.param("eefPosOpen", eefPosOpen, EEF_POSITION_OPEN);
+
+	private_nh_.param("touchLinks", touchLinks, TOUCH_LINKS);
+
+	private_nh_.param("goalJointTolerance", goalJointTolerance, GOAL_JOINT_TOLERANCE);
+    private_nh_.param("goalPositionTolerance", goalPositionTolerance, GOAL_POSITION_TOLERANCE);
+    private_nh_.param("goalOrientationTolerance", goalOrientationTolerance, GOAL_ORIENTATION_TOLERANCE);
 
 	private_nh_.param("force_threshold", gripperThresholdForce, GRIPPER_THRESHOLD_FORCE);
 	private_nh_.param("distance_threshold", gripperThresholdDistance, GRIPPER_THRESHOLD_DISTANCE);

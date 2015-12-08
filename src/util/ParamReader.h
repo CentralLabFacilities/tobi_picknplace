@@ -33,6 +33,12 @@ public:
 	std::vector<double> eefPosClosed;
 	std::vector<double> eefPosOpen;
 
+	std::vector<std::string> touchLinks;
+
+	double goalJointTolerance;
+	double goalPositionTolerance;
+	double goalOrientationTolerance;
+
 	int gripperThresholdForce;
 	int gripperThresholdDistance;
 

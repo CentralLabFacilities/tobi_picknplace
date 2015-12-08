@@ -6,6 +6,7 @@
  */
 
 #include "Model.h"
+#include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <actionlib/client/simple_action_client.h>
 #include <ros/ros.h>
 
@@ -13,6 +14,49 @@ using namespace std;
 using namespace moveit;
 using namespace actionlib;
 using namespace moveit::planning_interface;
+
+Model::Model() {
+
+    lastHeightAboveTable = 0.0;
+
+    for (const string &i : ParamReader::getParamReader().touchLinks)
+        touchlinks.push_back(i);
+
+    frame = ParamReader::getParamReader().frameGripper;
+
+    groupArm = new moveit::planning_interface::MoveGroup(
+            ParamReader::getParamReader().groupArm);
+    groupArm->setPlanningTime(ParamReader::getParamReader().planningTime);
+    groupArm->startStateMonitor();
+
+    groupArm->setPlannerId(ParamReader::getParamReader().plannerId);
+    groupArm->setPoseReferenceFrame(ParamReader::getParamReader().frameArm);
+
+    groupArm->setGoalJointTolerance(ParamReader::getParamReader().goalJointTolerance);
+    groupArm->setGoalPositionTolerance(ParamReader::getParamReader().goalPositionTolerance);
+    groupArm->setGoalOrientationTolerance(ParamReader::getParamReader().goalOrientationTolerance);
+
+    groupEe = new moveit::planning_interface::MoveGroup(
+            ParamReader::getParamReader().groupEef);
+    groupEe->startStateMonitor();
+
+    for (vector<string>::const_iterator it = groupEe->getActiveJoints().begin();
+            it != groupEe->getActiveJoints().end(); ++it) {
+        printf("active joint '%s'\n", it->c_str());
+    }
+
+    pickActionClient.reset(
+            new actionlib::SimpleActionClient<moveit_msgs::PickupAction>(nh,
+                    move_group::PICKUP_ACTION, false));
+    placeActionClient.reset(
+            new actionlib::SimpleActionClient<moveit_msgs::PlaceAction>(nh,
+                    move_group::PLACE_ACTION, false));
+
+    waitForAction(pickActionClient, ros::Duration(0, 0),
+            move_group::PICKUP_ACTION);
+    waitForAction(placeActionClient, ros::Duration(0, 0),
+            move_group::PLACE_ACTION);
+}
 
 void Model::addListener(ModelListener* listener) {
     listeners.push_back(listener);
@@ -353,7 +397,7 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
         goal.attached_object_touch_links.push_back(i);
 
     goal.group_name = groupArm->getName();
-    goal.end_effector = groupArm->getEndEffector();
+    goal.end_effector = ParamReader::getParamReader().frameGripper;
     goal.allowed_planning_time = groupArm->getPlanningTime();
     goal.planner_id = ParamReader::getParamReader().plannerId;
     goal.planning_options.plan_only = simulate;

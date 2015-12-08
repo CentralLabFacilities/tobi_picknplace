@@ -23,11 +23,8 @@ using namespace actionlib;
 using namespace moveit::planning_interface;
 
 static const double DEFAULT_PLACE_HEIGHT = 0.15;
-static const vector<string> links = { "palm", "thumb0", "thumb1", "thumb2",
-        "index0", "index1", "index2", "ring0", "ring1", "ring2", "pinky0",
-        "pinky1", "pinky2" };
 
-H2R5::H2R5() {
+H2R5::H2R5(): Model() {
 
     string group = ParamReader::getParamReader().groupArm;
     string substr;
@@ -36,50 +33,6 @@ H2R5::H2R5() {
         substr = "left";
     else
         substr = "right";
-
-    lastHeightAboveTable = 0.0;
-
-    for (const string &i : links)
-        touchlinks.push_back(i + string("_") + substr);
-
-    boost::to_upper(substr); //modified in-place!
-    touchlinks.push_back("wrist_" + substr);
-    touchlinks.push_back("w_differential_" + substr);
-    touchlinks.push_back("handmount_" + substr);
-
-    frame = ParamReader::getParamReader().frameGripper;
-
-    groupArm = new moveit::planning_interface::MoveGroup(group);
-    groupArm->setPlanningTime(ParamReader::getParamReader().planningTime);
-    groupArm->startStateMonitor();
-
-    groupArm->setPlannerId(ParamReader::getParamReader().plannerId);
-    groupArm->setPoseReferenceFrame(ParamReader::getParamReader().frameArm);
-
-    groupArm->setGoalJointTolerance(0.01); //rad
-    groupArm->setGoalPositionTolerance(0.02);  //m
-    groupArm->setGoalOrientationTolerance(0.5); //rad
-
-    groupEe = new moveit::planning_interface::MoveGroup(
-            ParamReader::getParamReader().groupEef);
-    groupEe->startStateMonitor();
-
-    for (vector<string>::const_iterator it = groupEe->getActiveJoints().begin();
-            it != groupEe->getActiveJoints().end(); ++it) {
-        printf("active joint '%s'\n", it->c_str());
-    }
-
-    pickActionClient.reset(
-            new actionlib::SimpleActionClient<moveit_msgs::PickupAction>(nh,
-                    move_group::PICKUP_ACTION, false));
-    placeActionClient.reset(
-            new actionlib::SimpleActionClient<moveit_msgs::PlaceAction>(nh,
-                    move_group::PLACE_ACTION, false));
-
-    waitForAction(pickActionClient, ros::Duration(0, 0),
-            move_group::PICKUP_ACTION);
-    waitForAction(placeActionClient, ros::Duration(0, 0),
-            move_group::PLACE_ACTION);
 
     string output_scope = ParamReader::getParamReader().eefCmdScope;
     printf("> sending targets on '%s'\n", output_scope.c_str());
@@ -169,6 +122,11 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
     rosTools.publish_collision_object(objId, obj, 0.5);
 
     vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(obj);
+
+    //fill up with pre and post grasp postures, model specific!
+    for(moveit_msgs::Grasp &i : grasps)
+        fillGrasp(i);
+
     rosTools.publish_grasps_as_markerarray(grasps);
 
     ObjectShape objArmFrame;
@@ -315,5 +273,54 @@ std::vector<moveit_msgs::Grasp> H2R5::generate_grasps_angle_trans(
             shape.primitive_poses[0].position.y,
             shape.primitive_poses[0].position.z,
             shape.primitives[0].dimensions[0]);
+}
+
+void H2R5::fillGrasp(moveit_msgs::Grasp& grasp) {
+
+    ParamReader& params = ParamReader::getParamReader();
+
+    grasp.pre_grasp_approach.direction.vector.x = 1.0;
+    grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
+    grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
+    grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
+    grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
+
+    // direction: lift up
+    grasp.post_grasp_retreat.direction.vector.x = -1.0;
+    grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
+    grasp.post_grasp_retreat.direction.header.frame_id = params.frameGripper;
+    grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
+    grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
+
+    vector<double> pos_open = params.eefPosOpen;
+    trajectory_msgs::JointTrajectory msg;
+    trajectory_msgs::JointTrajectoryPoint p;
+
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+        p.positions.push_back(pos_open.at(i));
+    }
+
+    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+
+    msg.points.push_back(p);
+
+    grasp.pre_grasp_posture = msg;
+
+    // close gripper when reached
+    vector<double> pos_closed = params.eefPosClosed;
+    trajectory_msgs::JointTrajectory msg2;
+    trajectory_msgs::JointTrajectoryPoint p2;
+
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+       msg2.joint_names.push_back(groupEe->getActiveJoints().at(i));
+       p2.positions.push_back(pos_closed.at(i));
+    }
+
+    p2.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+
+    msg2.points.push_back(p);
+
+    grasp.grasp_posture = msg2;
 }
 
