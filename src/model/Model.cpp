@@ -232,7 +232,6 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
     }
 
     moveit_msgs::PickupGoal goal = buildPickupGoal(obj, surface, grasps, simulate);
-
     pickActionClient->sendGoal(goal);
     if (!pickActionClient->waitForResult()) {
         ROS_INFO_STREAM("Pickup action returned early");
@@ -395,7 +394,6 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
 
     for(const string &i : touchlinks)
         goal.attached_object_touch_links.push_back(i);
-
     goal.group_name = groupArm->getName();
     goal.end_effector = ParamReader::getParamReader().endEffector;
     goal.allowed_planning_time = groupArm->getPlanningTime();
