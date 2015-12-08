@@ -31,6 +31,7 @@ public:
     std::string plannerId;
     int planningTime;
 
+	std::vector<double> graspRot;
 	std::vector<double> eefPosClosed;
 	std::vector<double> eefPosOpen;
 

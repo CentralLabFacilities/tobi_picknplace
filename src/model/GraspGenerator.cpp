@@ -74,10 +74,11 @@ std::vector<moveit_msgs::Grasp> GraspGenerator::generate_grasps_angle_only(doubl
 		double z) {
 
 	ParamReader& params = ParamReader::getParamReader();
+	vector<double> rot = params.graspRot;
 
 	std::vector<moveit_msgs::Grasp> grasps;
 
-	tf::Transform towardsObjectRotation(tf::createQuaternionFromRPY(0, -M_PI_2, 0));
+	tf::Transform towardsObjectRotation(tf::createQuaternionFromRPY(rot.at(0), rot.at(1), rot.at(2)));
 	tf::Transform graspThroughTransform;
 	graspThroughTransform.setOrigin(tf::Vector3(params.graspThroughDistance,0.0, 0.0));
 	graspThroughTransform.setRotation(tf::createQuaternionFromYaw(0));
@@ -146,10 +147,11 @@ std::vector<moveit_msgs::PlaceLocation> GraspGenerator::generate_placeloc_angle_
 		double z) {
 
 	ParamReader& params = ParamReader::getParamReader();
+	vector<double> rot = params.graspRot;
 
 	std::vector<moveit_msgs::PlaceLocation> placelocs;
 
-	tf::Transform towardsObjectRotation(tf::createQuaternionFromRPY(0, -M_PI_2, 0));
+	tf::Transform towardsObjectRotation(tf::createQuaternionFromRPY(rot.at(0), rot.at(1), rot.at(2)));
 
 	// create grasps
 	tf::Transform transform;

@@ -23,6 +23,7 @@ static const string EEF_CMD_SCOPE = "/meka_roscontrol/left_hand_position_traject
 static const string PLANNER_ID = "RRTConnectkConfigDefault";
 static const int PLANNING_TIME = 120;
 
+static const vector<double> GRASP_ROTATION = {0, -1,5708, 0};
 static const vector<double> EEF_POSITION_CLOSED = {-0.495};
 static const vector<double> EEF_POSITION_OPEN = {0.298};
 
@@ -95,6 +96,8 @@ ParamReader::ParamReader():private_nh_("~") {
 	private_nh_.param("eefPosOpen", eefPosOpen, EEF_POSITION_OPEN);
 
 	private_nh_.param("touchLinks", touchLinks, TOUCH_LINKS);
+
+    private_nh_.param("graspRot", graspRot, GRASP_ROTATION);
 
 	private_nh_.param("goalJointTolerance", goalJointTolerance, GOAL_JOINT_TOLERANCE);
     private_nh_.param("goalPositionTolerance", goalPositionTolerance, GOAL_POSITION_TOLERANCE);
