@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="model" default="h2r5" />  <!--katana-->
+  <arg name="endEffector" default="end_effector" />
   <arg name="frameArm" default="base_link" /> <!--katana_base_link-->
-  <arg name="frameGripper" default="palm_left" /> <!--katana_gripper_tool_frame-->
+  <arg name="frameGripper" default="hand_tool_frame_left" /> <!--katana_gripper_tool_frame-->
   <arg name="groupArm" default="left_arm" /> <!--"arm"-->
   <arg name="groupEe" default="left_hand" /> <!--gripper-->
   <arg name="plannerId" default="RRTConnectkConfigDefault" />
@@ -14,6 +15,7 @@
     
   <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="--model $(arg model) --transitions $(arg transitions) $(arg use_sim_args)" output="screen">
     <param name="model"                   value="$(arg model)" />  
+    <param name="endEffector"             value="$(arg endEffector)" />
     <param name="frameArm"                value="$(arg frameArm)" />
     <param name="frameGripper"            value="$(arg frameGripper)" />
     <param name="groupArm"                value="$(arg groupArm)" />

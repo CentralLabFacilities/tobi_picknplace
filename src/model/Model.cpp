@@ -397,7 +397,7 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
         goal.attached_object_touch_links.push_back(i);
 
     goal.group_name = groupArm->getName();
-    goal.end_effector = ParamReader::getParamReader().frameGripper;
+    goal.end_effector = ParamReader::getParamReader().endEffector;
     goal.allowed_planning_time = groupArm->getPlanningTime();
     goal.planner_id = ParamReader::getParamReader().plannerId;
     goal.planning_options.plan_only = simulate;

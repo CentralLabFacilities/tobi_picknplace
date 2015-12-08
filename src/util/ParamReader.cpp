@@ -16,6 +16,7 @@ static const string GROUP_END_EFFECTOR = "left_hand";
 
 static const string FRAME_ARM = "base_link";
 static const string FRAME_GRIPPER = "left_palm";
+static const string END_EFFECTOR = "end_effector";
 
 static const string EEF_CMD_SCOPE = "/meka_roscontrol/left_hand_position_trajectory_controller/command";
 
@@ -43,7 +44,6 @@ static const double RETREAT_DESIRED_DISTANCE = 0.07;
 static const double RETREAT_MIN_DISTANCE = 0.03;
 
 static const double GRASP_THROUGH_DISTANCE = 0.03;
-
 
 static const int GRIPPER_THRESHOLD_FORCE = 130;
 static const int GRIPPER_THRESHOLD_DISTANCE = 130;
@@ -80,6 +80,8 @@ ParamReader::ParamReader():private_nh_("~") {
 
     private_nh_.param("groupArm", groupArm, GROUP_ARM);
     private_nh_.param("groupEe", groupEef, GROUP_END_EFFECTOR);
+
+    private_nh_.param("endEffector", endEffector, END_EFFECTOR);
 
 	private_nh_.param("frameArm", frameArm, FRAME_ARM);
 	private_nh_.param("frameGripper", frameGripper, FRAME_GRIPPER);

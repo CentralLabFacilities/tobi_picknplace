@@ -25,6 +25,7 @@ public:
     std::string frameArm;
     std::string frameGripper;
 
+    std::string endEffector;
     std::string eefCmdScope;
 
     std::string plannerId;

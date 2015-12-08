@@ -1,12 +1,12 @@
 planningTime: 120
-touchLinks: ["palm_left", "palm_left", "thumb0_left", "thumb1_left", 
+touchLinks: ["palm_left", "hand_tool_frame_left", "thumb0_left", "thumb1_left", 
 "thumb2_left", "index0_left", "index1_left", "index2_left", "ring0_left", 
 "ring1_left", "ring2_left", "pinky0_left", "pinky1_left", "pinky2_left"] 
 eefPosClosed: [0.0, 2.0944, 3.14159, 3.14159, 3.14159]
 eefPosOpen: [0.0, 0.0, 0.0, 0.0, 0.0]
 goalJointTolerance: 0.01 #rad
 goalPositionTolerance: 0.02 #m
-goalOrientationTolerance" 0.5 #r
+goalOrientationTolerance: 0.5 #r
 graspThroughDistance: 0.02
 approachDesiredDistance: 0.10
 approachMinDistance: 0.05
