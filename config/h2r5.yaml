@@ -2,17 +2,17 @@ planningTime: 120
 touchLinks: ["palm_left", "hand_tool_frame_left", "thumb0_left", "thumb1_left", 
 "thumb2_left", "index0_left", "index1_left", "index2_left", "ring0_left", 
 "ring1_left", "ring2_left", "pinky0_left", "pinky1_left", "pinky2_left"] 
-eefPosClosed: [0.0, 2.0944, 3.14159, 3.14159, 3.14159]
-eefPosOpen: [0.0, 0.0, 0.0, 0.0, 0.0]
+eefPosClosed: [1.31, 2.0944, 3.14159, 3.14159, 3.14159]
+eefPosOpen: [1.31, 0.0, 0.0, 0.0, 0.0]
 graspRot: [-1.5708, 0, 0]
 goalJointTolerance: 0.01 #rad
-goalPositionTolerance: 0.02 #m
+goalPositionTolerance: 0.01 #m
 goalOrientationTolerance: 0.5 #r
-graspThroughDistance: 0.02
-approachDesiredDistance: 0.10
-approachMinDistance: 0.05
-liftUpDesiredDistance: 0.02
-liftUpMinDistance: 0.005
+graspThroughDistance: 0.0
+approachDesiredDistance: 0.12
+approachMinDistance: 0.09
+liftUpDesiredDistance: 0.08
+liftUpMinDistance: 0.04
 retreatDesiredDistance: 0.07
 retreatMinDistance: 0.03
 anglePitchInc: 0.01 # pi/8
