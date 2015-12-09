@@ -261,7 +261,7 @@ trajectory_msgs::JointTrajectory H2R5::generate_close_eef_msg() {
        p.positions.push_back(pos_close.at(i));
     }
 
-    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+    p.time_from_start = ros::Duration(1.0); //sec
 
     msg.points.push_back(p);
 
@@ -278,7 +278,7 @@ trajectory_msgs::JointTrajectory H2R5::generate_open_eef_msg() {
         p.positions.push_back(pos_open.at(i));
     }
 
-    p.time_from_start = ros::Duration(1.2 * 1.0 / 50.0);
+    p.time_from_start = ros::Duration(1.0);
 
     msg.points.push_back(p);
 
