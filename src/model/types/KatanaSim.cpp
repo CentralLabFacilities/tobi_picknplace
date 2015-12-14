@@ -16,12 +16,6 @@ KatanaSim::KatanaSim() {
 KatanaSim::~KatanaSim() {
 }
 
-void KatanaSim::addListener(ModelListener* listener) {
-}
-
-void KatanaSim::removeListener(ModelListener* listener) {
-}
-
 map<string, double> KatanaSim::getJointAngles() const {
 	ROS_INFO("Invoked getJointAngles");
 	return map<string, double>();

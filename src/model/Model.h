@@ -16,10 +16,9 @@
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 
-#include "ModelListener.h"
 #include "ModelTypes.h"
 
-#include "GraspGenerator.h"
+#include "../grasping/GraspGenerator.h"
 #include "../util/ParamReader.h"
 #include "../util/TransformerTF.h"
 #include "../util/RosTools.h"
@@ -31,9 +30,6 @@ public:
     Model();
     virtual ~Model() {
     }
-
-    virtual void addListener(ModelListener* listener);
-    virtual void removeListener(ModelListener* listener);
 
     virtual int getNumJoints() const;
     virtual std::vector<std::string> getJointNames() const;
@@ -95,7 +91,6 @@ protected:
     boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PickupAction> > pickActionClient;
     boost::scoped_ptr<actionlib::SimpleActionClient<moveit_msgs::PlaceAction> > placeActionClient;
 
-    std::vector<ModelListener*> listeners;
     std::vector<std::string> touchlinks;
     std::string frame;
 

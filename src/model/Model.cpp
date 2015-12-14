@@ -58,20 +58,6 @@ Model::Model() {
             move_group::PLACE_ACTION);
 }
 
-void Model::addListener(ModelListener* listener) {
-    listeners.push_back(listener);
-}
-
-void Model::removeListener(ModelListener* listener) {
-    vector<ModelListener*>::iterator i;
-    for (i = listeners.begin(); i != listeners.end(); ++i) {
-        if (listener == *i) {
-            listeners.erase(i);
-            return;
-        }
-    }
-}
-
 void Model::stop() const {
     groupArm->stop();
 }

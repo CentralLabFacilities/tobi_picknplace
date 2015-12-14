@@ -87,10 +87,11 @@ set(DEFAULT_FILES
   src/picknplace_server.cpp
   src/control/Controller.cpp
   src/control/ViaPoseStrategy.cpp
+  src/grasping/CentroidGrasping.cpp
   src/interface/RsbInterface.cpp
+  src/interface/AGNIInterface.cpp
   src/interface/ViewInterface.cpp
   src/model/ModelFactory.cpp
-  src/model/GraspGenerator.cpp
   src/util/TransitionReader.cpp
   src/util/TransformerTF.cpp
   src/util/Dijkstra.cpp

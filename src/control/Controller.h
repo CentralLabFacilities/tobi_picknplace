@@ -11,13 +11,12 @@
 
 #include "../interface/ControlInterface.h"
 #include "../interface/ControlInterfaceListener.h"
-#include "../model/ModelListener.h"
 #include "../util/Dijkstra.h"
 #include "../util/Transition.h"
 #include "ControlStrategy.h"
 
 
-class Controller: public ControlInterfaceListener, ModelListener {
+class Controller: public ControlInterfaceListener {
 public:
 	Controller(const Model::Ptr &model, const ControlStrategy::Ptr &strategy);
 	virtual ~Controller();

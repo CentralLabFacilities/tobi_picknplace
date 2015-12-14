@@ -21,9 +21,6 @@ public:
 	KatanaSim();
 	virtual ~KatanaSim();
 
-	void addListener(ModelListener* listener);
-	void removeListener(ModelListener* listener);
-
 	virtual std::map<std::string, double> getJointAngles() const;
 	virtual std::vector<std::string> getJointNames() const;
     virtual void setJointAngle(const std::string &joint, double angle);
