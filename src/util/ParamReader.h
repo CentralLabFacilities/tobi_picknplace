@@ -29,6 +29,7 @@ public:
     std::string eefCmdScope;
 
     std::string plannerId;
+    std::string graspGen;
     int planningTime;
 
 	std::vector<double> graspRot;

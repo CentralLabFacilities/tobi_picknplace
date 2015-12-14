@@ -33,7 +33,7 @@ Katana::Katana() :
             new actionlib::SimpleActionClient<katana_msgs::JointMovementAction>(
                     nh, "katana_arm_controller/joint_movement_action", false));
 
-    waitForAction(movementActionClient, ros::Duration(0, 0),
+    rosTools.waitForAction(movementActionClient, ros::Duration(0, 0),
             "katana_arm_controller/joint_movement_action");
 
     ROS_INFO("KatanaModel: connected");
@@ -349,7 +349,7 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 //		t.xMeter += lastHeightAboveTable;
 //	}
 
-    return graspGenerator.generate_placeloc_angle_trans(t.xMeter, t.yMeter,
+    return graspGenerator->generate_placeloc_angle_trans(t.xMeter, t.yMeter,
             t.zMeter);
 
 }
@@ -376,7 +376,7 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
         t.xMeter += lastHeightAboveTable;
     }
 
-    return graspGenerator.generate_place_locations(t.xMeter, t.yMeter, t.zMeter,
+    return graspGenerator->generate_place_locations(t.xMeter, t.yMeter, t.zMeter,
             obj.widthMeter, obj.heightMeter, obj.depthMeter, orientation);
 
 }
@@ -385,19 +385,14 @@ std::vector<moveit_msgs::Grasp> Katana::generate_grasps_angle_trans(
         ObjectShape shape) {
     tfTransformer.transform(shape, shape,
             ParamReader::getParamReader().frameArm);
-    return graspGenerator.generate_grasps_angle_trans(shape.center.xMeter,
-            shape.center.yMeter, shape.center.zMeter, shape.heightMeter);
+    return graspGenerator->generate_grasps(shape);
 }
 
 std::vector<moveit_msgs::Grasp> Katana::generate_grasps_angle_trans(
         moveit_msgs::CollisionObject shape) {
     tfTransformer.transform(shape, shape,
             ParamReader::getParamReader().frameArm);
-    return graspGenerator.generate_grasps_angle_trans(
-            shape.primitive_poses[0].position.x,
-            shape.primitive_poses[0].position.y,
-            shape.primitive_poses[0].position.z,
-            shape.primitives[0].dimensions[0]);
+    return graspGenerator->generate_grasps(shape);
 }
 
 void Katana::sensorCallback(const sensor_msgs::JointStatePtr& sensorReadings) {

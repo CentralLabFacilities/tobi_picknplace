@@ -21,6 +21,8 @@ static const string END_EFFECTOR = "end_effector";
 static const string EEF_CMD_SCOPE = "/meka_roscontrol/left_hand_position_trajectory_controller/command";
 
 static const string PLANNER_ID = "RRTConnectkConfigDefault";
+static const string GRASP_GENERATOR = "centroid";
+
 static const int PLANNING_TIME = 120;
 
 static const vector<double> GRASP_ROTATION = {0, -1,5708, 0};
@@ -90,6 +92,8 @@ ParamReader::ParamReader():private_nh_("~") {
 	private_nh_.param("eefCmdScope", eefCmdScope, EEF_CMD_SCOPE);
 
     private_nh_.param("plannerId", plannerId, PLANNER_ID);
+    private_nh_.param("graspGen", graspGen, GRASP_GENERATOR);
+
     private_nh_.param("planningTime", planningTime, PLANNING_TIME);
 
 	private_nh_.param("eefPosClosed", eefPosClosed, EEF_POSITION_CLOSED);

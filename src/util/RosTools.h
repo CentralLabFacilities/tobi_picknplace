@@ -52,6 +52,40 @@ public:
 
 	bool getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj);
 
+	template<typename T>
+	void waitForAction(const T &action, const ros::Duration &wait_for_server,
+			const std::string &name) {
+		ROS_DEBUG("Waiting for action server (%s)...", name.c_str());
+
+		// in case ROS time is published, wait for the time data to arrive
+		ros::Time start_time = ros::Time::now();
+		while (start_time == ros::Time::now()) {
+			ros::WallDuration(0.01).sleep();
+			ros::spinOnce();
+		}
+
+		// wait for the server (and spin as needed)
+		if (wait_for_server == ros::Duration(0, 0)) {
+			while (nh.ok() && !action->isServerConnected()) {
+				ros::WallDuration(0.02).sleep();
+				ros::spinOnce();
+			}
+		} else {
+			ros::Time final_time = ros::Time::now() + wait_for_server;
+			while (nh.ok() && !action->isServerConnected()
+					&& final_time > ros::Time::now()) {
+				ros::WallDuration(0.02).sleep();
+				ros::spinOnce();
+			}
+		}
+
+		if (!action->isServerConnected())
+			throw std::runtime_error(
+					"Unable to connect to action server within allotted time (2)");
+		else
+			ROS_DEBUG("Connected to '%s'", name.c_str());
+	}
+
 private:
 
     void sceneCallback(const moveit_msgs::PlanningScene& currentScene);

@@ -7,6 +7,7 @@
   <arg name="groupArm" default="left_arm" /> <!--"arm"-->
   <arg name="groupEe" default="left_hand" /> <!--gripper-->
   <arg name="plannerId" default="RRTConnectkConfigDefault" />
+  <arg name="graspGen" default="agni" />  <!--centroid or agni-->
   <arg name="transitions" default="" />
   <arg name="use_sim" default="false" />
 
@@ -21,6 +22,7 @@
     <param name="groupArm"                value="$(arg groupArm)" />
     <param name="groupEe"                 value="$(arg groupEe)" />
     <param name="plannerId"               value="$(arg plannerId)" />
+    <param name="graspGen"                value="$(arg graspGen)" />
     <rosparam file="$(find tobi_picknplace)/config/h2r5.yaml" command="load" />
     <!--rosparam file="$(find tobi_picknplace)/config/katana.yaml" command="load" /-->
   </node>

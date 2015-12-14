@@ -6,9 +6,13 @@
  */
 
 #include "Model.h"
+#include <ros/ros.h>
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <actionlib/client/simple_action_client.h>
-#include <ros/ros.h>
+
+#include "../grasping/CentroidGrasping.h"
+#include "../interface/AGNIInterface.h"
+
 
 using namespace std;
 using namespace moveit;
@@ -16,6 +20,11 @@ using namespace actionlib;
 using namespace moveit::planning_interface;
 
 Model::Model() {
+
+	if(ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
+		graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
+	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME)
+		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
 
     lastHeightAboveTable = 0.0;
 
@@ -52,9 +61,9 @@ Model::Model() {
             new actionlib::SimpleActionClient<moveit_msgs::PlaceAction>(nh,
                     move_group::PLACE_ACTION, false));
 
-    waitForAction(pickActionClient, ros::Duration(0, 0),
+    rosTools.waitForAction(pickActionClient, ros::Duration(0, 0),
             move_group::PICKUP_ACTION);
-    waitForAction(placeActionClient, ros::Duration(0, 0),
+    rosTools.waitForAction(placeActionClient, ros::Duration(0, 0),
             move_group::PLACE_ACTION);
 }
 

@@ -7,13 +7,34 @@
 
 #pragma once
 
+#include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
+#include <grasping_msgs/FindGraspableObjectsAction.h>
+
+#include "../util/RosTools.h"
 #include "../grasping/GraspGenerator.h"
 
-class AGNIInterface: GraspGenerator{
+#define AGNI_GRASP_NAME "agni"
+
+class AGNIInterface: public GraspGenerator {
 public:
+	typedef boost::shared_ptr<AGNIInterface> Ptr;
+
     AGNIInterface();
     virtual ~AGNIInterface();
 
+    virtual std::vector<moveit_msgs::Grasp> generate_grasps(std::string object_name);
+	virtual std::vector<moveit_msgs::Grasp> generate_grasps(moveit_msgs::CollisionObject object);
+	virtual std::vector<moveit_msgs::Grasp> generate_grasps(ObjectShape shape);
 
+private:
+	RosTools rosTools;
+
+	ros::NodeHandle nh_;
+
+	boost::scoped_ptr<actionlib::SimpleActionClient<grasping_msgs::FindGraspableObjectsAction> > client;
+
+	std::vector<moveit_msgs::Grasp> generate_grasps();
+	std::string action_name_;
 
 };
