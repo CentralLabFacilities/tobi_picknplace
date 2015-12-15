@@ -93,7 +93,7 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
     string objId = rosTools.getDefaultObjectName();
 
     // publish collision object NOT FOR h2r5! use agni vis.
-    //rosTools.publish_collision_object(objId, obj, 0.5);
+    rosTools.publish_collision_object(objId, obj, 0.5);
 
     vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(obj);
 
