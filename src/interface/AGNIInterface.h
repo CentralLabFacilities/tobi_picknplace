@@ -29,12 +29,16 @@ public:
 
 private:
 	RosTools rosTools;
+	std::string action_name_;
+	ros::Publisher pub_markers;
+	ros::ServiceClient grasp_viz_client;
 
 	ros::NodeHandle nh_;
 
 	boost::scoped_ptr<actionlib::SimpleActionClient<grasping_msgs::FindGraspableObjectsAction> > client;
 
 	std::vector<moveit_msgs::Grasp> generate_grasps();
-	std::string action_name_;
+
+	void display_grasps(const std::vector<grasping_msgs::GraspableObject>& grasps);
 
 };

@@ -26,6 +26,7 @@ set(CTKN_PKGS
     actionlib
     shape_tools
     shape_msgs
+    grasp_viewer
     moveit_msgs
     visualization_msgs
 )
