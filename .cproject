@@ -28,6 +28,7 @@
 									<listOptionValue builtIn="false" value="/vol/robocup/nightly/include/rsc0.12"/>
 									<listOptionValue builtIn="false" value="/vol/robocup/nightly/include/rst0.12/stable"/>
 									<listOptionValue builtIn="false" value="/vol/robocup/nightly/include/rst0.12/sandbox"/>
+									<listOptionValue builtIn="false" value="/vol/meka/nightly/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.485186528" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
