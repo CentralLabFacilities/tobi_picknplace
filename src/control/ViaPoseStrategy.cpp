@@ -269,6 +269,8 @@ double ViaPoseStrategy::calcErrorToPose(const std::string& pose) const {
 	squareError += pow(angles["katana_motor1_pan_joint"]  - joints["katana_motor1_pan_joint"],  2) * 3;
 	squareError += pow(angles["katana_motor2_lift_joint"] - joints["katana_motor2_lift_joint"], 2) * 2;
 	squareError += pow(angles["katana_motor3_lift_joint"] - joints["katana_motor3_lift_joint"], 2) * 1;
+	squareError += pow(angles["katana_motor4_lift_joint"] - joints["katana_motor4_lift_joint"], 2) * 0.5;
+	squareError += pow(angles["katana_motor5_wrist_roll_joint"] - joints["katana_motor5_wrist_roll_joint"], 2) * 0.1;
 	squareError /= 3;
 	ROS_DEBUG_STREAM("Error to Pose: " << pose << " is: " << squareError);
 	return squareError;
