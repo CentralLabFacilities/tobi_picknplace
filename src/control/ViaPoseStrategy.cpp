@@ -9,6 +9,7 @@
 #include <ros/ros.h>
 #include <limits>
 #include <cmath>
+#include <ros/console.h>
 
 using namespace std;
 using namespace boost;
