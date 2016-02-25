@@ -298,8 +298,14 @@ void H2R5::fillGrasp(moveit_msgs::Grasp& grasp) {
     grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
 
     // open on approach and close when reached
-    grasp.pre_grasp_posture = generate_open_eef_msg();
-    grasp.grasp_posture = generate_close_eef_msg();
+    if (grasp.pre_grasp_posture.points.size()==0)
+    {
+        grasp.pre_grasp_posture = generate_open_eef_msg();
+    }
+    if (grasp.grasp_posture.points.size()==0)
+    {
+        grasp.grasp_posture = generate_close_eef_msg();
+    }
 
 }
 
