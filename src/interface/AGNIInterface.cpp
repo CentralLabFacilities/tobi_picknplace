@@ -103,9 +103,9 @@ void AGNIInterface::display_grasps(const std::vector<grasping_msgs::GraspableObj
 		}
 		if(shape.type == shape_msgs::SolidPrimitive::BOX) {
 			marker.type = visualization_msgs::Marker::CUBE;
-			marker.scale.x = 2 * shape.dimensions[shape_msgs::SolidPrimitive::BOX_X];
-			marker.scale.y = 2 * shape.dimensions[shape_msgs::SolidPrimitive::BOX_Y];
-			marker.scale.z = 2 * shape.dimensions[shape_msgs::SolidPrimitive::BOX_Z];
+			marker.scale.x = shape.dimensions[shape_msgs::SolidPrimitive::BOX_X];
+			marker.scale.y = shape.dimensions[shape_msgs::SolidPrimitive::BOX_Y];
+			marker.scale.z = shape.dimensions[shape_msgs::SolidPrimitive::BOX_Z];
 		}
 		if(shape.type == shape_msgs::SolidPrimitive::SPHERE) {
 			marker.type = visualization_msgs::Marker::SPHERE;
