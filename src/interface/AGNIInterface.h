@@ -39,6 +39,6 @@ private:
 
 	std::vector<moveit_msgs::Grasp> generate_grasps();
 
-	void display_grasps(const std::vector<grasping_msgs::GraspableObject>& grasps);
+	void display_primitives(const std::vector<grasping_msgs::GraspableObject>& grasps);
 
 };

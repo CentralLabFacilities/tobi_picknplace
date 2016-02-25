@@ -20,11 +20,11 @@ AGNIInterface::AGNIInterface() {
 
 	rosTools.waitForAction(client, ros::Duration(0, 0), "grasp_manager");
 
-	std::string service = "/display_grasp";
+	//std::string service = "/display_grasp";
 
 	pub_markers = nh_.advertise<visualization_msgs::Marker>("/primitive_marker", 10);
-	ros::service::waitForService(service);
-	grasp_viz_client = nh_.serviceClient<grasp_viewer::DisplayGrasps>(service);
+	//ros::service::waitForService(service);
+	//grasp_viz_client = nh_.serviceClient<grasp_viewer::DisplayGrasps>(service);
 
 	//todo: output whether server is connected to, timeout, etc, introduce checks
 
@@ -48,6 +48,7 @@ std::vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(
 		ObjectShape shape) {
 	return generate_grasps();
 }
+
 
 std::vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps() {
 	if (!client) {
@@ -75,7 +76,7 @@ std::vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps() {
 		return std::vector<moveit_msgs::Grasp>();
 	}
 
-	display_grasps(results->objects);
+	display_primitives(results->objects);
 
 	return results->objects.at(0).grasps;
 
@@ -86,7 +87,7 @@ std::vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps() {
 }
 
 
-void AGNIInterface::display_grasps(const std::vector<grasping_msgs::GraspableObject>& grasps) {
+void AGNIInterface::display_primitives(const std::vector<grasping_msgs::GraspableObject>& grasps) {
 
 	uint i = 0;
 	for(grasping_msgs::GraspableObject o : grasps) {
@@ -123,13 +124,6 @@ void AGNIInterface::display_grasps(const std::vector<grasping_msgs::GraspableObj
 		marker.id = i;
 
 		pub_markers.publish(marker);
-
-		grasp_viewer::DisplayGraspsRequest disp_req; //note: also possible to use displaygrasps.request...
-		grasp_viewer::DisplayGraspsResponse disp_res;
-
-		disp_req.grasps = o.grasps;
-		grasp_viz_client.call(disp_req, disp_res);
-
 		i++;
 	}
 
