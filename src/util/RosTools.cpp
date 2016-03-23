@@ -10,6 +10,7 @@
 
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
+#include <grasp_viewer/DisplayGrasps.h>
 
 using namespace std;
 
@@ -22,6 +23,11 @@ RosTools::RosTools() {
 	grasps_marker = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker", 10);
 
 	clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
+
+	std::string service = "/display_grasp";
+	ros::service::waitForService(service);
+	// TODO test if service was found
+	grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
 
     scene_subscriber = nh.subscribe("planning_scene", 1, &RosTools::sceneCallback, this);
 }
@@ -145,6 +151,13 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
 	}
 
 	grasps_marker.publish(markers);
+}
+
+void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps){
+	grasp_viewer::DisplayGraspsRequest disp_req; //note: also possible to use displaygrasps.request...
+	grasp_viewer::DisplayGraspsResponse disp_res;
+	disp_req.grasps = grasps;
+	grasp_viz_client.call(disp_req, disp_res);
 }
 
 void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::PlaceLocation> loc) {

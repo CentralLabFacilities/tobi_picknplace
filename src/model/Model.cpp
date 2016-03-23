@@ -238,6 +238,9 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
 
         if (simulate || isSomethingInGripper()) {
             moveit_msgs::Grasp resultGrasp = pickActionClient->getResult()->grasp;
+            std::vector<moveit_msgs::Grasp> executed_grasps;
+            executed_grasps.push_back(resultGrasp);
+            rosTools.display_grasps(executed_grasps);
             grt.point.xMeter = resultGrasp.grasp_pose.pose.position.x;
             grt.point.yMeter = resultGrasp.grasp_pose.pose.position.y;
             grt.point.zMeter = resultGrasp.grasp_pose.pose.position.z;

@@ -101,7 +101,7 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
     for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
 
-    rosTools.publish_grasps_as_markerarray(grasps);
+    //rosTools.publish_grasps_as_markerarray(grasps);
 
     ObjectShape objArmFrame;
     tfTransformer.transform(obj, objArmFrame,
@@ -140,8 +140,7 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
     vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(
             collisionObject);
 
-    rosTools.publish_grasps_as_markerarray(grasps);
-
+    //rosTools.publish_grasps_as_markerarray(grasps);
     return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
             simulate, startPose);
 }
