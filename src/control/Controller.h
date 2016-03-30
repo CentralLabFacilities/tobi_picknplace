@@ -39,6 +39,7 @@ public:
 	EefPose requestEefPose() const;
 	bool requestMoveTo(const EefPose &pose, bool linear, bool orientation);
 	bool requestMoveTo(const std::string &poseName);
+	bool requestPlanTo(const std::string &poseName);
 
 	SensorReadings requestGripperSensors() const;
 	bool requestIsSomethingInGripper() const;

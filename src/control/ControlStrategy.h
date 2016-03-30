@@ -29,6 +29,7 @@ public:
 	virtual GraspReturnType placeObject(const std::string &surface, bool simulate) = 0;
     virtual std::string findNearestPose() const = 0;
 	virtual bool moveTo(const std::string &poseName, bool withRecovery = true) = 0;
+	virtual bool planTo(const std::string &poseName) = 0;
 
 };
 

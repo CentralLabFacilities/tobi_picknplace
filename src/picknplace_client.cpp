@@ -47,10 +47,12 @@ void callServerMethod(int argc, char* argv[]) {
                 ("help", "shows help message")
 
                 ("getPosition", "returns the position of the arms endEffector")
+				
                 ("listAngles", "returns the current angles of the KatanArms joints")
 
                 ("setMovement", "Move the arm to a predefined Position")
                 ("setPose", "Move the arm to a predefined Pose")
+				("planToPose", "Move the arm to a predifined position (with planning)")
 
                 ("moveJoints", "moves the arm to the given joint angles\nargs: m0 m1 m2 m3 m4 eef")
                 ("gotoLinear", "moves the end effector to pose. Translation in m, quaternion in radiant\n"
@@ -222,7 +224,16 @@ void callServerMethod(int argc, char* argv[]) {
             std::cout << "set Pose failed. Check Arguments" << std::endl;
         }
 
-    } else if (vm.count("findNearestPose")) {
+	} else if(vm.count("planToPose")) {
+		shared_ptr< std::string > request(new std::string(argv[2]));
+		shared_ptr< bool > result = remoteServer->call< bool >("planToPose", request);
+		if (*result == true) {
+			std::cout << "plan to pose success!" << std::endl;
+		} else {
+			std::cout << "plan to Pose failed. Check Arguments" << std::endl;
+		}
+		
+	} else if (vm.count("findNearestPose")) {
 
         shared_ptr< void > request; 
         shared_ptr< std::string > result = remoteServer->call< std::string >("findNearestPose", request);

@@ -24,6 +24,7 @@ public:
 	virtual GraspReturnType placeObject(ObjectShape obj, bool simulate);
 	virtual GraspReturnType placeObject(EefPose obj, bool simulate);
 	virtual GraspReturnType placeObject(const std::string &surface, bool simulate);
+	virtual bool planTo(const std::string &poseName);
 	virtual bool moveTo(const std::string &poseName, bool withRecovery = true);
 	virtual bool recoverAndMoveTo(const std::string &poseName);
 

@@ -254,6 +254,13 @@ public:
 		*success = listener->requestMoveTo(*input);
 		return success;
 	}
+	
+	shared_ptr<bool> planToPose(shared_ptr<string> input) {
+		shared_ptr<bool> success(new bool(false));
+		ROS_DEBUG_STREAM("Invoked planToPose");
+		*success = listener->requestPlanTo(*input);
+		return success;
+	}
 
 	shared_ptr<Dictionary> isObjectGraspable(shared_ptr<BoundingBox3DFloat> input) {
 		ObjectShape objectToGrasp;
@@ -458,6 +465,7 @@ void RsbInterface::init() {
 	d->server->registerMethod("listPoses", CREATE_CALLBACK_0(Dictionary, listPoses));
 	d->server->registerMethod("setMovement", CREATE_CALLBACK_1(string, bool, setPose));
 	d->server->registerMethod("setPose", CREATE_CALLBACK_1(string, bool, setPose));
+	d->server->registerMethod("planToPose", CREATE_CALLBACK_1(string, bool, planToPose));
 	//d->server->registerMethod("setCarryMovement", CREATE_CALLBACK(string, string, echo));
 	d->server->registerMethod("openGripper", CREATE_CALLBACK_0(void, openGripper));
 	d->server->registerMethod("openGripperWhenTouching",

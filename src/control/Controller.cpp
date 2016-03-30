@@ -37,6 +37,12 @@ bool Controller::requestMoveTo(const std::string &poseName) {
 	return strategy->moveTo(poseName);
 }
 
+bool Controller::requestPlanTo(const std::string &poseName) {
+	//return katana->moveTo(poseName);
+	return strategy->planTo(poseName);
+	//return strategy->moveTo(poseName);
+}
+
 std::string Controller::requestNearestPose() const{
 	return strategy->findNearestPose();
 }

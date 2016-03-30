@@ -32,6 +32,7 @@ public:
 	virtual EefPose requestEefPose() const = 0;
 	virtual bool requestMoveTo(const EefPose &pose, bool linear, bool orientation) = 0;
 	virtual bool requestMoveTo(const std::string &poseName) = 0;
+	virtual bool requestPlanTo(const std::string &poseName) = 0;
 
 	virtual SensorReadings requestGripperSensors() const = 0;
 	virtual bool requestIsSomethingInGripper() const = 0;
@@ -60,6 +61,7 @@ public:
 	EefPose requestEefPose() const{return EefPose();}
 	bool requestMoveTo(const EefPose &pose, bool linear, bool orientation){return false;}
 	bool requestMoveTo(const std::string &poseName){return false;}
+	bool requestPlanTo(const std::string &poseName){return false;};
 
 	SensorReadings requestGripperSensors() const{return SensorReadings();}
 	bool requestIsSomethingInGripper() const{return false;}
