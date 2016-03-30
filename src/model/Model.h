@@ -60,6 +60,8 @@ public:
     virtual MoveResult moveTo(const std::string &poseName,
             bool plan = true) = 0;
 
+    virtual void findObjects();
+
     virtual GraspReturnType graspObject(const std::string &obj,
             const std::string &surface, bool simulate,
             const std::string &startPose = "") = 0;

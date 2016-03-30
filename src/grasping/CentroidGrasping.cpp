@@ -16,10 +16,16 @@
 using namespace std;
 
 CentroidGrasping::CentroidGrasping() {
-
+    name = CENTROID_GRASP_NAME;
 }
 
 CentroidGrasping::~CentroidGrasping() {
+}
+
+std::vector<grasping_msgs::Object> CentroidGrasping::find_objects(bool plan_grasps) {
+    ROS_ERROR_STREAM("Find objects not supported by centroid grasping!");
+    std::vector<grasping_msgs::Object> objects;
+    return objects;
 }
 
 std::vector<moveit_msgs::Grasp> CentroidGrasping::generate_grasps(

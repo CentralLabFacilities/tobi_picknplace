@@ -36,6 +36,8 @@ public:
 	virtual SensorReadings requestGripperSensors() const = 0;
 	virtual bool requestIsSomethingInGripper() const = 0;
 
+	virtual void requestFindObjects () = 0;
+
 	virtual GraspReturnType requestGraspObject(ObjectShape obj, bool simulate) = 0;
 	virtual GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate) = 0;
 	virtual GraspReturnType requestPlaceObject(EefPose obj, bool simulate) = 0;

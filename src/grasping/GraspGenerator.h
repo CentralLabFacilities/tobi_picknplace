@@ -9,6 +9,7 @@
 
 #include <moveit_msgs/Grasp.h>
 #include <moveit_msgs/PlaceLocation.h>
+#include <grasping_msgs/Object.h>
 #include <tf/tf.h>
 #include <vector>
 
@@ -21,6 +22,9 @@ public:
 	GraspGenerator(){};
 	virtual ~GraspGenerator(){};
 
+	virtual std::vector<grasping_msgs::Object> find_objects(bool plan_grasps) = 0;
+
+	virtual std::vector<moveit_msgs::Grasp> generate_grasps(grasping_msgs::Object object) = 0;
 	virtual std::vector<moveit_msgs::Grasp> generate_grasps(std::string object_name) = 0;
 	virtual std::vector<moveit_msgs::Grasp> generate_grasps(moveit_msgs::CollisionObject object) = 0;
 	virtual std::vector<moveit_msgs::Grasp> generate_grasps(ObjectShape shape) = 0;
@@ -29,6 +33,11 @@ public:
 	virtual std::vector<moveit_msgs::PlaceLocation> generate_placeloc_angle_trans(double x, double y, double z) {};
 	virtual std::vector<moveit_msgs::PlaceLocation> generate_place_locations(double x, double y, double z, tf::Quaternion targetOrientation) {};
 	virtual std::vector<moveit_msgs::PlaceLocation> generate_place_locations(double x, double y, double z, double w, double h, double d, tf::Quaternion targetOrientation) {};
+
+	virtual std::string getName() { return name; }
+
+private:
+	std::string name;
 
 };
 

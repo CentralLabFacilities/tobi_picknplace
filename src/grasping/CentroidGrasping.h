@@ -24,6 +24,9 @@ public:
      * ALL COORDINATES MUST BE IN ARM COORDINATES
      */
 
+    virtual std::vector<grasping_msgs::Object> find_objects(bool plan_grasps);
+
+    virtual std::vector<moveit_msgs::Grasp> generate_grasps(grasping_msgs::Object object) {};
     virtual std::vector<moveit_msgs::Grasp> generate_grasps(std::string name) {};
     virtual std::vector<moveit_msgs::Grasp> generate_grasps(ObjectShape shape);
     virtual std::vector<moveit_msgs::Grasp> generate_grasps(moveit_msgs::CollisionObject object);

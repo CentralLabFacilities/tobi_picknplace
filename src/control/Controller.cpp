@@ -45,6 +45,10 @@ ArmPoses Controller::requestPoses() const {
 	return model->getRememberedPoses();
 }
 
+void Controller::requestFindObjects() {
+    model->findObjects();
+}
+
 GraspReturnType Controller::requestGraspObject(ObjectShape obj, bool simulate) {
 	return strategy->graspObject(obj, simulate);
 }

@@ -30,6 +30,10 @@ public:
 
     std::string plannerId;
     std::string graspGen;
+
+    std::string graspNode;
+    std::string fitterNode;
+
     int planningTime;
 
 	std::vector<double> graspRot;

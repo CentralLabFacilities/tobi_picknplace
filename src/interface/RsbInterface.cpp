@@ -264,6 +264,12 @@ public:
         return success;
     }
 
+    boost::shared_ptr<void> findObjects() {
+       ROS_DEBUG_STREAM("Invoked findObjects");
+       listener->requestFindObjects();
+       return boost::shared_ptr<void>();
+    }
+
     boost::shared_ptr<Dictionary> isObjectGraspable(
             boost::shared_ptr<BoundingBox3DFloat> input) {
         ObjectShape objectToGrasp;
@@ -528,6 +534,8 @@ void RsbInterface::init() {
             CREATE_CALLBACK_0(bool, isSomethingInGripper));
     //d->server->registerMethod("calculateGraspablePose", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("setObstacles", CREATE_CALLBACK(string, string, echo));
+    d->server->registerMethod("findObjects",
+            CREATE_CALLBACK_0(void, findObjects));
     d->server->registerMethod("isObjectGraspable",
             CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
                     isObjectGraspable));

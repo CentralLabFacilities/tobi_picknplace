@@ -17,6 +17,9 @@
 #include <moveit/common_planning_interface_objects/common_objects.h>
 #include <boost/algorithm/string.hpp>
 
+#include "../../grasping/CentroidGrasping.h"
+#include "../../interface/AGNIInterface.h"
+
 using namespace std;
 using namespace moveit;
 using namespace actionlib;
@@ -93,9 +96,17 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
     string objId = rosTools.getDefaultObjectName();
 
     // publish collision object NOT FOR h2r5! use agni vis.
-    rosTools.publish_collision_object(objId, obj, 0.5);
+    //rosTools.publish_collision_object(objId, obj, 0.5);
 
-    vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(obj);
+    vector<moveit_msgs::Grasp> grasps;
+
+    if(graspGenerator->getName() == CENTROID_GRASP_NAME) {
+        tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameArm);
+        grasps = graspGenerator->generate_grasps(obj);
+    } else { //agni
+        grasps = graspGenerator->generate_grasps(obj);
+        //todo: do we have to do a transformation?
+    }
 
     //fill up with pre and post grasp postures, model specific!
     for (moveit_msgs::Grasp &i : grasps)
@@ -137,8 +148,16 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
                     - collisionObjectArmCoords.primitives[0].dimensions[0]
                             / 2.0;
 
-    vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(
-            collisionObject);
+    vector<moveit_msgs::Grasp> grasps;
+
+    if(graspGenerator->getName() == CENTROID_GRASP_NAME) {
+        tfTransformer.transform(collisionObject, collisionObject,
+                    ParamReader::getParamReader().frameArm);
+        grasps = graspGenerator->generate_grasps(collisionObject);
+    } else { //agni
+        grasps = graspGenerator->generate_grasps(obj);
+        //todo: do we have to do a transformation?
+    }
 
     //rosTools.publish_grasps_as_markerarray(grasps);
     return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
@@ -228,20 +247,6 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
     return graspGenerator->generate_place_locations(t.xMeter, t.yMeter, t.zMeter,
             obj.widthMeter, obj.heightMeter, obj.depthMeter, orientation);
 
-}
-
-std::vector<moveit_msgs::Grasp> H2R5::generate_grasps_angle_trans(
-        ObjectShape shape) {
-    tfTransformer.transform(shape, shape,
-            ParamReader::getParamReader().frameArm);
-    return graspGenerator->generate_grasps(shape);
-}
-
-std::vector<moveit_msgs::Grasp> H2R5::generate_grasps_angle_trans(
-        moveit_msgs::CollisionObject shape) {
-    tfTransformer.transform(shape, shape,
-            ParamReader::getParamReader().frameArm);
-    return graspGenerator->generate_grasps(shape);
 }
 
 //todo: generalize

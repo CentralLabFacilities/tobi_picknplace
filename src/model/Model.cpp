@@ -13,7 +13,6 @@
 #include "../grasping/CentroidGrasping.h"
 #include "../interface/AGNIInterface.h"
 
-
 using namespace std;
 using namespace moveit;
 using namespace actionlib;
@@ -207,6 +206,10 @@ EefPose Model::getEefPose() const {
     pose.rotation.qz = ps.pose.orientation.z;
     pose.frame = ParamReader::getParamReader().frameArm;
     return pose;
+}
+
+void Model::findObjects() {
+    graspGenerator->find_objects(false);
 }
 
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {

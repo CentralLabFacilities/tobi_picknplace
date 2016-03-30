@@ -8,6 +8,8 @@
   <arg name="groupEe" default="left_hand" /> <!--gripper-->
   <arg name="plannerId" default="RRTConnectkConfigDefault" />
   <arg name="graspGen" default="agni" />  <!--centroid or agni-->
+  <arg name="fitterNode" default="object_fitter" />  <!--name of object fitting node-->
+  <arg name="graspNode" default="grasp_manager" />  <!--name of grasp generation node-->
   <arg name="transitions" default="" />
   <arg name="use_sim" default="false" />
 
@@ -23,8 +25,9 @@
     <param name="groupEe"                 value="$(arg groupEe)" />
     <param name="plannerId"               value="$(arg plannerId)" />
     <param name="graspGen"                value="$(arg graspGen)" />
-    <rosparam file="$(find tobi_picknplace)/config/h2r5.yaml" command="load" />
-    <!--rosparam file="$(find tobi_picknplace)/config/katana.yaml" command="load" /-->
+    <param name="fitterNode"              value="$(arg fitterNode)" />
+    <param name="graspNode"               value="$(arg graspNode)" />
+    <rosparam file="$(find tobi_picknplace)/config/$(arg model).yaml" command="load" />
   </node>
 
 </launch>

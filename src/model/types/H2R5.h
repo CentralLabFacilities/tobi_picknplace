@@ -55,11 +55,6 @@ private:
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
 
-    std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(
-            ObjectShape shape);
-    std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(
-            moveit_msgs::CollisionObject shape);
-
     trajectory_msgs::JointTrajectory generate_close_eef_msg();
     trajectory_msgs::JointTrajectory generate_open_eef_msg();
 

@@ -41,6 +41,8 @@ public:
 	SensorReadings requestGripperSensors() const;
 	bool requestIsSomethingInGripper() const;
 
+	void requestFindObjects();
+
 	GraspReturnType requestGraspObject(ObjectShape obj, bool simulate);
 	GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate);
 	GraspReturnType requestPlaceObject(EefPose obj, bool simulate);
