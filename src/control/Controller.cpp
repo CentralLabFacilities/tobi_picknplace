@@ -10,7 +10,7 @@
 using namespace std;
 
 Controller::Controller(const Model::Ptr& model, const ControlStrategy::Ptr &strategy) :
-		katana(model), strategy(strategy) {
+		model(model), strategy(strategy) {
 }
 
 Controller::~Controller() {
@@ -48,7 +48,11 @@ std::string Controller::requestNearestPose() const{
 }
 
 ArmPoses Controller::requestPoses() const {
-	return katana->getRememberedPoses();
+	return model->getRememberedPoses();
+}
+
+void Controller::requestFindObjects() {
+    model->findObjects();
 }
 
 GraspReturnType Controller::requestGraspObject(ObjectShape obj, bool simulate) {
@@ -70,45 +74,45 @@ GraspReturnType Controller::requestPlaceObject(const string &surface, bool simul
 }
 
 void Controller::requestMoveJointAngles(const vector<double>& angle) {
-	katana->setJointAngles(angle);
+	model->setJointAngles(angle);
 }
 
 int Controller::requestNumJoints() const {
-	return katana->getNumJoints();
+	return model->getNumJoints();
 }
 
 map<string, double> Controller::requestJointAngles() const {
-	return katana->getJointAngles();
+	return model->getJointAngles();
 }
 
 void Controller::requestOpenGripper(bool withSensors) {
-	katana->openGripper(withSensors);
+	model->openEef(withSensors);
 }
 
 void Controller::requestCloseGripper(bool withSensors) {
-	katana->closeGripper(withSensors);
+	model->closeEef(withSensors);
 }
 
 void Controller::requestMotorsOn() {
-	katana->motorsOn();
+	model->motorsOn();
 }
 
 void Controller::requestMotorsOff() {
-	katana->motorsOff();
+	model->motorsOff();
 }
 
 EefPose Controller::requestEefPose() const {
-	return katana->getEefPose();
+	return model->getEefPose();
 }
 
 bool Controller::requestMoveTo(const EefPose& pose, bool linear, bool orientation) {
-	return katana->moveTo(pose, linear, orientation);
+	return model->moveTo(pose, linear, orientation);
 }
 
 SensorReadings Controller::requestGripperSensors() const {
-	return katana->getGripperSensors();
+	return model->getGripperSensors();
 }
 
 bool Controller::requestIsSomethingInGripper() const {
-	return katana->isSomethingInGripper();
+	return model->isSomethingInGripper();
 }

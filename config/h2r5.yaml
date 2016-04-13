@@ -1,0 +1,31 @@
+planningTime: 120
+touchLinks: ["palm_left", "hand_tool_frame_left", "thumb0_left", "thumb1_left", 
+"thumb2_left", "index0_left", "index1_left", "index2_left", "ring0_left", 
+"ring1_left", "ring2_left", "pinky0_left", "pinky1_left", "pinky2_left"] 
+eefPosClosed: [1.84, 2.0944, 3.14159, 3.14159, 3.14159]
+eefPosOpen: [1.84, 0.0, 0.0, 0.0, 0.0]
+graspRot: [-1.5708, 0, 0]
+goalJointTolerance: 0.01 #rad
+goalPositionTolerance: 0.01 #m
+goalOrientationTolerance: 0.5 #r
+graspThroughDistance: 0.0
+approachDesiredDistance: 0.12
+approachMinDistance: 0.09
+liftUpDesiredDistance: 0.08
+liftUpMinDistance: 0.04
+retreatDesiredDistance: 0.07
+retreatMinDistance: 0.03
+anglePitchInc: 0.01 # pi/8
+anglePitchMax: 0.01 # pi/4
+angleYawInc: 0.01 # pi/8
+angleYawMax: 0.01 # pi/4
+transInc: 0.001
+transMax: 0.0
+placeXInc: 0.015
+placeYZInc: 0.04
+placeXMax: 0.08
+placeYMax: 0.10
+placeZMax: 0.17
+heightSkipTop: 0.005
+heightSkipBottom: 0.05
+heightInc: 0.01

@@ -10,17 +10,16 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
-#include "Model.h"
+#include "../Model.h"
 
-class KatanaSimModel: public Model {
+#define KATANA_SIM_NAME "katana_sim"
+
+class KatanaSim: public Model {
 public:
-	typedef boost::shared_ptr<KatanaSimModel> Ptr;
+	typedef boost::shared_ptr<KatanaSim> Ptr;
 
-	KatanaSimModel();
-	virtual ~KatanaSimModel();
-
-	void addListener(ModelListener* listener);
-	void removeListener(ModelListener* listener);
+	KatanaSim();
+	virtual ~KatanaSim();
 
 	virtual std::map<std::string, double> getJointAngles() const;
 	virtual std::vector<std::string> getJointNames() const;
@@ -29,8 +28,8 @@ public:
     virtual void setJointAngles(const std::vector<double> &angles);
 	virtual int getNumJoints() const;
 
-	virtual void openGripper(bool withSensors);
-	virtual void closeGripper(bool withSensors);
+	virtual void openEef(bool withSensors);
+	virtual void closeEef(bool withSensors);
 	virtual void moveToGripper(double target, bool withSensors);
 
 	virtual void motorsOn();

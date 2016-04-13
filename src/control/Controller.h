@@ -11,14 +11,12 @@
 
 #include "../interface/ControlInterface.h"
 #include "../interface/ControlInterfaceListener.h"
-#include "../model/KatanaModel.h"
-#include "../model/ModelListener.h"
 #include "../util/Dijkstra.h"
 #include "../util/Transition.h"
 #include "ControlStrategy.h"
 
 
-class Controller: public ControlInterfaceListener, ModelListener {
+class Controller: public ControlInterfaceListener {
 public:
 	Controller(const Model::Ptr &model, const ControlStrategy::Ptr &strategy);
 	virtual ~Controller();
@@ -44,6 +42,8 @@ public:
 	SensorReadings requestGripperSensors() const;
 	bool requestIsSomethingInGripper() const;
 
+	void requestFindObjects();
+
 	GraspReturnType requestGraspObject(ObjectShape obj, bool simulate);
 	GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate);
 	GraspReturnType requestPlaceObject(EefPose obj, bool simulate);
@@ -53,7 +53,7 @@ public:
 	ArmPoses requestPoses() const;
 
 private:
-	Model::Ptr katana;
+	Model::Ptr model;
 	ControlStrategy::Ptr strategy;
 	std::vector<ControlInterface::Ptr> controlInterfaces;
 

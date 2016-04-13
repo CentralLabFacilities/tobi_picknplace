@@ -7,8 +7,7 @@
 
 #include "control/Controller.h"
 #include "control/ViaPoseStrategy.h"
-#include "model/KatanaModel.h"
-#include "model/KatanaSimModel.h"
+#include "model/ModelFactory.h"
 #include "interface/RsbInterface.h"
 #include "interface/ViewInterface.h"
 #include <boost/program_options.hpp>
@@ -38,6 +37,7 @@ int main(int argc, char **argv) {
 		("debug", "debug mode") //
 		("sim", "simulation mode") //
 		("transitions,t", value<string>(), "file describing possible transitions")  // transitions
+		("model,m", value<string>(), "the effector model to use. Available options: katana, h2r5") //which model to use
 				;
 
 		store(
@@ -64,15 +64,15 @@ int main(int argc, char **argv) {
         ros::console::notifyLoggerLevelsChanged();
     }
 
-	Model::Ptr katana;
-	if (vm.count("sim")) {
-		katana = Model::Ptr(new KatanaSimModel());
-	} else {
-		KatanaModel::Ptr model(new KatanaModel());
-		katana = model;
-	}
+    if (!vm.count("model")) {
+        cerr << "No model specified. Use --model <MODELNAME>. Exiting.." << endl;
+        ros::shutdown();
+        return 0;
+    }
 
-	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(katana));
+	Model::Ptr model = ModelFactory::create(vm["model"].as<string>());
+
+	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));
 	if (vm.count("transitions")) {
 		TransitionsReader reader;
 		vector<Transition> t = reader.read(vm["transitions"].as<string>());
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 	RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
 	ViewInterface::Ptr viewInterface(new ViewInterface());
 
-	Controller controller(katana, strategy);
+	Controller controller(model, strategy);
 	controller.addControlInterface(rsbInterface);
 	controller.addControlInterface(viewInterface);
 

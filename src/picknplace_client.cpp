@@ -29,7 +29,6 @@
 
 using namespace rsb;
 using namespace rsb::patterns;
-using namespace boost;
 using namespace boost::program_options;
 using namespace rst::kinematics;
 using namespace rst::geometry;
@@ -104,7 +103,7 @@ void callServerMethod(int argc, char* argv[]) {
         if (argc != 6 + 2) {
             std::cout << "Too many/few Joints entered! use --help for mor information! argc = " << argc << std::endl;
         } else {
-            shared_ptr<JointAngles> angles(JointAngles::default_instance().New());
+            boost::shared_ptr<JointAngles> angles(JointAngles::default_instance().New());
             float tmp;
             for (int i = 2; i < argc; i++) {
 
@@ -120,13 +119,13 @@ void callServerMethod(int argc, char* argv[]) {
         if (argc != 7 + 2 && argc != 3 + 2) {
             std::cout << "Too many/few coordinates/joints entered! use --help for more information " << argc << std::endl;
         } else {
-            shared_ptr< Pose > pose(Pose::default_instance().New());
+            boost::shared_ptr< Pose > pose(Pose::default_instance().New());
 
             pose->mutable_translation()->set_x(boost::lexical_cast< double >(argv[2]));
             pose->mutable_translation()->set_y(boost::lexical_cast< double >(argv[3]));
             pose->mutable_translation()->set_z(boost::lexical_cast< double >(argv[4]));
 
-            shared_ptr< bool > result;
+            boost::shared_ptr< bool > result;
             if (argc == 7 + 2) {
 				pose->mutable_rotation()->set_qw(boost::lexical_cast< double >(argv[5]));
 				pose->mutable_rotation()->set_qx(boost::lexical_cast< double >(argv[6]));
@@ -151,13 +150,13 @@ void callServerMethod(int argc, char* argv[]) {
         if (argc != 7 + 2) {
             std::cout << "Too many/few coordinates/joints entered! use --help for more information" << std::endl;
         } else {
-            shared_ptr< Pose > pose(Pose::default_instance().New());
+            boost::shared_ptr< Pose > pose(Pose::default_instance().New());
 
             pose->mutable_translation()->set_x(boost::lexical_cast< double >(argv[2]));
             pose->mutable_translation()->set_y(boost::lexical_cast< double >(argv[3]));
             pose->mutable_translation()->set_z(boost::lexical_cast< double >(argv[4]));
 
-            shared_ptr< bool > result;
+            boost::shared_ptr< bool > result;
 			if (argc == 7 + 2) {
 				pose->mutable_rotation()->set_qw(boost::lexical_cast< double >(argv[5]));
 				pose->mutable_rotation()->set_qx(boost::lexical_cast< double >(argv[6]));
@@ -179,8 +178,8 @@ void callServerMethod(int argc, char* argv[]) {
         }
 
     } else if (vm.count("getPosition")) {
-        shared_ptr< void > request;
-        shared_ptr< Pose > result = remoteServer->call< Pose >("getPosition", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< Pose > result = remoteServer->call< Pose >("getPosition", request);
 
         double qw = result->mutable_rotation()->qw();
         double qx = result->mutable_rotation()->qx();
@@ -196,18 +195,18 @@ void callServerMethod(int argc, char* argv[]) {
                 y << " z = " << z << "\n rotation rad: qw=" << qw << " qx=" << qx <<" qy=" << qy <<" qz=" << qz << std::endl;
 
     } else if (vm.count("motorsOff")) {
-        shared_ptr< void > request;
-        shared_ptr< void > result = remoteServer->call< void >("motorsOff", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("motorsOff", request);
 
     } else if (vm.count("motorsOn")) {
-        shared_ptr< void > request;
-        shared_ptr< void > result = remoteServer->call< void >("motorsOn", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("motorsOn", request);
 
     } else if (vm.count("setMovement")) {
 
-        shared_ptr< std::string > request(new std::string(argv[2]));
+        boost::shared_ptr< std::string > request(new std::string(argv[2]));
 
-        shared_ptr< bool > result = remoteServer->call< bool >("setMovement", request);
+        boost::shared_ptr< bool > result = remoteServer->call< bool >("setMovement", request);
         if (*result == true) {
             std::cout << "setMovment success!" << std::endl;
         } else {
@@ -215,9 +214,9 @@ void callServerMethod(int argc, char* argv[]) {
         }
     } else if (vm.count("setPose")) {
 
-        shared_ptr< std::string > request(new std::string(argv[2]));
+        boost::shared_ptr< std::string > request(new std::string(argv[2]));
 
-        shared_ptr< bool > result = remoteServer->call< bool >("setPose", request);
+        boost::shared_ptr< bool > result = remoteServer->call< bool >("setPose", request);
         if (*result == true) {
             std::cout << "setPose success!" << std::endl;
         } else {
@@ -235,11 +234,11 @@ void callServerMethod(int argc, char* argv[]) {
 		
 	} else if (vm.count("findNearestPose")) {
 
-        shared_ptr< void > request; 
-        shared_ptr< std::string > result = remoteServer->call< std::string >("findNearestPose", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< std::string > result = remoteServer->call< std::string >("findNearestPose", request);
     } else if (vm.count("listPoses")) {
-    	shared_ptr< void > request;
-		shared_ptr< rst::generic::Dictionary > result = remoteServer->call< rst::generic::Dictionary >("listPoses", request);
+    	boost::shared_ptr< void > request;
+		boost::shared_ptr< rst::generic::Dictionary > result = remoteServer->call< rst::generic::Dictionary >("listPoses", request);
 
 		std::cout << "list Poses: \n";
 		for (int i = 0; i < result->entries_size(); i++) {
@@ -247,24 +246,24 @@ void callServerMethod(int argc, char* argv[]) {
 		}
 
     }else if (vm.count("openGripper")) {
-        shared_ptr< void > request;
-        shared_ptr< void > result = remoteServer->call< void >("openGripper", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("openGripper", request);
 
     } else if (vm.count("closeGripper")) {
-        shared_ptr< void > request;
-        shared_ptr< void > result = remoteServer->call< void >("closeGripper", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("closeGripper", request);
 
     } else if (vm.count("openGripperWhenTouching")) {
-        shared_ptr< void > request;
-        shared_ptr< void > result = remoteServer->call< void >("openGripperWhenTouching", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("openGripperWhenTouching", request);
 
     } else if (vm.count("closeGripperByForce")) {
-        shared_ptr< void > request;
-        shared_ptr< void > result = remoteServer->call< void >("closeGripperByForce", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("closeGripperByForce", request);
 
     } else if (vm.count("getGripperSensors")) {
-        shared_ptr< void > request;
-        shared_ptr< rst::generic::Dictionary > result = remoteServer->call< rst::generic::Dictionary >("getGripperSensors", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< rst::generic::Dictionary > result = remoteServer->call< rst::generic::Dictionary >("getGripperSensors", request);
         int value;
 
         std::cout << "IR Sensors: \n";
@@ -274,8 +273,8 @@ void callServerMethod(int argc, char* argv[]) {
         }
 
     } else if (vm.count("isSomethingInGripper")) {
-        shared_ptr< void > request;
-        shared_ptr< bool > result = remoteServer->call< bool >("isSomethingInGripper", request);
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< bool > result = remoteServer->call< bool >("isSomethingInGripper", request);
         if (*result == true) {
             std::cout << "Something is in the Gripper!" << std::endl;
         } else {
@@ -286,7 +285,7 @@ void callServerMethod(int argc, char* argv[]) {
             std::cout << "Too many/few coordinates entered-6 (width,height,depth,x,y,z) are expected! use --help for more information " << argc << std::endl;
         } else {
 
-            shared_ptr< rst::geometry::BoundingBox3DFloat> object(new rst::geometry::BoundingBox3DFloat);
+            boost::shared_ptr< rst::geometry::BoundingBox3DFloat> object(new rst::geometry::BoundingBox3DFloat);
 
             object->set_width(boost::lexical_cast< float >(argv[2]));
             object->set_height(boost::lexical_cast< float >(argv[3]));
@@ -301,7 +300,7 @@ void callServerMethod(int argc, char* argv[]) {
             object->mutable_transformation()->mutable_translation()->set_y(boost::lexical_cast<double>(argv[6]));
             object->mutable_transformation()->mutable_translation()->set_z(boost::lexical_cast<double>(argv[7]));
 
-            shared_ptr<rst::generic::Dictionary> result;
+            boost::shared_ptr<rst::generic::Dictionary> result;
             result = remoteServer->call<rst::generic::Dictionary>("isObjectGraspable", object);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
@@ -310,7 +309,7 @@ void callServerMethod(int argc, char* argv[]) {
             std::cout << "Too many/few coordinates entered-6 (width,height,depth,x,y,z) are expected! use --help for more information " << argc << std::endl;
         } else {
 
-            shared_ptr< rst::geometry::BoundingBox3DFloat> object(new rst::geometry::BoundingBox3DFloat);
+            boost::shared_ptr< rst::geometry::BoundingBox3DFloat> object(new rst::geometry::BoundingBox3DFloat);
 
             object->set_width(boost::lexical_cast< float >(argv[2]));
             object->set_height(boost::lexical_cast< float >(argv[3]));
@@ -324,7 +323,7 @@ void callServerMethod(int argc, char* argv[]) {
             object->mutable_transformation()->mutable_translation()->set_y(boost::lexical_cast<double>(argv[6]));
             object->mutable_transformation()->mutable_translation()->set_z(boost::lexical_cast<double>(argv[7]));
 
-            shared_ptr<rst::generic::Dictionary> result;
+            boost::shared_ptr<rst::generic::Dictionary> result;
             result = remoteServer->call<rst::generic::Dictionary>("graspObject", object, 60);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
@@ -333,7 +332,7 @@ void callServerMethod(int argc, char* argv[]) {
             std::cout << "Too many/few coordinates entered-6 (width,height,depth,x,y,z) are expected! use --help for more information " << argc << std::endl;
         } else {
 
-            shared_ptr< rst::geometry::BoundingBox3DFloat> object(new rst::geometry::BoundingBox3DFloat);
+            boost::shared_ptr< rst::geometry::BoundingBox3DFloat> object(new rst::geometry::BoundingBox3DFloat);
 
             object->set_width(boost::lexical_cast< float >(argv[2]));
             object->set_height(boost::lexical_cast< float >(argv[3]));
@@ -348,7 +347,7 @@ void callServerMethod(int argc, char* argv[]) {
             object->mutable_transformation()->mutable_translation()->set_y(boost::lexical_cast<double>(argv[6]));
             object->mutable_transformation()->mutable_translation()->set_z(boost::lexical_cast<double>(argv[7]));
 
-            shared_ptr<rst::generic::Dictionary> result;
+            boost::shared_ptr<rst::generic::Dictionary> result;
             result = remoteServer->call<rst::generic::Dictionary>("graspObjectOrientation", object);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
@@ -356,7 +355,7 @@ void callServerMethod(int argc, char* argv[]) {
         if (argc != 8) {
             std::cout << "Too many/few coordinates entered! use --help for more information " << argc << std::endl;
         } else {
-            shared_ptr< rst::geometry::Pose > object(Pose::default_instance().New());
+            boost::shared_ptr< rst::geometry::Pose > object(Pose::default_instance().New());
 
             object->mutable_translation()->set_x(boost::lexical_cast< double >(argv[2]));
             object->mutable_translation()->set_y(boost::lexical_cast< double >(argv[3]));
@@ -367,7 +366,7 @@ void callServerMethod(int argc, char* argv[]) {
             object->mutable_rotation()->set_qy(boost::lexical_cast< double >(argv[6]));
             object->mutable_rotation()->set_qz(boost::lexical_cast< double >(argv[7]));
 
-            shared_ptr<rst::generic::Dictionary> result;
+            boost::shared_ptr<rst::generic::Dictionary> result;
             result = remoteServer->call<rst::generic::Dictionary>("placeObjectAt", object);
             std::cout << "GraspablePose: \n" << result->DebugString() << std::endl;
         }
@@ -375,7 +374,7 @@ void callServerMethod(int argc, char* argv[]) {
         if (argc != 8) {
             std::cout << "Too many/few coordinates entered! use --help for more information " << argc << std::endl;
         } else {
-            shared_ptr< rst::geometry::Pose > object(Pose::default_instance().New());
+            boost::shared_ptr< rst::geometry::Pose > object(Pose::default_instance().New());
 
             object->mutable_translation()->set_x(boost::lexical_cast< double >(argv[2]));
             object->mutable_translation()->set_y(boost::lexical_cast< double >(argv[3]));
@@ -386,17 +385,17 @@ void callServerMethod(int argc, char* argv[]) {
             object->mutable_rotation()->set_qy(boost::lexical_cast< double >(argv[6]));
             object->mutable_rotation()->set_qz(boost::lexical_cast< double >(argv[7]));
 
-            shared_ptr<rst::generic::Dictionary> result;
+            boost::shared_ptr<rst::generic::Dictionary> result;
             result = remoteServer->call<rst::generic::Dictionary>("placeObjectAtExact", object);
             std::cout << "GraspablePose: \n" << result->DebugString() << std::endl;
         }
     } else if (vm.count("testGrasping")) {
-        shared_ptr<rst::geometry::Shape3DFloat> obstacles(Shape3DFloat::default_instance().New());
+        boost::shared_ptr<rst::geometry::Shape3DFloat> obstacles(Shape3DFloat::default_instance().New());
         rst::geometry::BoundingBox3DFloat* box1 = obstacles->add_box();
         rst::geometry::BoundingBox3DFloat* box2 = obstacles->add_box();
         rst::geometry::BoundingBox3DFloat* box3 = obstacles->add_box();
 
-        shared_ptr<rst::geometry::BoundingBox3DFloat> boxGrasp(BoundingBox3DFloat::default_instance().New());
+        boost::shared_ptr<rst::geometry::BoundingBox3DFloat> boxGrasp(BoundingBox3DFloat::default_instance().New());
 
 
         box1->mutable_transformation()->mutable_translation()->set_x(0);
@@ -446,7 +445,7 @@ void callServerMethod(int argc, char* argv[]) {
         std::cout << "Sending obstacles: \n" << obstacles->DebugString() << std::endl;
         remoteServer->call<rst::generic::Dictionary>("setObstacles", obstacles);
 
-        shared_ptr<rst::generic::Dictionary> result;
+        boost::shared_ptr<rst::generic::Dictionary> result;
         std::cout << "Sending graspObject: \n" << boxGrasp->DebugString() << std::endl;
         result = remoteServer->call<rst::generic::Dictionary>("graspObject", boxGrasp);
         std::cout << "GRT: \n" << result->DebugString() << std::endl;
