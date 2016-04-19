@@ -106,7 +106,8 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
         return grasps;
     }
 
-    grasping_msgs::GraspPlanningActionGoal goal;
+    grasping_msgs::GraspPlanningGoal goal;
+    
 
     goal.object = object;
     goal.group_name = ParamReader::getParamReader().groupArm;
@@ -118,7 +119,7 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
         return grasps;
     }
 
-    grasping_msgs::GraspPlanningActionResult::ConstPtr results = cl_agni->getResult();
+    grasping_msgs::GraspPlanningResult::ConstPtr results = cl_agni->getResult();
 
     if(!results->grasps.size()) {
         ROS_ERROR_STREAM("No grasps found!");

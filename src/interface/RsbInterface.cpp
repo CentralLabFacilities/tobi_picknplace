@@ -218,6 +218,10 @@ public:
         map<string, short> sensorValues = listener->requestGripperSensors();
         return convert(sensorValues);
     }
+    
+    void requestFindObjects() {
+        //TODO
+    }
 
     boost::shared_ptr<Dictionary> listPoses() {
         ROS_DEBUG_STREAM("Invoked listPoses");
@@ -264,8 +268,8 @@ public:
         return success;
     }
 	
-    boost::shared_ptr<bool> planToPose(shared_ptr<string> input) {
-        shared_ptr<bool> success(new bool(false));
+    boost::shared_ptr<bool> planToPose(boost::shared_ptr<string> input) {
+        boost::shared_ptr<bool> success(new bool(false));
         ROS_DEBUG_STREAM("Invoked planToPose");
         *success = listener->requestPlanTo(*input);
         return success;
@@ -519,7 +523,7 @@ void RsbInterface::init() {
     d->server->registerMethod("listPoses",
             CREATE_CALLBACK_0(Dictionary, listPoses));
     d->server->registerMethod("setMovement",
-            CREATE_CALLBACK_1(string, bool, setMovement));
+            CREATE_CALLBACK_1(string, bool, setPose));
     d->server->registerMethod("planToPose",
             CREATE_CALLBACK_1(string, bool, planToPose));
     d->server->registerMethod("setPose",

@@ -36,7 +36,7 @@ public:
 
 	virtual std::string getName() { return name; }
 
-private:
+protected:
 	std::string name;
 
 };

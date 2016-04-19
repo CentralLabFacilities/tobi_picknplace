@@ -223,14 +223,14 @@ void callServerMethod(int argc, char* argv[]) {
             std::cout << "set Pose failed. Check Arguments" << std::endl;
         }
 
-	} else if(vm.count("planToPose")) {
-		shared_ptr< std::string > request(new std::string(argv[2]));
-		shared_ptr< bool > result = remoteServer->call< bool >("planToPose", request);
-		if (*result == true) {
-			std::cout << "plan to pose success!" << std::endl;
-		} else {
-			std::cout << "plan to Pose failed. Check Arguments" << std::endl;
-		}
+    } else if (vm.count("planToPose")) {
+        boost::shared_ptr< std::string > request(new std::string(argv[2]));
+        boost::shared_ptr< bool > result = remoteServer->call< bool >("planToPose", request);
+        if (*result == true) {
+            std::cout << "plan to pose success!" << std::endl;
+        } else {
+            std::cout << "plan to Pose failed. Check Arguments" << std::endl;
+        }
 		
 	} else if (vm.count("findNearestPose")) {
 

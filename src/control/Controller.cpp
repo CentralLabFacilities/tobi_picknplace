@@ -51,7 +51,7 @@ ArmPoses Controller::requestPoses() const {
 	return model->getRememberedPoses();
 }
 
-void Controller::requestFindObjects() {
+void Controller::requestFindObjects() const {
     model->findObjects();
 }
 
