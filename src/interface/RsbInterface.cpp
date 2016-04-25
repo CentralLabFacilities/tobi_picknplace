@@ -461,6 +461,7 @@ public:
 
 RsbInterface::RsbInterface(const string &serverScope) :
         serverScope(serverScope), d(new Private()) {
+	  ROS_INFO_STREAM("RSBInterface startet on: " << serverScope);
     init();
 }
 
