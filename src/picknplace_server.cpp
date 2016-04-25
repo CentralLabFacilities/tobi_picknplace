@@ -26,7 +26,7 @@ variables_map vm;
 int main(int argc, char **argv) {
 
 	cout << "############################" << endl;
-	cout << "## tobi_picknplace_server ##" << endl;
+	cout << "## tobi_picknplace_server2 ##" << endl;
 	cout << "############################" << endl;
 	cout << endl << "init ..." << endl;
 
