@@ -79,6 +79,7 @@ int main(int argc, char **argv) {
 		strategy->setTransitions(t);
 	}
 
+	cout << "RSB Interface" << endl;
 	RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
 	ViewInterface::Ptr viewInterface(new ViewInterface());
 
