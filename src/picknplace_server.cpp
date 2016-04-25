@@ -53,9 +53,10 @@ int main(int argc, char **argv) {
 	if (vm.count("help")) {
 		cout << desc << endl;
 	}
-
+	cout << "ros init" << endl;
 	ros::init(argc, argv, "tobi_picknplace_server");
 
+	  cout << "ros console " << endl;
     ros::console::Level level = ros::console::levels::Info;
     if (vm.count("debug")) {
         level = ros::console::levels::Debug;
@@ -69,9 +70,10 @@ int main(int argc, char **argv) {
         ros::shutdown();
         return 0;
     }
-
+	cout << "creating model" << endl;
 	Model::Ptr model = ModelFactory::create(vm["model"].as<string>());
 
+	cout << "via posestrategy" << endl;
 	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));
 	if (vm.count("transitions")) {
 		TransitionsReader reader;
