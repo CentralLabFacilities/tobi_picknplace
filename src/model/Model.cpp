@@ -20,7 +20,9 @@ using namespace moveit::planning_interface;
 
 Model::Model() {
 	
-	cout << "Model.cpp" << endl;
+	cout << "Model.cpp" << flush;
+	 ROS_ERROR("Model.cpp");
+
   
 	if(ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
 		graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
