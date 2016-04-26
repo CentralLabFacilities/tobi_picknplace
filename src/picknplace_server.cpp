@@ -70,7 +70,8 @@ int main(int argc, char **argv) {
         ros::shutdown();
         return 0;
     }
-	cout << "creating model" << endl;
+	cout << "create model" << endl;
+	cout << vm["model"].as<string>() << endl;
 	Model::Ptr model = ModelFactory::create(vm["model"].as<string>());
 
 	cout << "via posestrategy" << endl;

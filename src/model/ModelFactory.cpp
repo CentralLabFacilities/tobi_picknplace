@@ -22,6 +22,7 @@ Model::Ptr ModelFactory::create(std::string const &type) {
         return KatanaSim::Ptr(new KatanaSim());
 #endif //USE_KATANA
     if(type == H2R5_NAME)
+      std::cout << "create H2R5" << std::endl;
         return H2R5::Ptr(new H2R5());
 
     return Model::Ptr();
