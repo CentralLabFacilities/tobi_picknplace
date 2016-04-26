@@ -211,10 +211,10 @@ bool Katana::isSomethingInGripper() const {
 //					< GRIPPER_THRESHOLD_DISTANCE;
 
     bool gripperClosed = fabs(
-            fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed)
+            fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed[0])
             < 0.05;
     bool gripperNearClosed = fabs(
-            fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed)
+            fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed[0])
             < 0.15;
 
 //	return (force && !gripperClosed) || (distance && !gripperNearClosed);
