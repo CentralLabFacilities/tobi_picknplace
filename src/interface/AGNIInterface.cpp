@@ -15,7 +15,7 @@
 using namespace std;
 
 AGNIInterface::AGNIInterface() {
-
+      cout << "AGNIInterface.cpp" << endl << flush;
     name = AGNI_GRASP_NAME;
 
 	cl_object_fitter.reset(
