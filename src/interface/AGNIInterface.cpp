@@ -25,8 +25,9 @@ AGNIInterface::AGNIInterface() {
 	cl_agni.reset(
 	            new actionlib::SimpleActionClient<grasping_msgs::GraspPlanningAction>(
 	                    nh_, ParamReader::getParamReader().graspNode, false));
-	 cout << "AGNIInterface.cpp now waiting" << endl << flush;
+	 cout << "AGNIInterface.cpp waiting object fitter" << endl << flush;
 	rosTools.waitForAction(cl_object_fitter, ros::Duration(0, 0), ParamReader::getParamReader().fitterNode);
+	cout << "AGNIInterface.cpp waiting cl_agni" << endl << flush;
 	rosTools.waitForAction(cl_agni, ros::Duration(0, 0), ParamReader::getParamReader().graspNode);
 	 cout << "AGNIInterface.cpp finished waiting" << endl << flush;
 
