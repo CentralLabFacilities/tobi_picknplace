@@ -55,6 +55,7 @@ Model::Model() {
     for (vector<string>::const_iterator it = groupEe->getActiveJoints().begin();
             it != groupEe->getActiveJoints().end(); ++it) {
         printf("active joint '%s'\n", it->c_str());
+	ROS_ERROR("active joint '%s'\n", it->c_str());
     }
 
     pickActionClient.reset(
