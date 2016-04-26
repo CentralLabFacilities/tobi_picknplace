@@ -26,7 +26,8 @@ static const double DEFAULT_PLACE_HEIGHT = 0.15;
 Katana::Katana() :
         Model() {
 	  
-	  cout << "Katana.cpp" << endl;
+	  cout << "Katana.cpp" << flush;
+	  ROS_ERROR("Katana.cpp");
 
     sensor_subscriber = nh.subscribe("sensor_states", 1,
             &Katana::sensorCallback, this);
