@@ -19,7 +19,9 @@ using namespace actionlib;
 using namespace moveit::planning_interface;
 
 Model::Model() {
-
+	
+	cout << "Model.cpp" << endl;
+  
 	if(ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
 		graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
 	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME)
