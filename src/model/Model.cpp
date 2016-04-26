@@ -30,6 +30,8 @@ Model::Model() {
 	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME){
 	  cout << "trying to create agniinterface" << endl << flush;
 		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
+		cout << "created agniinterface" << endl << flush;
+		
 	}
 	cout << "Model: sekond param" << endl << flush;
 

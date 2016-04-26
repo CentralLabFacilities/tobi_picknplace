@@ -25,9 +25,10 @@ AGNIInterface::AGNIInterface() {
 	cl_agni.reset(
 	            new actionlib::SimpleActionClient<grasping_msgs::GraspPlanningAction>(
 	                    nh_, ParamReader::getParamReader().graspNode, false));
-
+	 cout << "AGNIInterface.cpp now waiting" << endl << flush;
 	rosTools.waitForAction(cl_object_fitter, ros::Duration(0, 0), ParamReader::getParamReader().fitterNode);
 	rosTools.waitForAction(cl_agni, ros::Duration(0, 0), ParamReader::getParamReader().graspNode);
+	 cout << "AGNIInterface.cpp finished waiting" << endl << flush;
 
 	if (cl_object_fitter->isServerConnected())
 	    ROS_INFO_STREAM("Object fitter server connected!");
