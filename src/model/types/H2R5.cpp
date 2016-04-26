@@ -29,8 +29,6 @@ static const double DEFAULT_PLACE_HEIGHT = 0.15;
 
 H2R5::H2R5() :
         Model() {
-
-	  cout << "H2R5.cpp" << endl;
     string group = ParamReader::getParamReader().groupArm;
     string substr;
 

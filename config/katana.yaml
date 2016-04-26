@@ -7,7 +7,7 @@ eefPosOpen: [0.298]
 graspRot: [0, -1,5708, 0]
 goalJointTolerance: 0.01 #rad
 goalPositionTolerance: 0.02 #m
-goalOrientationTolerance" 0.5 #r
+goalOrientationTolerance: 0.5 #r
 graspThroughDistance: 0.02
 approachDesiredDistance: 0.10
 approachMinDistance: 0.05
