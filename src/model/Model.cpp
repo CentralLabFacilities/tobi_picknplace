@@ -33,6 +33,8 @@ Model::Model() {
 
     for (const string &i : ParamReader::getParamReader().touchLinks)
         touchlinks.push_back(i);
+    
+    ROS_ERROR("Model first for done ");
 
     frame = ParamReader::getParamReader().frameGripper;
 
@@ -47,7 +49,9 @@ Model::Model() {
     groupArm->setGoalJointTolerance(ParamReader::getParamReader().goalJointTolerance);
     groupArm->setGoalPositionTolerance(ParamReader::getParamReader().goalPositionTolerance);
     groupArm->setGoalOrientationTolerance(ParamReader::getParamReader().goalOrientationTolerance);
-
+    
+    ROS_ERROR("Model group_arm done ");
+    
     groupEe = new moveit::planning_interface::MoveGroup(
             ParamReader::getParamReader().groupEef);
     groupEe->startStateMonitor();
