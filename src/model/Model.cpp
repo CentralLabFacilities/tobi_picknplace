@@ -20,21 +20,26 @@ using namespace moveit::planning_interface;
 
 Model::Model() {
 	
-	cout << "Model.cpp" << flush;
+	cout << "Model.cpp" << endl << flush;
 	 ROS_ERROR("Model.cpp");
 
   
 	if(ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
 		graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
+	ROS_ERROR("Model: first param \n");
 	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME)
 		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
+	ROS_ERROR("Model: sekond param \n");
 
     lastHeightAboveTable = 0.0;
+    ROS_ERROR("Model: lastHeght ");
 
-    for (const string &i : ParamReader::getParamReader().touchLinks)
+    for (const string &i : ParamReader::getParamReader().touchLinks){
         touchlinks.push_back(i);
+	ROS_ERROR("touch link for %s \n ", i);
+    }
     
-    ROS_ERROR("Model first for done ");
+    ROS_ERROR("Model first for done \n");
 
     frame = ParamReader::getParamReader().frameGripper;
 
@@ -50,7 +55,7 @@ Model::Model() {
     groupArm->setGoalPositionTolerance(ParamReader::getParamReader().goalPositionTolerance);
     groupArm->setGoalOrientationTolerance(ParamReader::getParamReader().goalOrientationTolerance);
     
-    ROS_ERROR("Model group_arm done ");
+    ROS_ERROR("Model group_arm done \n");
     
     groupEe = new moveit::planning_interface::MoveGroup(
             ParamReader::getParamReader().groupEef);
