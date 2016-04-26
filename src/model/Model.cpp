@@ -26,17 +26,17 @@ Model::Model() {
   
 	if(ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
 		graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
-	ROS_ERROR("Model: first param \n");
+	cout << "Model: first param" << endl << flush;
 	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME)
 		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
-	ROS_ERROR("Model: sekond param \n");
+	cout << "Model: sekond param" << endl << flush;
 
     lastHeightAboveTable = 0.0;
-    ROS_ERROR("Model: lastHeght ");
+    cout << "Model: lastHeght " << endl << flush;
 
     for (const string &i : ParamReader::getParamReader().touchLinks){
         touchlinks.push_back(i);
-	ROS_ERROR("touch link for %s \n ", i);
+	cout << "touch link for" << i << endl << flush;
     }
     
     ROS_ERROR("Model first for done \n");
