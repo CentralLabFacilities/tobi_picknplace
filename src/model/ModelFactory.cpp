@@ -15,6 +15,7 @@
 
 Model::Ptr ModelFactory::create(std::string const &type) {
 
+  std::cout << "Factory" << std::endl;
 #ifdef USE_KATANA
     if(type == KATANA_NAME)
         std::cout << "create Katana" << std::endl;
@@ -24,6 +25,7 @@ Model::Ptr ModelFactory::create(std::string const &type) {
 #endif //USE_KATANA
     if(type == H2R5_NAME)
         return H2R5::Ptr(new H2R5());
+    std::cout << "Found error" << std::endl;
     return Model::Ptr();
 
 }
