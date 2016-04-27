@@ -17,14 +17,17 @@ using namespace std;
 const string OBJECT_NAME = "target_object";
 
 RosTools::RosTools() {
+    
+    ROS_DEBUG("RosTools::RosTools() called");
 
 	object_publisher = nh.advertise<moveit_msgs::CollisionObject>("collision_object", 1);
 	object_att_publisher = nh.advertise<moveit_msgs::AttachedCollisionObject>("attached_collision_object", 1);
 	grasps_marker = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker", 10);
 
 	clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
-
+        
 	std::string service = "/display_grasp";
+        ROS_INFO("Wait for Service: %s", service.c_str());
 	ros::service::waitForService(service);
 	// TODO test if service was found
 	grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
