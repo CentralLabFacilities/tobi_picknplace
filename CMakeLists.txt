@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tobi_picknplace)
 
-option(USE_KATANA "Use the katana gripper" OFF)
+option(WITH_KATANA "Use the katana gripper" OFF)
 option(USE_H2R5 "Use the h2r5 hand" ON)
 
 include(CheckCXXCompilerFlag)
@@ -37,31 +37,36 @@ set(CTKN_CMPNTS
     cmake_modules
 )
 
-if(USE_KATANA)
+if(WITH_KATANA)
+  add_definitions(-DUSE_KATANA=ON)
+endif(WITH_KATANA)
+
+
+if(WITH_KATANA)
     find_package(catkin REQUIRED COMPONENTS
         ${CTKN_CMPNTS}
         katana_msgs
     )
-else(USE_KATANA)
+else(WITH_KATANA)
     find_package(catkin REQUIRED COMPONENTS
         ${CTKN_CMPNTS}
     )
-endif(USE_KATANA)
+endif(WITH_KATANA)
 
 include_directories(${catkin_INCLUDE_DIRS})
 
-if(USE_KATANA)
+if(WITH_KATANA)
     catkin_package(CATKIN_DEPENDS
         ${CTKN_PKGS}
         message_runtime
         katana_msgs
     )
-else(USE_KATANA)
+else(WITH_KATANA)
     catkin_package(CATKIN_DEPENDS 
         message_runtime
         ${CTKN_PKGS}
 )
-endif(USE_KATANA)
+endif(WITH_KATANA)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system filesystem thread)
@@ -105,17 +110,17 @@ set(DEFAULT_FILES
 
 ## Declare a cpp executable
 
-if(USE_KATANA)
+if(WITH_KATANA)
     add_executable(tobi_picknplace_server_node
       ${DEFAULT_FILES}
       src/model/types/Katana.cpp
       src/model/types/KatanaSim.cpp
     )
-else(USE_KATANA)
+else(WITH_KATANA)
     add_executable(tobi_picknplace_server_node
       ${DEFAULT_FILES}
     )
-endif(USE_KATANA)
+endif(WITH_KATANA)
 
 add_executable(tobi_picknplace_client
   src/picknplace_client.cpp
@@ -158,8 +163,8 @@ install(DIRECTORY config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-if(USE_KATANA)
+if(WITH_KATANA)
     file(GLOB_RECURSE KATANA_PROGRAMS scripts/katana-*)
     install(PROGRAMS ${KATANA_PROGRAMS}
       DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
-endif(USE_KATANA)
+endif(WITH_KATANA)
