@@ -92,7 +92,7 @@ ParamReader::ParamReader():private_nh_("~") {
 	private_nh_.param("frameArm", frameArm, FRAME_ARM);
 	private_nh_.param("frameGripper", frameGripper, FRAME_GRIPPER);
 
-	private_nh_.param("eefCmdScope", eefCmdScope, EEF_CMD_SCOPE);
+	//private_nh_.param("eefCmdScope", eefCmdScope, EEF_CMD_SCOPE);
 
     private_nh_.param("plannerId", plannerId, PLANNER_ID);
     private_nh_.param("graspGen", graspGen, GRASP_GENERATOR);
