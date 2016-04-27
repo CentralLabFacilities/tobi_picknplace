@@ -24,7 +24,7 @@ Model::Model() {
   
 	if(ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
 		graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
-	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME){
+	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME)
 		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
     lastHeightAboveTable = 0.0;
 
