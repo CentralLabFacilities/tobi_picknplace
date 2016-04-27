@@ -20,31 +20,18 @@ using namespace moveit::planning_interface;
 
 Model::Model() {
 	
-	cout << "Model.cpp" << endl << flush;
-	 ROS_ERROR("Model.cpp");
 
   
 	if(ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
 		graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
-	cout << "Model: first param" << endl << flush;
 	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME){
-	  cout << "trying to create agniinterface" << endl << flush;
 		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
-		cout << "created agniinterface" << endl << flush;
-		
-	}
-	cout << "Model: sekond param" << endl << flush;
-
     lastHeightAboveTable = 0.0;
-    cout << "Model: lastHeght " << endl << flush;
 
     for (const string &i : ParamReader::getParamReader().touchLinks){
         touchlinks.push_back(i);
-	cout << "touch link for" << i << endl << flush;
     }
     
-    ROS_ERROR("Model first for done \n");
-
     frame = ParamReader::getParamReader().frameGripper;
 
     groupArm = new moveit::planning_interface::MoveGroup(
@@ -58,9 +45,7 @@ Model::Model() {
     groupArm->setGoalJointTolerance(ParamReader::getParamReader().goalJointTolerance);
     groupArm->setGoalPositionTolerance(ParamReader::getParamReader().goalPositionTolerance);
     groupArm->setGoalOrientationTolerance(ParamReader::getParamReader().goalOrientationTolerance);
-    
-    ROS_ERROR("Model group_arm done \n");
-    
+        
     groupEe = new moveit::planning_interface::MoveGroup(
             ParamReader::getParamReader().groupEef);
     groupEe->startStateMonitor();
@@ -68,7 +53,6 @@ Model::Model() {
     for (vector<string>::const_iterator it = groupEe->getActiveJoints().begin();
             it != groupEe->getActiveJoints().end(); ++it) {
         printf("active joint '%s'\n", it->c_str());
-	ROS_ERROR("active joint '%s'\n", it->c_str());
     }
 
     pickActionClient.reset(
