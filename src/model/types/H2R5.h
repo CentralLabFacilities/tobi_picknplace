@@ -16,7 +16,7 @@ public:
     typedef boost::shared_ptr<H2R5> Ptr;
 
     H2R5();
-    virtual ~H2R5();
+    ~H2R5();
 
     virtual MoveResult moveTo(const std::string &poseName, bool plan);
 

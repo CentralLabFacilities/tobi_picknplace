@@ -23,8 +23,7 @@ using namespace moveit::planning_interface;
 
 static const double DEFAULT_PLACE_HEIGHT = 0.15;
 
-Katana::Katana() :
-        Model() {
+Katana::Katana() : Model() {
 	  
 	  cout << "Katana.cpp" << flush;
 	  ROS_ERROR("Katana.cpp");

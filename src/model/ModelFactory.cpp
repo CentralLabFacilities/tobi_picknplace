@@ -19,9 +19,9 @@ Model::Ptr ModelFactory::create(std::string const &type) {
 //#ifdef USE_KATANA
     if(type == KATANA_NAME){
         std::cout << "before Katana" << std::endl;
-	Katana::Ptr katana;
+	Model::Ptr katana;
 	std::cout << "test Katana" << std::endl;
-	katana = Katana::Ptr(new Katana());
+	katana = Model::Ptr(new Katana());
 	std::cout << "create Katana" << std::endl;
         return katana;}
     //if(type == KATANA_SIM_NAME)

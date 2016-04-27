@@ -19,7 +19,7 @@ public:
 	typedef boost::shared_ptr<KatanaSim> Ptr;
 
 	KatanaSim();
-	virtual ~KatanaSim();
+	~KatanaSim();
 
 	virtual std::map<std::string, double> getJointAngles() const;
 	virtual std::vector<std::string> getJointNames() const;
