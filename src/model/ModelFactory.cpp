@@ -25,7 +25,7 @@ Model::Ptr ModelFactory::create(std::string const &type) {
 //#endif //USE_KATANA
     if(type == H2R5_NAME){
         return H2R5::Ptr(new H2R5());}
-    cout << "Load default Model" << endl;
+    std::cout << "Load default Model" << std::endl;
     return Model::Ptr();
 
 }
