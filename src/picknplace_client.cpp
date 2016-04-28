@@ -77,7 +77,8 @@ void callServerMethod(int argc, char* argv[]) {
                 ("placeObjectAt", "places the object at the position given\n"
                 "args: x y z phi theta psi")
                 ("placeObjectAtExact", "places the object at the position given\n"
-                "args: x y z phi theta psi");
+                "args: x y z phi theta psi")
+		("findObjects", "returns graspable Object");
 
         //store(parse_command_line(argc, argv, desc), vm);
 
@@ -449,7 +450,11 @@ void callServerMethod(int argc, char* argv[]) {
         std::cout << "Sending graspObject: \n" << boxGrasp->DebugString() << std::endl;
         result = remoteServer->call<rst::generic::Dictionary>("graspObject", boxGrasp);
         std::cout << "GRT: \n" << result->DebugString() << std::endl;
-    } else {
+    } else if (vm.count("findObjects")) {
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("findObjects", request);
+
+    }  else {
         std::cout << "wrong Arguments! Use: ArmControlRemoteServer --help" << std::endl;
     }
 

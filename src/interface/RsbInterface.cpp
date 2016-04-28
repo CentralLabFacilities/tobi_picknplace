@@ -218,10 +218,6 @@ public:
         map<string, short> sensorValues = listener->requestGripperSensors();
         return convert(sensorValues);
     }
-    
-    void requestFindObjects() {
-        //TODO
-    }
 
     boost::shared_ptr<Dictionary> listPoses() {
         ROS_DEBUG_STREAM("Invoked listPoses");

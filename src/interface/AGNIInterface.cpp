@@ -130,9 +130,21 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(std::string name) {
 
-    grasping_msgs::Object object;
-    object.name = name;
-
+    grasping_msgs::Object object ;
+    vector<grasping_msgs::Object> graspable_objects = find_objects();
+    
+     for (grasping_msgs::Object o: graspable_objects) {
+       if(o.name == name){
+	  object = o;
+	  break;
+       }
+     }
+     
+     if(object.name.empty()){
+	ROS_WARN_STREAM("Item with name" << name << "not found");
+     }
+     
+     
     return generate_grasps(object);
 }
 
@@ -144,6 +156,7 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(
 		ObjectShape shape) {
+     
 	return generate_grasps("dummy");
 }
 
