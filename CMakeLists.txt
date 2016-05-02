@@ -38,6 +38,7 @@ set(CTKN_CMPNTS
 )
 
 if(WITH_KATANA)
+  message(STATUS "Use katana gripper.")
   add_definitions(-DUSE_KATANA=ON)
 endif(WITH_KATANA)
 
