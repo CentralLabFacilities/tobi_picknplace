@@ -11,7 +11,7 @@ using namespace std;
 
 static const string MODEL = "katana";
 
-static const string GROUP_ARM = "left_arm"; 
+static const string GROUP_ARM = "left"; 
 static const string GROUP_END_EFFECTOR = "left_hand";
 
 static const string FRAME_ARM = "base_link";
