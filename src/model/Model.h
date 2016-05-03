@@ -71,6 +71,8 @@ public:
             const std::vector<moveit_msgs::Grasp> &grasps,
             double tableHeightArmCoords, bool simulate,
             const std::string &startPose);
+    
+    virtual void graspZero();
 
     virtual GraspReturnType placeObject(ObjectShape obj, bool simulate,
             const std::string &startPose = "") = 0;

@@ -214,6 +214,10 @@ void Model::findObjects() {
     graspGenerator->find_objects(false);
 }
 
+void Model::graspZero() {
+    graspGenerator->generate_grasps("0");
+}
+
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
 
     //ROS_DEBUG("Trying to pick object %s on %s (height: %.3f).", obj, surface, tableHeightArmCoords);

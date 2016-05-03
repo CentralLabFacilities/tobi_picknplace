@@ -454,7 +454,11 @@ void callServerMethod(int argc, char* argv[]) {
         boost::shared_ptr< void > request;
         boost::shared_ptr< void > result = remoteServer->call< void >("findObjects", request);
 
-    }  else {
+    }  else if (vm.count("graspZero")) {
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("graspZero", request);
+
+    } else {
         std::cout << "wrong Arguments! Use: ArmControlRemoteServer --help" << std::endl;
     }
 

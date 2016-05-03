@@ -147,7 +147,7 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(std::string name) {
 	ROS_WARN_STREAM("Item with name" << name << "not found");
      }**/
      
-     
+    object.name = name;
     return generate_grasps(object);
 }
 

@@ -321,6 +321,13 @@ public:
         }
         return convert(grt);
     }
+    
+     boost::shared_ptr<void> graspZero() {
+       
+        ROS_DEBUG_STREAM("Invoked graspZero \n");
+	listener->requestGraspZero();
+       return boost::shared_ptr<void>();
+    }
 
     boost::shared_ptr<Dictionary> placeObject(
             boost::shared_ptr<rst::geometry::Pose> input) {
@@ -546,6 +553,8 @@ void RsbInterface::init() {
     //d->server->registerMethod("setObstacles", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("findObjects",
             CREATE_CALLBACK_0(void, findObjects));
+    d->server->registerMethod("graspZero",
+            CREATE_CALLBACK_0(void, graspZero));
     d->server->registerMethod("isObjectGraspable",
             CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
                     isObjectGraspable));

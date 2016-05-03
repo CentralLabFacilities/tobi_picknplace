@@ -73,6 +73,10 @@ GraspReturnType Controller::requestPlaceObject(const string &surface, bool simul
     return strategy->placeObject(surface, simulate);
 }
 
+void Controller::requestGraspZero() const{
+    model->graspZero();
+}
+
 void Controller::requestMoveJointAngles(const vector<double>& angle) {
 	model->setJointAngles(angle);
 }

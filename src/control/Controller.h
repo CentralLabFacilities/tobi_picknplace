@@ -43,7 +43,8 @@ public:
 	bool requestIsSomethingInGripper() const;
 
 	void requestFindObjects() const;
-
+	void requestGraspZero() const;
+	
 	GraspReturnType requestGraspObject(ObjectShape obj, bool simulate);
 	GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate);
 	GraspReturnType requestPlaceObject(EefPose obj, bool simulate);
