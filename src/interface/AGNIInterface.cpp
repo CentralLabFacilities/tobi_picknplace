@@ -132,36 +132,34 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
 }
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(std::string name) {
-
+  
+    vector<moveit_msgs::Grasp> grasps;
     grasping_msgs::Object object ;
-    /**vector<grasping_msgs::Object> graspable_objects = find_objects();
     
+    if(!rosTools.getGraspingObjectByName(name, &object)){
+      ROS_ERROR_STREAM("No CollisionObject matching with given name");
+      return grasps;
+    }
     
-    for (grasping_msgs::Object o: graspable_objects) {
-       if(o.name == name){
-	  object = o;
-	  break;
-       }
-     }
-     
-     if(object.name.empty()){
-	ROS_WARN_STREAM("Item with name" << name << "not found");
-     }**/
-     
-    object.name = name;
-    return generate_grasps(object);
+    grasps = generate_grasps(object);
+    
+    return grasps;
 }
 
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(
 		moveit_msgs::CollisionObject object) {
-    return generate_grasps(object.id);
+  
+    return generate_grasps(rosTools.convertMoveItToGrasping(object));
+    
 }
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(
 		ObjectShape shape) {
-     
+  
+	ROS_ERROR_STREAM("ObjectShape not supported anymore. Creating grasps for dummy");
 	return generate_grasps("dummy");
+	
 }
 
 

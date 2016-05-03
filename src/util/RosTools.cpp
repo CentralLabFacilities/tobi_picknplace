@@ -273,3 +273,34 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
     }
     return false;
 }
+
+grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionObject obj){
+  
+  grasping_msgs::Object msg;
+  ParamReader& params = ParamReader::getParamReader();
+  
+  
+  msg.name = obj.id;
+  msg.mesh_poses = obj.mesh_poses;
+  msg.primitives = obj.primitives;
+  msg.meshes = obj.meshes;
+  msg.primitive_poses = obj.primitive_poses;
+  
+  return msg;
+
+}
+
+bool RosTools::getGraspingObjectByName(const std::string name, grasping_msgs::Object *msg) {
+    boost::mutex::scoped_lock lock(sceneMutex);
+    grasping_msgs::Object msg_tmp;
+    vector<moveit_msgs::CollisionObject>::iterator colObjIt;
+    for (colObjIt = currentPlanningScene.world.collision_objects.begin();
+            colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
+        if (colObjIt->id == name) {
+            msg_tmp = convertMoveItToGrasping(*colObjIt);
+	    msg = &msg_tmp;
+            return true;
+        }
+    }
+    return false;
+}

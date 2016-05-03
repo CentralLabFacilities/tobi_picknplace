@@ -53,8 +53,11 @@ public:
 	void clear_octomap(double sleep_seconds = 1.0);
 
 	std::string getDefaultObjectName() const;
+	
+	grasping_msgs::Object convertMoveItToGrasping(moveit_msgs::CollisionObject obj);
 
 	bool getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj);
+	bool getGraspingObjectByName(const std::string name, grasping_msgs::Object *msg);
 
 	template<typename T>
 	void waitForAction(const T &action, const ros::Duration &wait_for_server,
