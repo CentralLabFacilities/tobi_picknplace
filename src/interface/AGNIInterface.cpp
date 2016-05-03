@@ -82,6 +82,7 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
             ROS_WARN_STREAM("No grasps for object " << obj.object.name << " found");
         } else{
 	  rosTools.publish_collision_object(obj.object);
+	  generate_grasps(obj.object);
 	}
 	
     }
