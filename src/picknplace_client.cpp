@@ -78,7 +78,8 @@ void callServerMethod(int argc, char* argv[]) {
                 "args: x y z phi theta psi")
                 ("placeObjectAtExact", "places the object at the position given\n"
                 "args: x y z phi theta psi")
-		("findObjects", "returns graspable Object");
+		("findObjects", "returns graspable Object")
+		("graspZero", "grasps object with id 0");
 
         //store(parse_command_line(argc, argv, desc), vm);
 
