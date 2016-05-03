@@ -127,6 +127,7 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
         return grasps;
     }
 
+    rosTools.display_grasps(results->grasps);
     return results->grasps;
 
 }
