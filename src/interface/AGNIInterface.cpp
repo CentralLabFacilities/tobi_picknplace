@@ -77,6 +77,7 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     }
 
     for(grasping_msgs::GraspableObject obj: results->objects) {
+	ROS_ERROR_STREAM("UUID " << obj.object.name << " .\n ");
         graspable_objects.push_back(obj.object);
         if(plan_grasps && !obj.grasps.size()) {
             ROS_WARN_STREAM("No grasps for object " << obj.object.name << " found");
@@ -86,7 +87,6 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");
 
     display_primitives(results->objects);
-
     return graspable_objects;
 }
 
