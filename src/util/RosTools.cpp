@@ -10,6 +10,7 @@
 
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
+#include <grasping_msgs/Object.h>
 #include <grasp_viewer/DisplayGrasps.h>
 
 using namespace std;
@@ -77,6 +78,38 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 		ROS_WARN_STREAM("unknown error code: " << errorCode.val);
 		return GraspReturnType::FAIL;
 	}
+}
+void RosTools::publish_collision_object(grasping_msgs::Object msg) {
+  
+  ParamReader& params = ParamReader::getParamReader();
+  moveit_msgs::CollisionObject target_object;
+  
+  target_object.id = msg.name;
+  target_object.header.frame_id = params.frameArm;
+  target_object.operation = target_object.REMOVE;
+  object_publisher.publish(target_object);
+	
+  moveit_msgs::AttachedCollisionObject attached_object;
+  attached_object.object.id = msg.name;
+  attached_object.object.operation = attached_object.object.REMOVE;
+  object_att_publisher.publish(attached_object);
+    
+  ros::spinOnce();
+  
+  target_object.header.frame_id = params.frameArm;
+  target_object.primitives = msg.primitives;
+  target_object.id = msg.name;
+  target_object.primitive_poses = msg.primitive_poses;
+  target_object.mesh_poses = msg.mesh_poses;
+  target_object.meshes = msg.meshes;
+  target_object.operation = target_object.ADD;
+  
+  object_publisher.publish(target_object);
+  
+  ros::spinOnce();
+
+  clear_octomap(0.1);
+
 }
 
 

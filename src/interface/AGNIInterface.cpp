@@ -77,11 +77,13 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     }
 
     for(grasping_msgs::GraspableObject obj: results->objects) {
-	ROS_ERROR_STREAM("UUID " << obj.object.name << " .\n ");
         graspable_objects.push_back(obj.object);
         if(plan_grasps && !obj.grasps.size()) {
             ROS_WARN_STREAM("No grasps for object " << obj.object.name << " found");
-        }
+        } else{
+	  rosTools.publish_collision_object(obj.object);
+	}
+	
     }
 
     ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");
@@ -131,9 +133,10 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(std::string name) {
 
     grasping_msgs::Object object ;
-    vector<grasping_msgs::Object> graspable_objects = find_objects();
+    /**vector<grasping_msgs::Object> graspable_objects = find_objects();
     
-     for (grasping_msgs::Object o: graspable_objects) {
+    
+    for (grasping_msgs::Object o: graspable_objects) {
        if(o.name == name){
 	  object = o;
 	  break;
@@ -142,7 +145,7 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(std::string name) {
      
      if(object.name.empty()){
 	ROS_WARN_STREAM("Item with name" << name << "not found");
-     }
+     }**/
      
      
     return generate_grasps(object);

@@ -12,6 +12,7 @@
 #include <moveit_msgs/PlaceLocation.h>
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit/move_group_interface/move_group.h>
+#include <grasping_msgs/Object.h>
 #include "../model/ModelTypes.h"
 #include "TransformerTF.h"
 
@@ -39,6 +40,7 @@ public:
 	MoveResult moveResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 	GraspReturnType::GraspResult graspResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 
+	void publish_collision_object(grasping_msgs::Object msg);
 	void publish_collision_object(const std::string &id, ObjectShape shape, double sleep_seconds);
 	void remove_collision_object();
 	void detach_collision_object();
