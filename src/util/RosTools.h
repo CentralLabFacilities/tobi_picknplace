@@ -32,6 +32,8 @@ private:
 
     mutable boost::mutex sceneMutex;
     moveit_msgs::PlanningScene currentPlanningScene;
+    
+    int maxid = 0;
 
 public:
 	RosTools();
@@ -40,6 +42,7 @@ public:
 	MoveResult moveResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 	GraspReturnType::GraspResult graspResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 
+	void clear_collision_objects();
 	void publish_collision_object(grasping_msgs::Object msg);
 	void publish_collision_object(const std::string &id, ObjectShape shape, double sleep_seconds);
 	void remove_collision_object();

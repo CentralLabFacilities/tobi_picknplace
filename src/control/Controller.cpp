@@ -55,6 +55,13 @@ void Controller::requestFindObjects() const {
     model->findObjects();
 }
 
+//void Controller::requestGraspObjectByName(std::string name) {
+
+//}
+
+void Controller::requestGenerateAllGrasps() const {
+  model->generateAllGrasps();
+}
 GraspReturnType Controller::requestGraspObject(ObjectShape obj, bool simulate) {
 	return strategy->graspObject(obj, simulate);
 }

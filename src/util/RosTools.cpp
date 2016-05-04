@@ -83,12 +83,11 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ParamReader& params = ParamReader::getParamReader();
   moveit_msgs::CollisionObject target_object;
-  
-  target_object.id = msg.name;
-  target_object.header.frame_id = params.frameArm;
-  target_object.operation = target_object.REMOVE;
-  object_publisher.publish(target_object);
-	
+  int objectid = boost::lexical_cast<int>(msg.name);
+  if(maxid < objectid)
+  {
+    maxid = objectid;
+  }
   moveit_msgs::AttachedCollisionObject attached_object;
   attached_object.object.id = msg.name;
   attached_object.object.operation = attached_object.object.REMOVE;
@@ -110,6 +109,19 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 
   clear_octomap(0.1);
 
+}
+
+void RosTools::clear_collision_objects() {
+  
+  ParamReader& params = ParamReader::getParamReader();
+  moveit_msgs::CollisionObject target_object;
+  for(int i; i < maxid; i++)
+  {
+  target_object.id = i;
+  target_object.header.frame_id = params.frameArm;
+  target_object.operation = target_object.REMOVE;
+  object_publisher.publish(target_object);
+  }
 }
 
 

@@ -75,22 +75,32 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
         ROS_ERROR_STREAM("No objects found");
         return graspable_objects;
     }
-
+    rosTools.clear_collision_objects();
     for(grasping_msgs::GraspableObject obj: results->objects) {
         graspable_objects.push_back(obj.object);
         if(plan_grasps && !obj.grasps.size()) {
             ROS_WARN_STREAM("No grasps for object " << obj.object.name << " found");
         } else{
 	  rosTools.publish_collision_object(obj.object);
-	  generate_grasps(obj.object);
 	}
 	
     }
 
     ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");
 
-    display_primitives(results->objects);
     return graspable_objects;
+}
+
+void AGNIInterface::generateAllGrasps(){
+    grasping_msgs::FindGraspableObjectsGoal goal;
+    goal.plan_grasps = false;
+
+    cl_object_fitter->sendGoal(goal);
+    grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
+    
+    for(grasping_msgs::GraspableObject obj: results->objects) {
+      generate_grasps(obj.object);
+    } 
 }
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object object) {

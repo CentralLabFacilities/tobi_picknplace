@@ -79,7 +79,8 @@ void callServerMethod(int argc, char* argv[]) {
                 ("placeObjectAtExact", "places the object at the position given\n"
                 "args: x y z phi theta psi")
 		("findObjects", "returns graspable Object")
-		("graspZero", "grasps object with id 0");
+		("generateAllGrasps", "generate the Grasps for all Objects")
+		("graspObjectByName", "grasp the object with the name");
 
         //store(parse_command_line(argc, argv, desc), vm);
 
@@ -455,11 +456,18 @@ void callServerMethod(int argc, char* argv[]) {
         boost::shared_ptr< void > request;
         boost::shared_ptr< void > result = remoteServer->call< void >("findObjects", request);
 
-    }  else if (vm.count("graspZero")) {
+    }  else if (vm.count("graspObjectByName")) {
+      if (argc != 3) {
+            std::cout << "Too many/few coordinates entered! use --help for more information " << argc << std::endl;
+        } else {
+        boost::shared_ptr< std::string > request(new std::string(argv[2]));
+        boost::shared_ptr< void > result = remoteServer->call< string >("graspObject", request);
+	}
+    }  else if (vm.count("generateAllGrasps")) {
         boost::shared_ptr< void > request;
-        boost::shared_ptr< void > result = remoteServer->call< void >("graspZero", request);
+        boost::shared_ptr< void > result = remoteServer->call< void >("generateAllGrasps", request);
 
-    } else {
+    }else {
         std::cout << "wrong Arguments! Use: ArmControlRemoteServer --help" << std::endl;
     }
 

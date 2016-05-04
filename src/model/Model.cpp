@@ -214,9 +214,15 @@ void Model::findObjects() {
     graspGenerator->find_objects(false);
 }
 
-void Model::graspZero() {
-    graspGenerator->generate_grasps("0");
+void Model::generateAllGrasps(){
+  graspGenerator->generateAllGrasps();
 }
+
+void Model::graspZero()
+{
+  graspGenerator->generate_grasps("0");
+}
+
 
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
 

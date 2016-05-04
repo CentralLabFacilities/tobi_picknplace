@@ -73,6 +73,8 @@ public:
             const std::string &startPose);
     
     virtual void graspZero();
+    
+    virtual void generateAllGrasps();
 
     virtual GraspReturnType placeObject(ObjectShape obj, bool simulate,
             const std::string &startPose = "") = 0;
