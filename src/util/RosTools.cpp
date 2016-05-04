@@ -294,6 +294,7 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
     boost::mutex::scoped_lock lock(sceneMutex);
     grasping_msgs::Object msg_tmp;
     vector<moveit_msgs::CollisionObject>::iterator colObjIt;
+    std::cout << "Collision objects with size: " << currentPlanningScene.world.collision_objects.size() << "\n" <<  std::endl;
     for (colObjIt = currentPlanningScene.world.collision_objects.begin();
             colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
 	std::cout << "colObjIt ID: " << colObjIt->id << "with name: " << name <<  "\n" << std::endl;
