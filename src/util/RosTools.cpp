@@ -277,8 +277,8 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
 grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionObject obj){
   
   grasping_msgs::Object msg;
+  double a = 1.9;
   ParamReader& params = ParamReader::getParamReader();
-  
   
   msg.name = obj.id;
   msg.mesh_poses = obj.mesh_poses;
@@ -290,12 +290,13 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
 
 }
 
-bool RosTools::getGraspingObjectByName(const std::string name, grasping_msgs::Object *msg) {
+bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::Object *msg) {
     boost::mutex::scoped_lock lock(sceneMutex);
     grasping_msgs::Object msg_tmp;
     vector<moveit_msgs::CollisionObject>::iterator colObjIt;
     for (colObjIt = currentPlanningScene.world.collision_objects.begin();
             colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
+	std::cout << "colObjIt ID: " << colObjIt->id << "with name: " << name <<  "\n" << std::endl;
         if (colObjIt->id == name) {
             msg_tmp = convertMoveItToGrasping(*colObjIt);
 	    msg = &msg_tmp;

@@ -138,7 +138,8 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(std::string name) {
     grasping_msgs::Object object ;
     
     if(!rosTools.getGraspingObjectByName(name, &object)){
-      ROS_ERROR_STREAM("No CollisionObject matching with given name");
+      
+      ROS_ERROR_STREAM("No CollisionObject matching with name: " << name);
       return grasps;
     }
     

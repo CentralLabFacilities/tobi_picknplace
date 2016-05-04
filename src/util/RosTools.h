@@ -57,7 +57,7 @@ public:
 	grasping_msgs::Object convertMoveItToGrasping(moveit_msgs::CollisionObject obj);
 
 	bool getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj);
-	bool getGraspingObjectByName(const std::string name, grasping_msgs::Object *msg);
+	bool getGraspingObjectByName(const std::string &name, grasping_msgs::Object *msg);
 
 	template<typename T>
 	void waitForAction(const T &action, const ros::Duration &wait_for_server,
