@@ -113,10 +113,11 @@ void RosTools::clear_collision_objects() {
   
   ParamReader& params = ParamReader::getParamReader();
   moveit_msgs::CollisionObject target_object;
+  char buffer[2];
   
   for(int i = 0; i < maxid; i++)
   {
-    target_object.id = i;
+    target_object.id = std::to_string(i);
     target_object.header.frame_id = params.frameArm;
     target_object.operation = target_object.REMOVE;
     std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
