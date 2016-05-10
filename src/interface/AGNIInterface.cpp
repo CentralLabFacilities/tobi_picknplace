@@ -102,11 +102,16 @@ void AGNIInterface::generateAllGrasps(){
     ROS_ERROR_STREAM("Generate all Grasps for Debugging");
     
     vector<grasping_msgs::Object> graspable_objects = find_objects();
-    
+    vector<moveit_msgs::Grasp> graps;
     for(grasping_msgs::Object obj: graspable_objects) {
       ROS_ERROR_STREAM("Generate grasp");
-      rosTools.display_grasps(generate_grasps(obj));
-    } 
+      vector<moveit_msgs::Grasp> grasp = generate_grasps(obj);
+       for(moveit_msgs::Grasp graspv2: grasp) {
+	 ROS_ERROR_STREAM("Push Grasp back");
+	 graps.push_back(graspv2);
+       }
+    }
+    rosTools.display_grasps(graps);
 }
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object object) {
