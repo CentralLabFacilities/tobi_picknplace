@@ -117,11 +117,10 @@ void RosTools::clear_collision_objects() {
   
   for(int i = 0; i < maxid; i++)
   {
-    string id = std::to_string(i);
-    target_object.id = "test";
+    target_object.id = std::to_string(i);
     target_object.header.frame_id = params.frameArm;
     target_object.operation = target_object.REMOVE;
-    std::cout << "removed object " << target_object.id << "also known as" << id << " from planning scene" << std::endl;
+    std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
     object_publisher.publish(target_object);
     
   }
