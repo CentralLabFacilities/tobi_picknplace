@@ -105,7 +105,7 @@ void AGNIInterface::generateAllGrasps(){
     vector<moveit_msgs::Grasp> graps;
     for(grasping_msgs::Object obj: graspable_objects) {
       ROS_ERROR_STREAM("Generate grasp");
-      moveit_msgs::Grasp grasp = generate_grasps(obj);
+      vector<moveit_msgs::Grasp> grasp = generate_grasps(obj);
        for(moveit_msgs::Grasp graspv2: grasp) {
 	 ROS_ERROR_STREAM("Push Grasp back");
 	 graps.push_back(graspv2);
