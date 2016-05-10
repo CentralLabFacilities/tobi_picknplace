@@ -461,7 +461,7 @@ void callServerMethod(int argc, char* argv[]) {
             std::cout << "Too many/few coordinates entered! use --help for more information " << argc << std::endl;
         } else {
         boost::shared_ptr< std::string > request(new std::string(argv[2]));
-        boost::shared_ptr< void > result = remoteServer->call< string >("graspObject", request);
+        boost::shared_ptr< void > result = remoteServer->call< string >("graspObjectByName", request);
 	}
     }  else if (vm.count("generateAllGrasps")) {
         boost::shared_ptr< void > request;

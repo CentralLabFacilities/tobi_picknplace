@@ -55,9 +55,9 @@ void Controller::requestFindObjects() const {
     model->findObjects();
 }
 
-//void Controller::requestGraspObjectByName(std::string name) {
-
-//}
+void Controller::requestGraspObjectByName(std::string &name) {
+    model->graspObjectByName(name);
+}
 
 void Controller::requestGenerateAllGrasps() const {
   model->generateAllGrasps();

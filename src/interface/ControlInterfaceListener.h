@@ -47,9 +47,9 @@ public:
 	virtual GraspReturnType requestPlaceObject(ObjectShape obj, bool simulate) = 0;
 	virtual GraspReturnType requestPlaceObject(const std::string &surface, bool simulate) = 0;
 	virtual std::string requestNearestPose() const = 0;
-    virtual ArmPoses requestPoses() const = 0;
-    //virtual void requestGraspObjectByName(const std::string &name) = 0;
-    virtual void requestGenerateAllGrasps() const = 0;
+	virtual ArmPoses requestPoses() const = 0;
+	virtual void requestGenerateAllGrasps() const = 0;
+	virtual void requestGraspObjectByName(std::string &name) = 0;
 };
 
 class EmptyControlInterfaceListener: public ControlInterfaceListener {
@@ -76,8 +76,10 @@ public:
         
         void requestGraspZero() const{}
         
-        //void requestGraspObjectByName(const std::string &name) const{};
-        void requestGenerateAllGrasps() const{};
+        void requestGraspObjectByName(std::string &name) {}
+        void requestGenerateAllGrasps() const{}
+	
+
 
 
     GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate){return GraspReturnType();}

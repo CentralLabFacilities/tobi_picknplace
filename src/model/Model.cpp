@@ -223,6 +223,11 @@ void Model::graspZero()
   graspGenerator->generate_grasps("0");
 }
 
+void Model::graspObjectByName(std::string name)
+{
+  graspGenerator->graspObjectByName(name);
+}
+
 
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
 

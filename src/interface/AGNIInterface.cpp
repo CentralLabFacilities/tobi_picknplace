@@ -119,6 +119,12 @@ void AGNIInterface::generateAllGrasps(){
     rosTools.display_grasps(graps);
 }
 
+void AGNIInterface::graspObjectByName(std::string name){
+  
+  vector<moveit_msgs::Grasp> grasp = generate_grasps(name);
+  
+}
+
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object object) {
 
     vector<moveit_msgs::Grasp> grasps;

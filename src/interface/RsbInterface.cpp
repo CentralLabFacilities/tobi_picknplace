@@ -277,11 +277,11 @@ public:
        return boost::shared_ptr<void>();
     }
     
-    /**boost::shared_ptr<void> graspObjectByName(boost::shared_ptr<string> name) {
+    boost::shared_ptr<void> graspObjectByName(boost::shared_ptr<string> name) {
        ROS_DEBUG_STREAM("Invoked graspObjectByName");
        listener->requestGraspObjectByName(*name);
        return boost::shared_ptr<void>();
-    }**/
+    }
     
     boost::shared_ptr<void> generateAllGrasps() {
        ROS_DEBUG_STREAM("Invoked generateAllGrasps");
@@ -567,8 +567,8 @@ void RsbInterface::init() {
             CREATE_CALLBACK_0(void, findObjects));
     d->server->registerMethod("generateAllGrasps",
             CREATE_CALLBACK_0(void, generateAllGrasps));
-   // d->server->registerMethod("graspObjectByName",
-    //        CREATE_CALLBACK_1(string, void, graspObjectByName));
+    d->server->registerMethod("graspObjectByName",
+            CREATE_CALLBACK_1(string, void, graspObjectByName));
     d->server->registerMethod("isObjectGraspable",
             CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
                     isObjectGraspable));

@@ -44,7 +44,7 @@ public:
 
 	void requestFindObjects() const;
 	void requestGraspZero() const;
-	//void requestGraspObjectByName(std::string  &name) const;
+	void requestGraspObjectByName(std::string &name);
 	void requestGenerateAllGrasps() const;
 	
 	GraspReturnType requestGraspObject(ObjectShape obj, bool simulate);
