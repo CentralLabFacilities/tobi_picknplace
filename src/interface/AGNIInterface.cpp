@@ -90,7 +90,7 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
 
     rosTools.setMaxID(graspable_objects.size());
     
-    std::cout << "added " << graspable_objects.size() << " to the planning scene" << std::endl; 
+    std::cout << "added " << graspable_objects.size() << " objects to the planning scene" << std::endl; 
 
     ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");
 

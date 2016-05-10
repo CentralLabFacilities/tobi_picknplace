@@ -109,17 +109,20 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 
 void RosTools::clear_collision_objects() {
   
+  std::cout << "Invoked clear_collision_objects. Removing " << (maxid - 1) << " objects" << std::endl;
+  
   ParamReader& params = ParamReader::getParamReader();
   moveit_msgs::CollisionObject target_object;
-  for(int i = 0; i < (maxid - 1); i++)
+  
+  for(int i = 0; i < maxid; i++)
   {
-    
-  target_object.id = i;
-  target_object.header.frame_id = params.frameArm;
-  target_object.operation = target_object.REMOVE;
-  object_publisher.publish(target_object);
-  std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
+    target_object.id = i;
+    target_object.header.frame_id = params.frameArm;
+    target_object.operation = target_object.REMOVE;
+    object_publisher.publish(target_object);
+    std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
   }
+  
 }
 
 
