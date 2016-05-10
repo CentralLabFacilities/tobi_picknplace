@@ -109,23 +109,19 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 
 void RosTools::clear_collision_objects() {
   
-  std::cout << "Invoked clear_collision_objects. Removing " << (maxid - 1) << " objects" << std::endl;
+    std::cout << "Invoked clear_collision_objects. Removing  objects" << std::endl;
   
-  ParamReader& params = ParamReader::getParamReader();
-  moveit_msgs::CollisionObject target_object;
-  char buffer[2];
-  
-  for(int i = 0; i < maxid; i++)
-  {
-    target_object.id = std::to_string(i);
+    ParamReader& params = ParamReader::getParamReader();
+    moveit_msgs::CollisionObject target_object;
+   
+    target_object.id = "isegal";
     target_object.header.frame_id = params.frameArm;
-    target_object.operation = target_object.REMOVE;
+    target_object.operation = 3;
     std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
     object_publisher.publish(target_object);
-    
-  }
+
   
-  ros::spinOnce();
+    ros::spinOnce();
 }
 
 
@@ -261,9 +257,6 @@ bool RosTools::has_attached_object() {
 
 }
 
-void RosTools::setMaxID(int size){
-	maxid = size;
-}
 
 void RosTools::clear_octomap(double sleep_seconds) {
 	std_srvs::Empty srv;
