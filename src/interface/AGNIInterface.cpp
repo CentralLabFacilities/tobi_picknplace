@@ -75,7 +75,9 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
         ROS_ERROR_STREAM("No objects found");
         return graspable_objects;
     }
+    
     rosTools.clear_collision_objects();
+    
     for(grasping_msgs::GraspableObject obj: results->objects) {
         graspable_objects.push_back(obj.object);
         if(plan_grasps && !obj.grasps.size()) {
@@ -85,6 +87,10 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
 	}
 	
     }
+
+    rosTools.setMaxID(graspable_objects.size());
+    
+    std::cout << "added " << graspable_objects.size() << " to the planning scene" << std::endl; 
 
     ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");
 

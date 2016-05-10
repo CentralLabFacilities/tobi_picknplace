@@ -83,12 +83,8 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ParamReader& params = ParamReader::getParamReader();
   moveit_msgs::CollisionObject target_object;
-  int objectid = boost::lexical_cast<int>(msg.name);
-  if(maxid < objectid)
-  {
-    maxid = objectid;
-  }
   moveit_msgs::AttachedCollisionObject attached_object;
+  
   attached_object.object.id = msg.name;
   attached_object.object.operation = attached_object.object.REMOVE;
   object_att_publisher.publish(attached_object);
@@ -115,12 +111,14 @@ void RosTools::clear_collision_objects() {
   
   ParamReader& params = ParamReader::getParamReader();
   moveit_msgs::CollisionObject target_object;
-  for(int i; i < maxid; i++)
+  for(int i = 0; i < (maxid - 1); i++)
   {
+    
   target_object.id = i;
   target_object.header.frame_id = params.frameArm;
   target_object.operation = target_object.REMOVE;
   object_publisher.publish(target_object);
+  std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
   }
 }
 
@@ -255,6 +253,10 @@ void RosTools::attach_collision_object() {
 
 bool RosTools::has_attached_object() {
 
+}
+
+void RosTools::setMaxID(int size){
+	maxid = size;
 }
 
 void RosTools::clear_octomap(double sleep_seconds) {

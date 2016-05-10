@@ -33,7 +33,7 @@ private:
     mutable boost::mutex sceneMutex;
     moveit_msgs::PlanningScene currentPlanningScene;
     
-    int maxid = 0;
+    int maxid = 1;
 
 public:
 	RosTools();
@@ -54,6 +54,8 @@ public:
 	void publish_place_locations_as_markerarray(std::vector<moveit_msgs::PlaceLocation> loc);
 
 	void clear_octomap(double sleep_seconds = 1.0);
+	
+	void setMaxID(int size);
 
 	std::string getDefaultObjectName() const;
 	
