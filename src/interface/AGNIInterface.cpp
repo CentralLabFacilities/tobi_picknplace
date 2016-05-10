@@ -93,13 +93,15 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
 
 void AGNIInterface::generateAllGrasps(){
     grasping_msgs::FindGraspableObjectsGoal goal;
-    goal.plan_grasps = false;
+    goal.plan_grasps = true;
+    vector<moveit_msgs::Grasp> grasp;
 
     cl_object_fitter->sendGoal(goal);
     grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
     
     for(grasping_msgs::GraspableObject obj: results->objects) {
-      generate_grasps(obj.object);
+      grasp = generate_grasps(obj.object);
+      rosTools.display_grasps(grasp);
     } 
 }
 
@@ -136,8 +138,6 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
         ROS_ERROR_STREAM("No grasps found!");
         return grasps;
     }
-
-    rosTools.display_grasps(results->grasps);
     return results->grasps;
 
 }
