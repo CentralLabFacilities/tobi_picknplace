@@ -123,6 +123,7 @@ void RosTools::clear_collision_objects() {
     std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
   }
   
+  ros::spinOnce();
 }
 
 
