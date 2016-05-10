@@ -11,6 +11,7 @@
 #include <moveit_msgs/Grasp.h>
 #include <moveit_msgs/PlaceLocation.h>
 #include <moveit_msgs/PlanningScene.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/move_group_interface/move_group.h>
 #include <grasping_msgs/Object.h>
 #include "../model/ModelTypes.h"
@@ -32,7 +33,9 @@ private:
 
     mutable boost::mutex sceneMutex;
     moveit_msgs::PlanningScene currentPlanningScene;
-    
+    moveit::planning_interface::PlanningSceneInterface planningInterface; 
+
+    std::vector<moveit_msgs::CollisionObject> curObjects;
 
 public:
 	RosTools();

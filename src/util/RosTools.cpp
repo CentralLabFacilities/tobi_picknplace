@@ -26,6 +26,7 @@ RosTools::RosTools() {
 	grasps_marker = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker", 10);
 
 	clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
+
         
 	std::string service = "/display_grasp";
         ROS_INFO("Wait for Service: %s", service.c_str());
@@ -82,6 +83,7 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ParamReader& params = ParamReader::getParamReader();
+  std::vector<moveit_msgs::CollisionObject> objects;
   moveit_msgs::CollisionObject target_object;
   moveit_msgs::AttachedCollisionObject attached_object;
   
@@ -101,6 +103,10 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   object_publisher.publish(target_object);
   
+  objects.push_back(target_object);
+  planningInterface.addCollisionObjects(objects);
+  curObjects.push_back(target_object);
+  
   ros::spinOnce();
 
   clear_octomap(0.1);
@@ -108,19 +114,19 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 }
 
 void RosTools::clear_collision_objects() {
+  std::vector<std::string> objectids;
   
-    std::cout << "Invoked clear_collision_objects. Removing  objects" << std::endl;
-  
-    ParamReader& params = ParamReader::getParamReader();
-    moveit_msgs::CollisionObject target_object;
+    std::cout << "Invoked clear_collision_objects. Removing " << curObjects.size() <<  " objects" << std::endl;
    
-    target_object.id = "isegal";
-    target_object.header.frame_id = params.frameArm;
-    target_object.operation = 3;
-    std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
-    object_publisher.publish(target_object);
-
+    for(moveit_msgs::CollisionObject object : curObjects){
+	objectids.push_back(object.id);
+	std::cout << "removing object " << object.id << " from planning scene" << std::endl;
+    }
+    
+    planningInterface.removeCollisionObjects(objectids);
   
+    curObjects.clear();
+    
     ros::spinOnce();
 }
 
@@ -166,7 +172,7 @@ void RosTools::publish_collision_object(const string &id, ObjectShape shape, dou
 	target_object.operation = target_object.ADD;
 	target_object.header.frame_id = params.frameArm;
 	object_publisher.publish(target_object);
-
+	
 	ROS_INFO("Publish collision object at %.3f,%.3f,%.3f (frame: %s) - h:%.3f w:%.3f d:%.3f",
 			pose.position.x, pose.position.y, pose.position.z, params.frameArm.c_str(),
 			shape.heightMeter, shape.widthMeter, shape.depthMeter);
@@ -271,6 +277,7 @@ void RosTools::clear_octomap(double sleep_seconds) {
 
 void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
     boost::mutex::scoped_lock lock(sceneMutex);
+    std::cout << "getting new planning scene" << std::endl;
     currentPlanningScene = currentScene;
 }
 
@@ -307,6 +314,7 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
     boost::mutex::scoped_lock lock(sceneMutex);
     grasping_msgs::Object msg_tmp;
     vector<moveit_msgs::CollisionObject>::iterator colObjIt;
+    
     std::cout << "Collision objects with size: " << currentPlanningScene.world.collision_objects.size() << "\n" <<  std::endl;
     for (colObjIt = currentPlanningScene.world.collision_objects.begin();
             colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
