@@ -105,14 +105,15 @@ void AGNIInterface::generateAllGrasps(){
     for(grasping_msgs::Object obj: graspable_objects) {
       ROS_ERROR_STREAM("Generate grasp");
       vector<moveit_msgs::Grasp> grasp = generate_grasps(obj);
-      i = i + grasp.size();
        for(moveit_msgs::Grasp graspv2: grasp) {
 	 //int id = std::stoi(graspv2.id) + i;
 	 graspv2.id = graspv2.id + std::to_string(i);
 	 ROS_ERROR_STREAM("ID " + graspv2.id);
 	 graps.push_back(graspv2);
        }
+       i = i + grasp.size();
     }
+    ROS_ERROR_STREAM(graps.size());
     rosTools.display_grasps(graps);
 }
 
