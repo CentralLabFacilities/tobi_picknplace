@@ -107,8 +107,9 @@ void AGNIInterface::generateAllGrasps(){
       vector<moveit_msgs::Grasp> grasp = generate_grasps(obj);
       i = i + grasp.size();
        for(moveit_msgs::Grasp graspv2: grasp) {
-	 graspv2.id = boost::lexical_cast<string>(boost::lexical_cast<int>(graspv2.id) + i);
-	 ROS_ERROR_STREAM("Push Grasp back " + graspv2.id);
+	 ROS_ERROR_STREAM("ID " + graspv2.id);
+	 //int id = std::stoi(graspv2.id) + i;
+	 //graspv2.id = std::to_string(id);
 	 graps.push_back(graspv2);
        }
     }
