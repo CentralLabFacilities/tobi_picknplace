@@ -119,8 +119,9 @@ void RosTools::clear_collision_objects() {
     target_object.id = i;
     target_object.header.frame_id = params.frameArm;
     target_object.operation = target_object.REMOVE;
-    object_publisher.publish(target_object);
     std::cout << "removed object " << target_object.id << " from planning scene" << std::endl;
+    object_publisher.publish(target_object);
+    
   }
   
   ros::spinOnce();
