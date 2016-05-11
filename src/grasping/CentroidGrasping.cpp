@@ -443,6 +443,3 @@ moveit_msgs::Grasp CentroidGrasping::build_grasp(tf::Transform t) {
 	return grasp;
 }
 
-void CentroidGrasping::graspObjectByName(std::string name){
-  ROS_ERROR_STREAM("Not implementet");
-}

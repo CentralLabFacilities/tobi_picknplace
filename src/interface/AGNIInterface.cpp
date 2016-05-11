@@ -11,6 +11,8 @@
 #include <grasp_viewer/DisplayGrasps.h>
 
 #include "../util/ParamReader.h"
+#include "../model/Model.h"
+
 
 using namespace std;
 
@@ -119,10 +121,10 @@ void AGNIInterface::generateAllGrasps(){
     rosTools.display_grasps(graps);
 }
 
-void AGNIInterface::graspObjectByName(std::string name){
-  
+vector<moveit_msgs::Grasp> AGNIInterface::graspObjectByName(std::string name){
+  ROS_ERROR_STREAM("Grasp Object by name: " + name);
   vector<moveit_msgs::Grasp> grasp = generate_grasps(name);
-  
+  return grasp;
 }
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object object) {
