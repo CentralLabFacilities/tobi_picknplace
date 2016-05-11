@@ -312,6 +312,51 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
 
 }
 
+/*
+ * sensor_msgs/PointCloud2 point_cluster
+
+shape_msgs/Plane surface
+
+ */
+
+
+void RosTools::printGraspingObject(grasping_msgs::Object obj){
+  int i = 0;
+  
+  std::cout  << "printing object information with name " << obj.name << std::endl;
+  std::cout << "HEADER - seq: " <<  std::to_string(obj.header.seq) << std::endl;
+  std::cout << "HEADER - time:  " << obj.header.stamp << std::endl;
+  std::cout << "HEADER - frame_id: " << obj.header.frame_id << std::endl;
+  
+  std::cout << "SUPPORT SURFACE - name: " << obj.support_surface << std::endl;
+  
+  for(grasping_msgs::ObjectProperty prop : obj.properties){
+    std::cout << "PROPERTY " << std::to_string(i) << " - name: " << prop.name << std::endl;
+    std::cout << "PROPERTY " << std::to_string(i) << " - value: " << prop.value << std::endl;
+  }
+  
+  
+  std::cout << "PRIMITIVES - size: " << obj.primitives.size() << std::endl;
+  std::cout << "PRIMITIVE_POSES - size: " << obj.primitive_poses.size() << std::endl;
+  std::cout << "MESHES - size: " << obj.meshes.size() << std::endl;
+  std::cout << "MESHES_POSES - size: " << obj.mesh_poses.size() << std::endl;
+  
+  
+  /*if(obj.point_cluster){
+      std::cout << "POINT_CLUSTER exists " << std::endl;
+  } else {
+      std::cout << "POINT_CLUSTER non-existent " << std::endl;
+  }
+  
+  if(obj.surface == NULL){
+      std::cout << "SURFACE exists " << std::endl;
+ } else {
+      std::cout << "SURFACE non-existent " << std::endl;
+  }*/
+  
+
+}
+
 bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::Object *msg) {
     boost::mutex::scoped_lock lock(sceneMutex);
     grasping_msgs::Object msg_tmp;

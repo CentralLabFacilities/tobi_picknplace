@@ -54,6 +54,8 @@ public:
 	void publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps);
 	void display_grasps(const std::vector<moveit_msgs::Grasp> &grasps);
 	void publish_place_locations_as_markerarray(std::vector<moveit_msgs::PlaceLocation> loc);
+	
+	void printGraspingObject(grasping_msgs::Object obj);
 
 	void clear_octomap(double sleep_seconds = 1.0);
 	
