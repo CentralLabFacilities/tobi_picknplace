@@ -301,12 +301,13 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
   double a = 1.9;
   ParamReader& params = ParamReader::getParamReader();
   
+  msg.header.frame_id = obj.header.frame_id;
   msg.name = obj.id;
   msg.mesh_poses = obj.mesh_poses;
   msg.primitives = obj.primitives;
   msg.meshes = obj.meshes;
   msg.primitive_poses = obj.primitive_poses;
-  
+
   return msg;
 
 }
