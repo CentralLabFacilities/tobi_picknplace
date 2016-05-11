@@ -94,7 +94,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     
   ros::spinOnce();
   
-  /*geometry_msgs::Pose pose;
+  geometry_msgs::Pose pose;
   vector<geometry_msgs::Pose>::iterator poseIterator = msg.primitive_poses.begin();
   pose.orientation.w = poseIterator->orientation.w;
   pose.orientation.x = poseIterator->orientation.x;
@@ -109,20 +109,23 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   primitive.type = primIterator->type;
   
   if(primIterator->type == shape_msgs::SolidPrimitive::BOX){
-    primitive.BOX_X =primIterator->BOX_X;
-    primitive.BOX_X =primIterator->BOX_Y;
-    primitive.BOX_X =primIterator->BOX_Z;
+    primitive.BOX_X << primIterator->BOX_X;
+    primitive.BOX_Y << primIterator->BOX_Y;
+    primitive.BOX_Z << primIterator->BOX_Z;
   }
   
   if(primIterator->type == shape_msgs::SolidPrimitive::SPHERE){
-    
+    primitive.SPHERE_RADIUS << primIterator->SPHERE_RADIUS;
   }
   
   if(primIterator->type == shape_msgs::SolidPrimitive::CYLINDER){
-    
+    primitive.CYLINDER_HEIGHT << primIterator->CYLINDER_HEIGHT;
+    primitive.CYLINDER_RADIUS << primIterator->CYLINDER_RADIUS;
   }
   
   if(primIterator->type == shape_msgs::SolidPrimitive::CONE){
+    primitive.CONE_HEIGHT << primIterator->CONE_HEIGHT;
+    primitive.CONE_RADIUS << primIterator->CONE_RADIUS;
     
   }
 
@@ -132,15 +135,13 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   primitive.dimensions[2] = primIterator->dimensions[2];
   
   target_object.primitives.push_back(primitive);
-  target_object.primitive_poses.push_back(pose);*/
+  target_object.primitive_poses.push_back(pose);
   
   
   target_object.header.frame_id = params.frameArm;
   target_object.id = msg.name;
   target_object.mesh_poses = msg.mesh_poses;
   target_object.meshes = msg.meshes;
-  target_object.primitives.push_back(msg.primitives[0]);
-  target_object.plane_poses.push_back(msg.primitive_poses[0]);
   target_object.operation = target_object.ADD;
   
   object_publisher.publish(target_object);
