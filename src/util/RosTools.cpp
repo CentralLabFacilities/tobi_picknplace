@@ -345,13 +345,54 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
   ParamReader& params = ParamReader::getParamReader();
   
 
+  geometry_msgs::Pose pose;
+  vector<geometry_msgs::Pose>::iterator poseIterator = obj.primitive_poses.begin();
+  pose.orientation.w = poseIterator->orientation.w;
+  pose.orientation.x = poseIterator->orientation.x;
+  pose.orientation.y = poseIterator->orientation.y;
+  pose.orientation.z = poseIterator->orientation.z;
+  pose.position.x = poseIterator->position.x;
+  pose.position.y = poseIterator->position.y;
+  pose.position.z = poseIterator->position.z;
+
+  shape_msgs::SolidPrimitive primitive;
+  vector<shape_msgs::SolidPrimitive>::iterator primIterator = obj.primitives.begin();
+  primitive.type = primIterator->type;
+  
+  if(primIterator->type == shape_msgs::SolidPrimitive::BOX){
+    primitive.BOX_X << primIterator->BOX_X;
+    primitive.BOX_Y << primIterator->BOX_Y;
+    primitive.BOX_Z << primIterator->BOX_Z;
+  }
+  
+  if(primIterator->type == shape_msgs::SolidPrimitive::SPHERE){
+    primitive.SPHERE_RADIUS << primIterator->SPHERE_RADIUS;
+  }
+  
+  if(primIterator->type == shape_msgs::SolidPrimitive::CYLINDER){
+    primitive.CYLINDER_HEIGHT << primIterator->CYLINDER_HEIGHT;
+    primitive.CYLINDER_RADIUS << primIterator->CYLINDER_RADIUS;
+  }
+  
+  if(primIterator->type == shape_msgs::SolidPrimitive::CONE){
+    primitive.CONE_HEIGHT << primIterator->CONE_HEIGHT;
+    primitive.CONE_RADIUS << primIterator->CONE_RADIUS;
+    
+  }
+
+  primitive.dimensions.resize(3);
+  primitive.dimensions[0] = primIterator->dimensions[0];
+  primitive.dimensions[1] = primIterator->dimensions[1];
+  primitive.dimensions[2] = primIterator->dimensions[2];
+  
+
   
   msg.header.frame_id = obj.header.frame_id;
   msg.name = obj.id;
   msg.mesh_poses = obj.mesh_poses;
   msg.meshes = obj.meshes;
-  msg.primitives.push_back(obj.primitives[0]);
-  msg.primitive_poses.push_back(obj.primitive_poses[0]);
+  msg.primitives.push_back(primitive);
+  msg.primitive_poses.push_back(pose);
 
   return msg;
 
