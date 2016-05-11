@@ -83,6 +83,7 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ParamReader& params = ParamReader::getParamReader();
+  
   std::vector<moveit_msgs::CollisionObject> objects;
   moveit_msgs::CollisionObject target_object;
   moveit_msgs::AttachedCollisionObject attached_object;
@@ -93,12 +94,53 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     
   ros::spinOnce();
   
+  /*geometry_msgs::Pose pose;
+  vector<geometry_msgs::Pose>::iterator poseIterator = msg.primitive_poses.begin();
+  pose.orientation.w = poseIterator->orientation.w;
+  pose.orientation.x = poseIterator->orientation.x;
+  pose.orientation.y = poseIterator->orientation.y;
+  pose.orientation.z = poseIterator->orientation.z;
+  pose.position.x = poseIterator->position.x;
+  pose.position.y = poseIterator->position.y;
+  pose.position.z = poseIterator->position.z;
+
+  shape_msgs::SolidPrimitive primitive;
+  vector<shape_msgs::SolidPrimitive>::iterator primIterator = msg.primitives.begin();
+  primitive.type = primIterator->type;
+  
+  if(primIterator->type == shape_msgs::SolidPrimitive::BOX){
+    primitive.BOX_X =primIterator->BOX_X;
+    primitive.BOX_X =primIterator->BOX_Y;
+    primitive.BOX_X =primIterator->BOX_Z;
+  }
+  
+  if(primIterator->type == shape_msgs::SolidPrimitive::SPHERE){
+    
+  }
+  
+  if(primIterator->type == shape_msgs::SolidPrimitive::CYLINDER){
+    
+  }
+  
+  if(primIterator->type == shape_msgs::SolidPrimitive::CONE){
+    
+  }
+
+  primitive.dimensions.resize(3);
+  primitive.dimensions[0] = primIterator->dimensions[0];
+  primitive.dimensions[1] = primIterator->dimensions[1];
+  primitive.dimensions[2] = primIterator->dimensions[2];
+  
+  target_object.primitives.push_back(primitive);
+  target_object.primitive_poses.push_back(pose);*/
+  
+  
   target_object.header.frame_id = params.frameArm;
-  target_object.primitives = msg.primitives;
   target_object.id = msg.name;
-  target_object.primitive_poses = msg.primitive_poses;
   target_object.mesh_poses = msg.mesh_poses;
   target_object.meshes = msg.meshes;
+  target_object.primitives.push_back(msg.primitives[0]);
+  target_object.plane_poses.push_back(msg.primitive_poses[0]);
   target_object.operation = target_object.ADD;
   
   object_publisher.publish(target_object);
@@ -301,47 +343,42 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
   double a = 1.9;
   ParamReader& params = ParamReader::getParamReader();
   
+
+  
   msg.header.frame_id = obj.header.frame_id;
   msg.name = obj.id;
   msg.mesh_poses = obj.mesh_poses;
-  msg.primitives = obj.primitives;
   msg.meshes = obj.meshes;
-  msg.primitive_poses = obj.primitive_poses;
+  msg.primitives.push_back(obj.primitives[0]);
+  msg.primitive_poses.push_back(obj.primitive_poses[0]);
 
   return msg;
 
 }
 
-/*
- * sensor_msgs/PointCloud2 point_cluster
-
-shape_msgs/Plane surface
-
- */
-
 
 void RosTools::printGraspingObject(grasping_msgs::Object obj){
   int i = 0;
   
-  std::cout  << "printing object information with name " << obj.name << std::endl;
-  std::cout << "HEADER - seq: " <<  std::to_string(obj.header.seq) << std::endl;
-  std::cout << "HEADER - time:  " << obj.header.stamp << std::endl;
-  std::cout << "HEADER - frame_id: " << obj.header.frame_id << std::endl;
+  ROS_DEBUG_STREAM("printing object information with name " << obj.name);
   
-  std::cout << "SUPPORT SURFACE - name: " << obj.support_surface << std::endl;
+  ROS_DEBUG_STREAM("HEADER - seq: " <<  std::to_string(obj.header.seq));
+  ROS_DEBUG_STREAM("HEADER - time:  " << obj.header.stamp);
+  ROS_DEBUG_STREAM("HEADER - frame_id: " << obj.header.frame_id);
+  
+  ROS_DEBUG_STREAM("SUPPORT SURFACE - name: " << obj.support_surface);
   
   for(grasping_msgs::ObjectProperty prop : obj.properties){
-    std::cout << "PROPERTY " << std::to_string(i) << " - name: " << prop.name << std::endl;
-    std::cout << "PROPERTY " << std::to_string(i) << " - value: " << prop.value << std::endl;
+    ROS_DEBUG_STREAM("PROPERTY " << std::to_string(i) << " - name: " << prop.name);
+    ROS_DEBUG_STREAM("PROPERTY " << std::to_string(i) << " - value: " << prop.value);
+    i++;
   }
   
-  
-  std::cout << "PRIMITIVES - size: " << obj.primitives.size() << std::endl;
-  std::cout << "PRIMITIVE_POSES - size: " << obj.primitive_poses.size() << std::endl;
-  std::cout << "MESHES - size: " << obj.meshes.size() << std::endl;
-  std::cout << "MESHES_POSES - size: " << obj.mesh_poses.size() << std::endl;
-  
-  
+  ROS_DEBUG_STREAM("PRIMITIVES - size: " << obj.primitives.size());
+  ROS_DEBUG_STREAM("PRIMITIVE_POSES - size: " << obj.primitive_poses.size());
+  ROS_DEBUG_STREAM("MESHES - size: " << obj.meshes.size());
+  ROS_DEBUG_STREAM("MESHES_POSES - size: " << obj.mesh_poses.size());
+
   /*if(obj.point_cluster){
       std::cout << "POINT_CLUSTER exists " << std::endl;
   } else {
@@ -367,6 +404,7 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
             colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
 	std::cout << "colObjIt ID: " << colObjIt->id << "with name: " << name <<  "\n" << std::endl;
         if (colObjIt->id == name) {
+	  
             msg_tmp = convertMoveItToGrasping(*colObjIt);
 	    msg = &msg_tmp;
             return true;
