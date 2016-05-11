@@ -139,7 +139,6 @@ void AGNIInterface::generateAllGrasps(){
 vector<moveit_msgs::Grasp> AGNIInterface::graspObjectByName(std::string name){
   ROS_INFO_STREAM("AGNI Grasp Object by name: " + name);
   vector<grasping_msgs::Object> graspable_objects = find_objects();
-  vector<moveit_msgs::Grasp> allGrasps;
   vector<moveit_msgs::Grasp> grasps;
   for(grasping_msgs::Object obj: graspable_objects) {
       if(obj.name == name) {
