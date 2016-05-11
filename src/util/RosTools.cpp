@@ -212,6 +212,7 @@ void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps){
 	grasp_viewer::DisplayGraspsResponse disp_res;
 	disp_req.grasps = grasps;
 	grasp_viz_client.call(disp_req, disp_res);
+	ROS_DEBUG_STREAM("request returned:" << disp_res.success);
 }
 
 void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::PlaceLocation> loc) {

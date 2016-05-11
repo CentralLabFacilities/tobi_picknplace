@@ -105,20 +105,25 @@ void AGNIInterface::generateAllGrasps(){
     ROS_ERROR_STREAM("Generate all Grasps for Debugging");
     int i = 0;
     vector<grasping_msgs::Object> graspable_objects = find_objects();
-    vector<moveit_msgs::Grasp> graps;
+    vector<moveit_msgs::Grasp> allGrasps;
     for(grasping_msgs::Object obj: graspable_objects) {
-      ROS_ERROR_STREAM("Generate grasp");
-      vector<moveit_msgs::Grasp> grasp = generate_grasps(obj);
-       for(moveit_msgs::Grasp graspv2: grasp) {
+      vector<moveit_msgs::Grasp> grasps = generate_grasps(obj);
+      ROS_ERROR_STREAM("Generated grasps for " << obj.name << " num" << grasps.size());
+       for(moveit_msgs::Grasp graspv2: grasps) {
 	 //int id = std::stoi(graspv2.id) + i;
 	 graspv2.id = graspv2.id + std::to_string(i);
-	 ROS_ERROR_STREAM("ID " + graspv2.id);
-	 graps.push_back(graspv2);
+	 //ROS_ERROR_STREAM("ID " + graspv2.id);
+	 allGrasps.push_back(graspv2);
+	 i++;
        }
-       i = i + grasp.size();
     }
-    ROS_ERROR_STREAM(graps.size());
-    rosTools.display_grasps(graps);
+    
+    for(moveit_msgs::Grasp grasp: allGrasps) {
+      ROS_ERROR_STREAM("" << grasp);
+    }
+    ROS_ERROR_STREAM("we have " << allGrasps.size() << "grasps");
+    
+    rosTools.display_grasps(allGrasps);
 }
 
 vector<moveit_msgs::Grasp> AGNIInterface::graspObjectByName(std::string name){
