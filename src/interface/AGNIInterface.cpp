@@ -127,14 +127,16 @@ void AGNIInterface::generateAllGrasps(){
 
 vector<moveit_msgs::Grasp> AGNIInterface::graspObjectByName(std::string name){
   ROS_INFO_STREAM("AGNI Grasp Object by name: " + name);
-  vector<grasping_msgs::Object> graspable_objects = find_objects();
   vector<moveit_msgs::Grasp> grasps;
-  for(grasping_msgs::Object obj: graspable_objects) {
-      if(obj.name == name) {
-	 grasps = generate_grasps(obj);
-	 break;
-      }
-  }
+  grasping_msgs::Object obj;
+  
+  rosTools.getGraspingObjectByName(name, obj);
+  
+   ROS_DEBUG_STREAM("--------------CONVERTED OBJECT------------");
+   rosTools.printGraspingObject(obj);
+  
+  grasps = generate_grasps(obj);
+  
   //vector<moveit_msgs::Grasp>
   int q = 0;
   for(moveit_msgs::Grasp grasp: grasps) {
