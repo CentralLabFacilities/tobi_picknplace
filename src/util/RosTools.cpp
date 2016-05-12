@@ -378,6 +378,10 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
         if (colObjIt->id == name) {
 	  
             msg_tmp = convertMoveItToGrasping(*colObjIt);
+	    ROS_DEBUG_STREAM("msg_temp ID: " << msg_tmp.name );
+	    ROS_DEBUG_STREAM("HEADER - frame_id: " << msg_tmp.header.frame_id);
+	    ROS_DEBUG_STREAM("PRIMITIVES - size: " << msg_tmp.primitives.size());
+	    ROS_DEBUG_STREAM("PRIMITIVE_POSES - size: " << msg_tmp.primitive_poses.size());
 	    msg = &msg_tmp;
             return true;
         }
