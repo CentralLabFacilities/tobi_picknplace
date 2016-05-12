@@ -94,49 +94,17 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     
   ros::spinOnce();
   
-  geometry_msgs::Pose pose;
-  vector<geometry_msgs::Pose>::iterator poseIterator = msg.primitive_poses.begin();
-  pose.orientation.w = poseIterator->orientation.w;
-  pose.orientation.x = poseIterator->orientation.x;
-  pose.orientation.y = poseIterator->orientation.y;
-  pose.orientation.z = poseIterator->orientation.z;
-  pose.position.x = poseIterator->position.x;
-  pose.position.y = poseIterator->position.y;
-  pose.position.z = poseIterator->position.z;
 
-  shape_msgs::SolidPrimitive primitive;
-  vector<shape_msgs::SolidPrimitive>::iterator primIterator = msg.primitives.begin();
-  primitive.type = primIterator->type;
+  vector<geometry_msgs::Pose>::iterator poseIterator;
+  vector<shape_msgs::SolidPrimitive>::iterator primIterator;
   
-  if(primIterator->type == shape_msgs::SolidPrimitive::BOX){
-    primitive.BOX_X << primIterator->BOX_X;
-    primitive.BOX_Y << primIterator->BOX_Y;
-    primitive.BOX_Z << primIterator->BOX_Z;
+  for(primIterator = msg.primitives.begin(); primIterator != msg.primitives.end(); primIterator++){
+    target_object.primitives.push_back(*primIterator);
   }
   
-  if(primIterator->type == shape_msgs::SolidPrimitive::SPHERE){
-    primitive.SPHERE_RADIUS << primIterator->SPHERE_RADIUS;
+  for(poseIterator = msg.primitive_poses.begin(); poseIterator != msg.primitive_poses.end(); poseIterator++){
+    target_object.primitive_poses.push_back(*poseIterator); 
   }
-  
-  if(primIterator->type == shape_msgs::SolidPrimitive::CYLINDER){
-    primitive.CYLINDER_HEIGHT << primIterator->CYLINDER_HEIGHT;
-    primitive.CYLINDER_RADIUS << primIterator->CYLINDER_RADIUS;
-  }
-  
-  if(primIterator->type == shape_msgs::SolidPrimitive::CONE){
-    primitive.CONE_HEIGHT << primIterator->CONE_HEIGHT;
-    primitive.CONE_RADIUS << primIterator->CONE_RADIUS;
-    
-  }
-
-  primitive.dimensions.resize(3);
-  primitive.dimensions[0] = primIterator->dimensions[0];
-  primitive.dimensions[1] = primIterator->dimensions[1];
-  primitive.dimensions[2] = primIterator->dimensions[2];
-  
-  target_object.primitives.push_back(primitive);
-  target_object.primitive_poses.push_back(pose);
-  
   
   target_object.header.frame_id = params.frameArm;
   target_object.id = msg.name;
@@ -341,58 +309,23 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
 grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionObject obj){
   
   grasping_msgs::Object msg;
-  double a = 1.9;
   ParamReader& params = ParamReader::getParamReader();
   
-
-  geometry_msgs::Pose pose;
-  vector<geometry_msgs::Pose>::iterator poseIterator = obj.primitive_poses.begin();
-  pose.orientation.w = poseIterator->orientation.w;
-  pose.orientation.x = poseIterator->orientation.x;
-  pose.orientation.y = poseIterator->orientation.y;
-  pose.orientation.z = poseIterator->orientation.z;
-  pose.position.x = poseIterator->position.x;
-  pose.position.y = poseIterator->position.y;
-  pose.position.z = poseIterator->position.z;
-
-  shape_msgs::SolidPrimitive primitive;
-  vector<shape_msgs::SolidPrimitive>::iterator primIterator = obj.primitives.begin();
-  primitive.type = primIterator->type;
+  vector<geometry_msgs::Pose>::iterator poseIterator;
+  vector<shape_msgs::SolidPrimitive>::iterator primIterator;
   
-  if(primIterator->type == shape_msgs::SolidPrimitive::BOX){
-    primitive.BOX_X << primIterator->BOX_X;
-    primitive.BOX_Y << primIterator->BOX_Y;
-    primitive.BOX_Z << primIterator->BOX_Z;
+  for(primIterator = obj.primitives.begin(); primIterator != obj.primitives.end(); primIterator++){
+    msg.primitives.push_back(*primIterator);
   }
   
-  if(primIterator->type == shape_msgs::SolidPrimitive::SPHERE){
-    primitive.SPHERE_RADIUS << primIterator->SPHERE_RADIUS;
+  for(poseIterator = obj.primitive_poses.begin(); poseIterator != obj.primitive_poses.end(); poseIterator++){
+    msg.primitive_poses.push_back(*poseIterator);
   }
   
-  if(primIterator->type == shape_msgs::SolidPrimitive::CYLINDER){
-    primitive.CYLINDER_HEIGHT << primIterator->CYLINDER_HEIGHT;
-    primitive.CYLINDER_RADIUS << primIterator->CYLINDER_RADIUS;
-  }
-  
-  if(primIterator->type == shape_msgs::SolidPrimitive::CONE){
-    primitive.CONE_HEIGHT << primIterator->CONE_HEIGHT;
-    primitive.CONE_RADIUS << primIterator->CONE_RADIUS;
-    
-  }
-
-  primitive.dimensions.resize(3);
-  primitive.dimensions[0] = primIterator->dimensions[0];
-  primitive.dimensions[1] = primIterator->dimensions[1];
-  primitive.dimensions[2] = primIterator->dimensions[2];
-  
-
-  
-  msg.header.frame_id = obj.header.frame_id;
+  msg.header.frame_id = params.frameArm;
   msg.name = obj.id;
   msg.mesh_poses = obj.mesh_poses;
   msg.meshes = obj.meshes;
-  msg.primitives.push_back(primitive);
-  msg.primitive_poses.push_back(pose);
 
   return msg;
 
@@ -420,19 +353,6 @@ void RosTools::printGraspingObject(grasping_msgs::Object obj){
   ROS_DEBUG_STREAM("PRIMITIVE_POSES - size: " << obj.primitive_poses.size());
   ROS_DEBUG_STREAM("MESHES - size: " << obj.meshes.size());
   ROS_DEBUG_STREAM("MESHES_POSES - size: " << obj.mesh_poses.size());
-
-  /*if(obj.point_cluster){
-      std::cout << "POINT_CLUSTER exists " << std::endl;
-  } else {
-      std::cout << "POINT_CLUSTER non-existent " << std::endl;
-  }
-  
-  if(obj.surface == NULL){
-      std::cout << "SURFACE exists " << std::endl;
- } else {
-      std::cout << "SURFACE non-existent " << std::endl;
-  }*/
-  
 
 }
 
