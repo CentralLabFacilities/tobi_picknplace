@@ -96,7 +96,7 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     
     grasping_msgs::Object test;
     
-    if(rosTools.getGraspingObjectByName("0", &test)){
+    if(rosTools.getGraspingObjectByName("0", test)){
       ROS_DEBUG_STREAM("-----------------CONVERTED OBJECT-----------");
       rosTools.printGraspingObject(test);
     
@@ -198,7 +198,7 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(std::string name) {
     vector<moveit_msgs::Grasp> grasps;
     grasping_msgs::Object object ;
     
-    if(!rosTools.getGraspingObjectByName(name, &object)){
+    if(!rosTools.getGraspingObjectByName(name, object)){
       
       ROS_ERROR_STREAM("No CollisionObject matching with name: " << name);
       return grasps;

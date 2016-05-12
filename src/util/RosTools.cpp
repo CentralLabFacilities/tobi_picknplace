@@ -360,7 +360,7 @@ void RosTools::printGraspingObject(grasping_msgs::Object obj){
 
 
 
-bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::Object *msg) {
+bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::Object &msg) {
     boost::mutex::scoped_lock lock(sceneMutex);
     grasping_msgs::Object msg_tmp;
     vector<moveit_msgs::CollisionObject>::iterator colObjIt;
@@ -376,13 +376,7 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
       ROS_DEBUG_STREAM("PRIMITIVE_POSES - size: " << colObjIt->primitive_poses.size());
 
         if (colObjIt->id == name) {
-	  
-            msg_tmp = convertMoveItToGrasping(*colObjIt);
-	    ROS_DEBUG_STREAM("msg_temp ID: " << msg_tmp.name );
-	    ROS_DEBUG_STREAM("HEADER - frame_id: " << msg_tmp.header.frame_id);
-	    ROS_DEBUG_STREAM("PRIMITIVES - size: " << msg_tmp.primitives.size());
-	    ROS_DEBUG_STREAM("PRIMITIVE_POSES - size: " << msg_tmp.primitive_poses.size());
-	    msg = &msg_tmp;
+	    msg = convertMoveItToGrasping(*colObjIt);
             return true;
         }
     }
