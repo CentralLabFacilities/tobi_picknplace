@@ -137,13 +137,9 @@ vector<moveit_msgs::Grasp> AGNIInterface::graspObjectByName(std::string name){
   
   grasps = generate_grasps(obj);
   
-  //vector<moveit_msgs::Grasp>
-  int q = 0;
-  for(moveit_msgs::Grasp grasp: grasps) {
-      //ROS_ERROR_STREAM("" << grasp);
-      if(grasp.grasp_quality >= 0) q++;
-    }
-  ROS_DEBUG_STREAM("Generated " << grasps.size() << "graps, " << q << " with quality >= 0");
+  //TODO Add Quality Check if necessary
+  
+  ROS_DEBUG_STREAM("Generated " << grasps.size() << "graps");
   
   return grasps;
 }
