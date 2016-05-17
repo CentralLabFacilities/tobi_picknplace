@@ -226,7 +226,7 @@ void Model::graspZero()
 void Model::graspObjectByName(std::string name)
 {
   vector<moveit_msgs::Grasp> grasp = graspGenerator->graspObjectByName(name);
-  GraspReturnType grt = graspObject(name, "", grasp, 0.0, false, "");
+  GraspReturnType grt = graspObject(name, "surface0", grasp, 0.0, false, "");
   ROS_ERROR_STREAM("GraspReturnType:  "  << grt.resultToString(grt.result));
 
 }
