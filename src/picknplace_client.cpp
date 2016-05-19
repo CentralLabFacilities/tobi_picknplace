@@ -307,8 +307,8 @@ void callServerMethod(int argc, char* argv[]) {
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
     } else if (vm.count("graspObjectName")){
-        if (argc >= 3) {
-            std::cout << "Too many/few coordinates entered-6 nothing, object or object;surface are expected! use --help for more information " << argc << std::endl;
+        if (argc >= 4) {
+            std::cout << "Too many/few arguments entered nothing, object or object;surface is expected! use --help for more information " << argc << std::endl;
         } else {
 	    boost::shared_ptr< std::string > request(new std::string(argv[2]));
             boost::shared_ptr<rst::generic::Dictionary> result;
