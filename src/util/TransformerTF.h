@@ -13,6 +13,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
+#include <moveit_msgs/Grasp.h>
 
 class TransformerTF {
 public:
@@ -25,6 +26,7 @@ public:
 	bool transform(const geometry_msgs::PoseStamped &pose, geometry_msgs::PoseStamped &poseOut, const std::string &to) const;
 	bool transform(const geometry_msgs::Vector3Stamped &pose, geometry_msgs::Vector3Stamped &poseOut, const std::string &to) const;
 	bool transform(const moveit_msgs::CollisionObject &obj, moveit_msgs::CollisionObject &objOut, const std::string &to) const;
+	bool transform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const std::string &to) const ;
 
 private:
 	tf2_ros::Buffer tfBuffer;
