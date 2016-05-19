@@ -77,7 +77,9 @@ void callServerMethod(int argc, char* argv[]) {
                 ("placeObjectAt", "places the object at the position given\n"
                 "args: x y z phi theta psi")
                 ("placeObjectAtExact", "places the object at the position given\n"
-                "args: x y z phi theta psi");
+                "args: x y z phi theta psi")
+		("graspObjectName", "grasp the Object by Name\n"
+		"args: nothing, object or object;surface" );
 
         //store(parse_command_line(argc, argv, desc), vm);
 
@@ -304,7 +306,17 @@ void callServerMethod(int argc, char* argv[]) {
             result = remoteServer->call<rst::generic::Dictionary>("isObjectGraspable", object);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
-    } else if (vm.count("graspObject")) {
+    } else if (vm.count("graspObjectName")){
+        if (argc >= 3) {
+            std::cout << "Too many/few coordinates entered-6 nothing, object or object;surface are expected! use --help for more information " << argc << std::endl;
+        } else {
+	    boost::shared_ptr< std::string > request(new std::string(argv[2]));
+            boost::shared_ptr<rst::generic::Dictionary> result;
+            result = remoteServer->call<rst::generic::Dictionary>("graspObjectName", request);
+            std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
+        }
+    }
+    else if (vm.count("graspObject")) {
         if (argc != 8) {
             std::cout << "Too many/few coordinates entered-6 (width,height,depth,x,y,z) are expected! use --help for more information " << argc << std::endl;
         } else {
