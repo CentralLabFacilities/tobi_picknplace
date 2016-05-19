@@ -292,9 +292,9 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     
     //due to a wrong orientation of the grasps, we had to transform between the ee links and the base_link
     for(moveit_msgs::Grasp i : grasps){
-	tfTransformer.transform(i, i, "/katana_gripper_tool_agni_frame");
+	tfTransformer.transform(i, i, "katana_gripper_tool_agni_frame");
 	i.grasp_pose.header.frame_id = "/katana_gripper_tool_frame";
-	tfTransformer.transform(i, i, "/base_link");
+	tfTransformer.transform(i, i, "base_link");
     }
       
     
