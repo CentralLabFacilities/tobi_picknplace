@@ -19,6 +19,7 @@
 
 #include "../../grasping/CentroidGrasping.h"
 #include "../../interface/AGNIInterface.h"
+#include <../../opt/ros/indigo/include/moveit_msgs/CollisionObject.h>
 
 using namespace std;
 using namespace moveit;
@@ -140,6 +141,15 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
         return grt;
     }
 
+    ROS_INFO_STREAM("collision object");
+    ROS_INFO_STREAM("primitive_poses: " << collisionObject.primitive_poses.size());
+    ROS_INFO_STREAM("primitive: " << collisionObject.primitives.size());
+    ROS_INFO_STREAM("plane_poses: " << collisionObject.plane_poses.size());
+    ROS_INFO_STREAM("plane: " << collisionObject.planes.size());
+    ROS_INFO_STREAM("mesh_poses: " << collisionObject.mesh_poses.size());
+    ROS_INFO_STREAM("mesh: " << collisionObject.meshes.size());
+    ROS_INFO_STREAM("id: " << collisionObject.id);
+    
     moveit_msgs::CollisionObject collisionObjectArmCoords;
     ROS_INFO("Tranform collision object to ArmCoords");
     tfTransformer.transform(collisionObject, collisionObjectArmCoords,
