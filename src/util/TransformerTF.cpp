@@ -245,6 +245,7 @@ const std::string& getFrameId(const CollisionObject& t) {
 template<>
 void doTransform(const CollisionObject& t_in, CollisionObject& t_out,
         const geometry_msgs::TransformStamped& transform) {
+    t_out = CollisionObject(t_in);
     for (int i = 0; i < t_in.primitive_poses.size(); i++) {
         KDL::Vector v(t_in.primitive_poses[i].position.x, t_in.primitive_poses[i].position.y, t_in.primitive_poses[i].position.z);
         KDL::Rotation r = KDL::Rotation::Quaternion(t_in.primitive_poses[i].orientation.x, t_in.primitive_poses[i].orientation.y,
