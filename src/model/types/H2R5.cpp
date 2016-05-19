@@ -147,7 +147,7 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
             collisionObjectArmCoords.primitive_poses[0].position.x
                     - collisionObjectArmCoords.primitives[0].dimensions[0]
                             / 2.0;
-
+    ROS_INFO("tableHeightArmCoords: %f", tableHeightArmCoords);
     vector<moveit_msgs::Grasp> grasps;
 
     if(graspGenerator->getName() == CENTROID_GRASP_NAME) {
@@ -158,7 +158,7 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
         grasps = graspGenerator->generate_grasps(obj);
         //todo: do we have to do a transformation?
     }
-
+    ROS_INFO("Publish grasps.");
     rosTools.publish_grasps_as_markerarray(grasps);
     return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
             simulate, startPose);

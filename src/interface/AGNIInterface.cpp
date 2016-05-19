@@ -124,12 +124,12 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
     }
 
     grasping_msgs::GraspPlanningResult::ConstPtr results = cl_agni->getResult();
-
+    
     if(!results->grasps.size()) {
         ROS_ERROR_STREAM("No grasps found!");
         return grasps;
     }
-
+    ROS_INFO("Number of generated grasps: %f",results->grasps.size());
     return results->grasps;
 
 }
