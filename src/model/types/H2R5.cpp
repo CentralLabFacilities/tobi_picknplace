@@ -141,8 +141,10 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
     }
 
     moveit_msgs::CollisionObject collisionObjectArmCoords;
+    ROS_INFO("Tranform collision object to ArmCoords");
     tfTransformer.transform(collisionObject, collisionObjectArmCoords,
             ParamReader::getParamReader().frameArm);
+    ROS_INFO("Calculate tableHeightArmCoords");
     double tableHeightArmCoords =
             collisionObjectArmCoords.primitive_poses[0].position.x
                     - collisionObjectArmCoords.primitives[0].dimensions[0]
