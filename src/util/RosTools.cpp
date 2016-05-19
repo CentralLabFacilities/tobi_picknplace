@@ -300,3 +300,45 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
     }
     return false;
 }
+
+grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionObject obj){
+  
+  grasping_msgs::Object msg;
+  ParamReader& params = ParamReader::getParamReader();
+  
+  vector<geometry_msgs::Pose>::iterator poseIterator;
+  vector<shape_msgs::SolidPrimitive>::iterator primIterator;
+  
+  for(primIterator = obj.primitives.begin(); primIterator != obj.primitives.end(); primIterator++){
+    msg.primitives.push_back(*primIterator);
+  }
+  
+  for(poseIterator = obj.primitive_poses.begin(); poseIterator != obj.primitive_poses.end(); poseIterator++){
+    msg.primitive_poses.push_back(*poseIterator);
+  }
+  
+  msg.header.frame_id = params.frameArm;
+  msg.name = obj.id;
+  msg.mesh_poses = obj.mesh_poses;
+  msg.meshes = obj.meshes;
+
+  return msg;
+}
+
+bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::Object &msg) {
+    boost::mutex::scoped_lock lock(sceneMutex);
+    grasping_msgs::Object msg_tmp;
+    vector<moveit_msgs::CollisionObject>::iterator colObjIt;
+    
+    ROS_DEBUG_STREAM("Collision objects with size: " << currentPlanningScene.world.collision_objects.size());
+    
+    for (colObjIt = currentPlanningScene.world.collision_objects.begin();
+            colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
+	ROS_DEBUG_STREAM("colObjIt ID: " << colObjIt->id << " with name: " << name);
+        if (colObjIt->id == name) {
+	    msg = convertMoveItToGrasping(*colObjIt);
+            return true;
+        }
+    }
+    return false;
+}

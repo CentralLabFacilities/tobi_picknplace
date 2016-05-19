@@ -11,6 +11,7 @@
 #include <grasp_viewer/DisplayGrasps.h>
 
 #include "../util/ParamReader.h"
+#include <../../opt/ros/indigo/include/grasping_msgs/Object.h>
 
 using namespace std;
 
@@ -116,6 +117,7 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
     goal.object = object;
     goal.group_name = ParamReader::getParamReader().groupArm;
 
+    
     cl_agni->sendGoal(goal);
 
     if(!cl_agni->waitForResult(ros::Duration(15, 0))) { // wait for 15 seconds
@@ -137,8 +139,11 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(std::string name) {
 
     grasping_msgs::Object object;
-    object.name = name;
-
+    if(!rosTools.getGraspingObjectByName(name, object)){
+      vector<moveit_msgs::Grasp> grasps;
+      ROS_DEBUG_STREAM("No CollisionObject matching with name: " << name);
+      return grasps;
+    }
     return generate_grasps(object);
 }
 
