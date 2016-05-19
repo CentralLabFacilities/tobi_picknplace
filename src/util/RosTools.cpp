@@ -7,6 +7,7 @@
 
 #include "RosTools.h"
 #include "ParamReader.h"
+#include <../../opt/ros/indigo/include/grasping_msgs/Object.h>
 
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
