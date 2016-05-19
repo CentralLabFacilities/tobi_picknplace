@@ -289,6 +289,10 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 
     vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(
             collisionObject);
+    
+    for(moveit_msgs::Grasp &i : grasps)
+        fillGrasp(i);
+    
     rosTools.publish_grasps_as_markerarray(grasps);
 
     return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
