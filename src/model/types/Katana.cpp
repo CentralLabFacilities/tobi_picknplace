@@ -290,6 +290,19 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(
             collisionObject);
     
+    //due to a wrong orientation of the grasps, we had to transform between the ee links and the base_link
+    for(moveit_msgs::Grasp i : grasps){
+	ROS_DEBUG("Converting grasp into tool_frame");
+	tfTransformer.transform(i, i, "katana_gripper_tool_frame");
+	
+	ROS_DEBUG("Converting grasp into tool_agni_frame");
+	i.grasp_pose.header.frame_id = "/katana_gripper_tool_agni_frame";
+
+	ROS_DEBUG("Converting grasp into base_link");
+	tfTransformer.transform(i, i, "base_link");
+    }
+      
+    
     for(moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
     
