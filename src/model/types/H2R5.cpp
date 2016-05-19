@@ -170,7 +170,8 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
         grasps = graspGenerator->generate_grasps(obj);
         //todo: do we have to do a transformation?
     }
-    /fill up with pre and post grasp postures, model specific!
+    
+    //fill up with pre and post grasp postures, model specific!
     for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
     
