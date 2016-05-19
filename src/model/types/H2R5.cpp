@@ -149,7 +149,7 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
             collisionObjectArmCoords.primitive_poses[0].position.x
                     - collisionObjectArmCoords.primitives[0].dimensions[0]
                             / 2.0;
-    ROS_INFO("tableHeightArmCoords: %f", tableHeightArmCoords);
+    ROS_INFO_STREAM("tableHeightArmCoords: " <<tableHeightArmCoords);
     vector<moveit_msgs::Grasp> grasps;
 
     if(graspGenerator->getName() == CENTROID_GRASP_NAME) {
