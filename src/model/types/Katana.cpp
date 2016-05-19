@@ -23,8 +23,7 @@ using namespace moveit::planning_interface;
 
 static const double DEFAULT_PLACE_HEIGHT = 0.15;
 
-Katana::Katana() :
-        Model() {
+Katana::Katana() : Model() {
 
     sensor_subscriber = nh.subscribe("sensor_states", 1,
             &Katana::sensorCallback, this);
@@ -211,10 +210,10 @@ bool Katana::isSomethingInGripper() const {
 //					< GRIPPER_THRESHOLD_DISTANCE;
 
     bool gripperClosed = fabs(
-            fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed)
+            fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed[0])
             < 0.05;
     bool gripperNearClosed = fabs(
-            fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed)
+            fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed[0])
             < 0.15;
 
 //	return (force && !gripperClosed) || (distance && !gripperNearClosed);

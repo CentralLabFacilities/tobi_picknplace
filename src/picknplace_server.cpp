@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
         ros::shutdown();
         return 0;
     }
-
+	cout << "Model: " << vm["model"].as<string>() << endl;
 	Model::Ptr model = ModelFactory::create(vm["model"].as<string>());
 
 	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));

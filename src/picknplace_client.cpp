@@ -79,7 +79,8 @@ void callServerMethod(int argc, char* argv[]) {
                 ("placeObjectAtExact", "places the object at the position given\n"
                 "args: x y z phi theta psi")
 		("graspObjectName", "grasp the Object by Name\n"
-		"args: nothing, object or object;surface" );
+		"args: nothing, object or object;surface" )
+		("findObjects", "returns graspable Object");
 
         //store(parse_command_line(argc, argv, desc), vm);
 
@@ -315,6 +316,9 @@ void callServerMethod(int argc, char* argv[]) {
             result = remoteServer->call<rst::generic::Dictionary>("graspObjectName", request);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
+    } else if (vm.count("findObjects")) {
+        boost::shared_ptr< void > request;
+        boost::shared_ptr< void > result = remoteServer->call< void >("findObjects", request);
     }
     else if (vm.count("graspObject")) {
         if (argc != 8) {

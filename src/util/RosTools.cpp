@@ -11,12 +11,15 @@
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
 #include <grasp_viewer/DisplayGrasps.h>
+#include <grasping_msgs/Object.h>
 
 using namespace std;
 
 const string OBJECT_NAME = "target_object";
 
 RosTools::RosTools() {
+  
+	ROS_DEBUG("RosTools::RosTools() called");
 
 	object_publisher = nh.advertise<moveit_msgs::CollisionObject>("collision_object", 1);
 	object_att_publisher = nh.advertise<moveit_msgs::AttachedCollisionObject>("attached_collision_object", 1);
@@ -25,6 +28,7 @@ RosTools::RosTools() {
 	clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
 
 	std::string service = "/display_grasp";
+	ROS_INFO("Wait for Service: %s", service.c_str());
 	ros::service::waitForService(service);
 	// TODO test if service was found
 	grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
@@ -75,7 +79,66 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 		return GraspReturnType::FAIL;
 	}
 }
+void RosTools::publish_collision_object(grasping_msgs::Object msg) {
+  
+  ParamReader& params = ParamReader::getParamReader();
+  
+  std::vector<moveit_msgs::CollisionObject> objects;
+  moveit_msgs::CollisionObject target_object;
+  moveit_msgs::AttachedCollisionObject attached_object;
+  
+  attached_object.object.id = msg.name;
+  attached_object.object.operation = attached_object.object.REMOVE;
+  object_att_publisher.publish(attached_object);
+    
+  ros::spinOnce();
+  
 
+  vector<geometry_msgs::Pose>::iterator poseIterator;
+  vector<shape_msgs::SolidPrimitive>::iterator primIterator;
+  
+  for(primIterator = msg.primitives.begin(); primIterator != msg.primitives.end(); primIterator++){
+    target_object.primitives.push_back(*primIterator);
+  }
+  
+  for(poseIterator = msg.primitive_poses.begin(); poseIterator != msg.primitive_poses.end(); poseIterator++){
+    target_object.primitive_poses.push_back(*poseIterator); 
+  }
+  
+  target_object.header.frame_id = params.frameArm;
+  target_object.id = msg.name;
+  target_object.mesh_poses = msg.mesh_poses;
+  target_object.meshes = msg.meshes;
+  target_object.operation = target_object.ADD;
+  
+  object_publisher.publish(target_object);
+  
+  objects.push_back(target_object);
+  planningInterface.addCollisionObjects(objects);
+  curObjects.push_back(target_object);
+  
+  ros::spinOnce();
+
+  clear_octomap(0.1);
+
+}
+
+void RosTools::clear_collision_objects() {
+  std::vector<std::string> objectids;
+  
+    std::cout << "Invoked clear_collision_objects. Removing " << curObjects.size() <<  " objects" << std::endl;
+   
+    for(moveit_msgs::CollisionObject object : curObjects){
+	objectids.push_back(object.id);
+	std::cout << "removing object " << object.id << " from planning scene" << std::endl;
+    }
+    
+    planningInterface.removeCollisionObjects(objectids);
+  
+    curObjects.clear();
+    
+    ros::spinOnce();
+}
 
 void RosTools::publish_collision_object(const string &id, ObjectShape shape, double sleep_seconds) {
 

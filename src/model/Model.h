@@ -28,8 +28,7 @@ public:
     typedef boost::shared_ptr<Model> Ptr;
 
     Model();
-    virtual ~Model() {
-    }
+    ~Model() {}
 
     virtual int getNumJoints() const;
     virtual std::vector<std::string> getJointNames() const;

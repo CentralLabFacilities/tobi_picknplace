@@ -72,7 +72,9 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     }
 
     grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
-
+    
+    rosTools.clear_collision_objects();
+    
     if(!results->objects.size()) {
         ROS_ERROR_STREAM("No objects found");
         return graspable_objects;
@@ -82,7 +84,9 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
         graspable_objects.push_back(obj.object);
         if(plan_grasps && !obj.grasps.size()) {
             ROS_WARN_STREAM("No grasps for object " << obj.object.name << " found");
-        }
+        } else {
+	  rosTools.publish_collision_object(obj.object);
+	}
     }
 
     ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");

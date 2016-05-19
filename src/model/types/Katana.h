@@ -28,10 +28,10 @@ public:
     typedef boost::shared_ptr<Katana> Ptr;
 
     Katana();
-    virtual ~Katana();
+    ~Katana();
 
-    virtual std::map<std::string, double> getJointAngles() const;
-    virtual std::vector<std::string> getJointNames() const;
+    //virtual std::map<std::string, double> getJointAngles() const;
+    //virtual std::vector<std::string> getJointNames() const;
     virtual void setJointAngle(const std::string &joint, double angle);
     virtual void setJointAngles(const std::map<std::string, double> &angle);
     virtual void setJointAngles(const std::vector<double> &angles);
@@ -46,12 +46,12 @@ public:
 
     virtual void fillGrasp(moveit_msgs::Grasp& grasp);
 
-    virtual ArmPoses getRememberedPoses() const;
-    virtual ArmPose getRememberedPose(const std::string &name) const;
+    //virtual ArmPoses getRememberedPoses() const;
+    //virtual ArmPose getRememberedPose(const std::string &name) const;
     virtual MoveResult moveTo(const EefPose &pose, bool linear,
             bool orientation);
     virtual MoveResult moveTo(const std::string &poseName, bool plan);
-    virtual void stop() const;
+    //virtual void stop() const;
 
     virtual bool isSomethingInGripper() const;
     virtual SensorReadings getGripperSensors() const;
