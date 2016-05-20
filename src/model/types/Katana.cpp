@@ -295,14 +295,23 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 
     for(moveit_msgs::Grasp &i : grasps)
     {
-      geometry_msgs::Quaternion quat = i.grasp_pose.pose.orientation; 
-      geometry_msgs::Quaternion rotation;
-      rotation.w = 0.7071;
-      rotation.x = 0.0;
-      rotation.y = 0.7071;
-      rotation.z = 0.0;
-      quat = rotation*quat;
-      i.grasp_pose.pose.orientation = quat;
+      Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w,i.grasp_pose.pose.orientation.x,i.grasp_pose.pose.orientation.y,i.grasp_pose.pose.orientation.z);// = i.grasp_pose.pose.orientation; 
+      Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5*M_PI, Eigen::Vector3f::UnitY())); // AngleAxis<float>(angle_in_radian, axis);
+      //rotation.w = 0.7071;
+      //rotation.x = 0.0;
+      //rotation.y = 0.7071;
+      //rotation.z = 0.0;
+      //quat = rotation*quat;
+      //i.grasp_pose.pose.orientation = quat;
+      Eigen::Matrix3f result= (rotation.toRotationMatrix()*quat.toRotationMatrix());
+      
+      Eigen::Quaternionf quatresult(result);
+      i.grasp_pose.pose.orientation.w = quatresult.w();
+      i.grasp_pose.pose.orientation.x = quatresult.x();
+      i.grasp_pose.pose.orientation.y = quatresult.y();
+      i.grasp_pose.pose.orientation.z = quatresult.z();
+
+      //result.
     }
     
     for(moveit_msgs::Grasp &i : grasps)
