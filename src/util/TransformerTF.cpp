@@ -68,6 +68,31 @@ bool TransformerTF::transform(const EefPose &pose, EefPose &poseOut, const strin
 	}
 }
 
+bool TransformerTF::localtransform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const string &to) const {
+  
+  geometry_msgs::PoseStamped ps;
+  
+	ps.pose.position.x = grasp.grasp_pose.pose.position.x;
+	ps.pose.position.y = grasp.grasp_pose.pose.position.y;
+	ps.pose.position.z = grasp.grasp_pose.pose.position.z;
+	ps.pose.orientation.w = grasp.grasp_pose.pose.orientation.w;
+	ps.pose.orientation.x = grasp.grasp_pose.pose.orientation.x;
+	ps.pose.orientation.y = grasp.grasp_pose.pose.orientation.y;
+	ps.pose.orientation.z = grasp.grasp_pose.pose.orientation.z;
+	ps.header.frame_id = grasp.grasp_pose.header.frame_id;
+
+  if(transform(ps, ps, to)) {
+		graspOut.grasp_pose.pose.position.x = grasp.grasp_pose.pose.position.x;
+		graspOut.grasp_pose.pose.position.y = grasp.grasp_pose.pose.position.y;
+		graspOut.grasp_pose.pose.position.z = grasp.grasp_pose.pose.position.z;
+		graspOut.grasp_pose.pose.orientation.w = ps.pose.orientation.w;
+		graspOut.grasp_pose.pose.orientation.x = ps.pose.orientation.x;
+		graspOut.grasp_pose.pose.orientation.y = ps.pose.orientation.y;
+		graspOut.grasp_pose.pose.orientation.z = ps.pose.orientation.z;
+		graspOut.grasp_pose.header.frame_id = to;
+  }
+}
+
 bool TransformerTF::transform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const string &to) const {
 
 	geometry_msgs::PoseStamped ps;
