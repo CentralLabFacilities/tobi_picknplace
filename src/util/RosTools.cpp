@@ -192,7 +192,7 @@ void RosTools::publish_collision_object(const string &id, ObjectShape shape, dou
 	clear_octomap(sleep_seconds);
 }
 
-void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps) {
+void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color) {
 	visualization_msgs::MarkerArray markers;
 	int i = 0;
 
@@ -207,7 +207,21 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
 		marker.scale.x = -0.1;
 		marker.scale.y = 0.002;
 		marker.scale.z = 0.002;
-		marker.color.b = 1.0;
+		if(color == "red"){
+		  marker.color.r = 1.0;
+		  marker.color.g = 0.0;
+		  marker.color.b = 0.0;
+		} else {
+		  if(color == "green") {
+		    marker.color.r = 0.0;
+		    marker.color.g = 1.0;
+		    marker.color.b = 0.0;
+		  } else {
+		    marker.color.r = 0.0;
+		    marker.color.g = 0.0;
+		    marker.color.b = 1.0;
+		  }
+		}
 		marker.color.a = 1.0;
 
 		markers.markers.push_back(marker);
