@@ -475,7 +475,7 @@ void Katana::fillGrasp(moveit_msgs::Grasp& grasp) {
     grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
 
     // direction: lift up
-    grasp.post_grasp_retreat.direction.vector.x = 1.0;
+    grasp.post_grasp_retreat.direction.vector.z = 1.0;
     grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
     grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm;
     grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
