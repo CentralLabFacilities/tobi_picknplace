@@ -290,24 +290,58 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(
             collisionObject);
     
-    //due to a wrong orientation of the grasps, we had to transform between the ee links and the base_link
-    for(moveit_msgs::Grasp i : grasps){
-	ROS_DEBUG("Converting grasp into tool_frame");
-	tfTransformer.transform(i, i, "katana_gripper_tool_frame");
-	
-	ROS_DEBUG("Converting grasp into tool_agni_frame");
-	i.grasp_pose.header.frame_id = "/katana_gripper_tool_agni_frame";
 
-	ROS_DEBUG("Converting grasp into base_link");
-	tfTransformer.transform(i, i, "base_link");
-    }
+    rosTools.publish_grasps_as_markerarray(grasps,"white");
+
+    for(moveit_msgs::Grasp &i : grasps)
+    {
+      Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w,i.grasp_pose.pose.orientation.x,i.grasp_pose.pose.orientation.y,i.grasp_pose.pose.orientation.z);// = i.grasp_pose.pose.orientation; 
+      Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5*M_PI, Eigen::Vector3f::UnitY())); // AngleAxis<float>(angle_in_radian, axis);
+      //rotation.w = 0.7071;
+      //rotation.x = 0.0;
+      //rotation.y = 0.7071;
+      //rotation.z = 0.0;
+      //quat = rotation*quat;
+      //i.grasp_pose.pose.orientation = quat;
+      Eigen::Matrix3f result= (quat.toRotationMatrix()*rotation.toRotationMatrix());
       
+      Eigen::Quaternionf quatresult(result);
+      i.grasp_pose.pose.orientation.w = quatresult.w();
+      i.grasp_pose.pose.orientation.x = quatresult.x();
+      i.grasp_pose.pose.orientation.y = quatresult.y();
+      i.grasp_pose.pose.orientation.z = quatresult.z();
+
+      //result.
+    }
     
     for(moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
     
+    /*rosTools.publish_grasps_as_markerarray(grasps,"white");
+    //due to a wrong orientation of the grasps, we had to transform between the ee links and the base_link
+    for(moveit_msgs::Grasp &i : grasps){
+	ROS_DEBUG("Converting grasp into tool_frame");
+	tfTransformer.transform(i, i, "katana_gripper_tool_frame");
+	i.grasp_pose.pose.orientation.
+    }
+    rosTools.publish_grasps_as_markerarray(grasps,"red");
+    
+    for(moveit_msgs::Grasp &i : grasps){
+	ROS_DEBUG("Converting grasp into tool_agni_frame");
+	tfTransformer.localtransform(i, i, "katana_gripper_tool_agni_frame");
+	i.grasp_pose.header.frame_id = "katana_gripper_tool_frame";
+	
+    }
+    rosTools.publish_grasps_as_markerarray(grasps,"green");
+    
+    for(moveit_msgs::Grasp &i : grasps){
+	ROS_DEBUG("Converting grasp into base_link");
+	tfTransformer.transform(i, i, "base_link");
+    }
+    */
     rosTools.publish_grasps_as_markerarray(grasps);
 
+    closeEef(false);
     return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
             simulate, startPose);
 }
@@ -442,7 +476,7 @@ void Katana::fillGrasp(moveit_msgs::Grasp& grasp) {
     grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
 
     // direction: lift up
-    grasp.post_grasp_retreat.direction.vector.x = 1.0;
+    grasp.post_grasp_retreat.direction.vector.z = 1.0;
     grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
     grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm;
     grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
