@@ -72,9 +72,9 @@ bool TransformerTF::localtransform(const moveit_msgs::Grasp &grasp, moveit_msgs:
   
   geometry_msgs::PoseStamped ps;
   
-	ps.pose.position.x = grasp.grasp_pose.pose.position.x;
-	ps.pose.position.y = grasp.grasp_pose.pose.position.y;
-	ps.pose.position.z = grasp.grasp_pose.pose.position.z;
+	ps.pose.position.x = 0.0;
+	ps.pose.position.y = 0.0;
+	ps.pose.position.z = 0.0;
 	ps.pose.orientation.w = grasp.grasp_pose.pose.orientation.w;
 	ps.pose.orientation.x = grasp.grasp_pose.pose.orientation.x;
 	ps.pose.orientation.y = grasp.grasp_pose.pose.orientation.y;
