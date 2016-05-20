@@ -23,6 +23,8 @@ private:
 
     ros::NodeHandle nh;
     ros::Publisher grasps_marker;
+    ros::Publisher grasps_marker_red;
+    ros::Publisher grasps_marker_green;
     ros::Publisher object_publisher;
     ros::Publisher object_att_publisher;
 

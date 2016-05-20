@@ -25,6 +25,9 @@ RosTools::RosTools() {
 	object_publisher = nh.advertise<moveit_msgs::CollisionObject>("collision_object", 1);
 	object_att_publisher = nh.advertise<moveit_msgs::AttachedCollisionObject>("attached_collision_object", 1);
 	grasps_marker = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker", 10);
+	grasps_marker_red = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_red", 10);
+	grasps_marker_green = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_green", 10);
+
 
 	clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
 
@@ -228,7 +231,17 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
 		i++;
 	}
 
-	grasps_marker.publish(markers);
+	if(color == "red")
+	{
+	  grasps_marker_red.publish(markers);
+	} else {
+	  if(color == "green")
+	  {
+	    grasps_marker_green.publish(markers);
+	  } else {
+	    grasps_marker.publish(markers);
+	  }
+	}
 }
 
 void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps){
