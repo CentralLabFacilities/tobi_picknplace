@@ -291,16 +291,29 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
             collisionObject);
     
 
-      
+    rosTools.publish_grasps_as_markerarray(grasps,"white");
+
+    for(moveit_msgs::Grasp &i : grasps)
+    {
+      geometry_msgs::Quaternion quat = i.grasp_pose.pose.orientation; 
+      geometry_msgs::Quaternion rotation;
+      rotation.w = 0.7071;
+      rotation.x = 0.0;
+      rotation.y = 0.7071;
+      rotation.z = 0.0;
+      quat = rotation*quat;
+      i.grasp_pose.pose.orientation = quat;
+    }
     
     for(moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
     
-    rosTools.publish_grasps_as_markerarray(grasps,"white");
+    /*rosTools.publish_grasps_as_markerarray(grasps,"white");
     //due to a wrong orientation of the grasps, we had to transform between the ee links and the base_link
     for(moveit_msgs::Grasp &i : grasps){
 	ROS_DEBUG("Converting grasp into tool_frame");
 	tfTransformer.transform(i, i, "katana_gripper_tool_frame");
+	i.grasp_pose.pose.orientation.
     }
     rosTools.publish_grasps_as_markerarray(grasps,"red");
     
@@ -308,6 +321,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 	ROS_DEBUG("Converting grasp into tool_agni_frame");
 	tfTransformer.localtransform(i, i, "katana_gripper_tool_agni_frame");
 	i.grasp_pose.header.frame_id = "katana_gripper_tool_frame";
+	
     }
     rosTools.publish_grasps_as_markerarray(grasps,"green");
     
@@ -315,7 +329,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 	ROS_DEBUG("Converting grasp into base_link");
 	tfTransformer.transform(i, i, "base_link");
     }
-    
+    */
     rosTools.publish_grasps_as_markerarray(grasps);
 
     return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
