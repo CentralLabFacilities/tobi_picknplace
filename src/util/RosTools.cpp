@@ -199,11 +199,11 @@ void RosTools::publish_collision_object(const string &id, ObjectShape shape, dou
 void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color) {
 	visualization_msgs::MarkerArray markers;
 	int i = 0;
-
+	
 	for (std::vector<moveit_msgs::Grasp>::iterator it = grasps.begin(); it != grasps.end(); ++it) {
 		visualization_msgs::Marker marker;
 		marker.header.stamp = ros::Time::now();
-		marker.header.frame_id = ParamReader::getParamReader().frameArm;
+		marker.header.frame_id = it->grasp_pose.header.frame_id;
 		marker.id = i;
 		marker.type = marker.ARROW;
 		marker.ns = "graspmarker";
