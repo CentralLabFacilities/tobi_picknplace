@@ -25,6 +25,8 @@ private:
     ros::Publisher grasps_marker;
     ros::Publisher grasps_marker_red;
     ros::Publisher grasps_marker_green;
+    ros::Publisher grasps_marker_white;
+
     ros::Publisher object_publisher;
     ros::Publisher object_att_publisher;
 

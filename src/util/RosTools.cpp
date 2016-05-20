@@ -27,6 +27,7 @@ RosTools::RosTools() {
 	grasps_marker = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker", 10);
 	grasps_marker_red = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_red", 10);
 	grasps_marker_green = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_green", 10);
+	grasps_marker_white = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_white", 10);
 
 
 	clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
@@ -220,9 +221,15 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
 		    marker.color.g = 1.0;
 		    marker.color.b = 0.0;
 		  } else {
-		    marker.color.r = 0.0;
-		    marker.color.g = 0.0;
-		    marker.color.b = 1.0;
+		    if(color == "white") {
+		      marker.color.r = 1.0;
+		      marker.color.g = 1.0;
+		      marker.color.b = 1.0;
+		    } else{	      
+		      marker.color.r = 0.0;
+		      marker.color.g = 0.0;
+		      marker.color.b = 1.0;
+		    }
 		  }
 		}
 		marker.color.a = 1.0;
@@ -239,7 +246,12 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
 	  {
 	    grasps_marker_green.publish(markers);
 	  } else {
-	    grasps_marker.publish(markers);
+	    if(color == "white")
+	    {
+	      grasps_marker_white.publish(markers);
+	    } else{
+	      grasps_marker.publish(markers);
+	    }
 	  }
 	}
 }
