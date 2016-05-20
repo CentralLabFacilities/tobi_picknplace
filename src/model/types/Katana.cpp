@@ -306,7 +306,8 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     
     for(moveit_msgs::Grasp &i : grasps){
 	ROS_DEBUG("Converting grasp into tool_agni_frame");
-	i.grasp_pose.header.frame_id = "katana_gripper_tool_frame";
+	tfTransformer.transform(i, i, "katana_gripper_tool_frame");
+	i.grasp_pose.header.frame_id = "katana_gripper_tool_agni_frame";
     }
     rosTools.publish_grasps_as_markerarray(grasps,"green");
     
