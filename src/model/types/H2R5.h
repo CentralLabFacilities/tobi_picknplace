@@ -9,8 +9,6 @@
 
 #include "../Model.h"
 
-#define H2R5_NAME "h2r5"
-
 class H2R5: public Model {
 public:
     typedef boost::shared_ptr<H2R5> Ptr;
@@ -29,8 +27,6 @@ public:
     virtual bool isSomethingInGripper() const {return true;};
     virtual SensorReadings getGripperSensors() const {};
 
-    virtual void fillGrasp(moveit_msgs::Grasp& grasp);
-
     virtual GraspReturnType graspObject(ObjectShape obj, bool simulate,
             const std::string &startPose = "");
     virtual GraspReturnType graspObject(const std::string &obj,
@@ -43,7 +39,8 @@ public:
             const std::string &startPose = "");
     virtual GraspReturnType placeObject(const std::string &surface,
             bool simulate, const std::string &startPose = "");
-
+    virtual trajectory_msgs::JointTrajectory generate_close_eef_msg();
+    virtual trajectory_msgs::JointTrajectory generate_open_eef_msg();
 private:
 
     RosTools rosTools;
@@ -54,8 +51,6 @@ private:
             EefPose obj);
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
-
-    trajectory_msgs::JointTrajectory generate_close_eef_msg();
-    trajectory_msgs::JointTrajectory generate_open_eef_msg();
-
+    std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+            const std::string &surface);
 };

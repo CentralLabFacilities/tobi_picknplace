@@ -78,6 +78,8 @@ void callServerMethod(int argc, char* argv[]) {
                 "args: x y z phi theta psi")
                 ("placeObjectAtExact", "places the object at the position given\n"
                 "args: x y z phi theta psi")
+                ("placeObjectOnSurface", "places the object on a given surface\n"
+                "args: Surface Name (str)")
 		("graspObjectName", "grasp the Object by Name\n"
 		"args: nothing, object or object;surface" )
 		("findObjects", "returns graspable Object");
@@ -404,6 +406,15 @@ void callServerMethod(int argc, char* argv[]) {
             boost::shared_ptr<rst::generic::Dictionary> result;
             result = remoteServer->call<rst::generic::Dictionary>("placeObjectAtExact", object);
             std::cout << "GraspablePose: \n" << result->DebugString() << std::endl;
+        }
+    } else if (vm.count("placeObjectOnSurface")) {
+        if (argc >= 4) {
+            std::cout << "Too many/few arguments entered nothing, object or object;surface is expected! use --help for more information " << argc << std::endl;
+        } else {
+	    boost::shared_ptr< std::string > request(new std::string(argv[2]));
+            boost::shared_ptr<rst::generic::Dictionary> result;
+            result = remoteServer->call<rst::generic::Dictionary>("placeObjectOnSurface", request);
+            std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
     } else if (vm.count("testGrasping")) {
         boost::shared_ptr<rst::geometry::Shape3DFloat> obstacles(Shape3DFloat::default_instance().New());

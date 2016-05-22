@@ -20,6 +20,7 @@
 #include "../../grasping/CentroidGrasping.h"
 #include "../../interface/AGNIInterface.h"
 #include <../../opt/ros/indigo/include/moveit_msgs/CollisionObject.h>
+#include <moveit_msgs/PlaceLocation.h>
 
 using namespace std;
 using namespace moveit;
@@ -154,12 +155,12 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
     ROS_DEBUG("Tranform collision object to ArmCoords");
     tfTransformer.transform(collisionObject, collisionObjectArmCoords,
             ParamReader::getParamReader().frameArm);
-    ROS_DEBUG("Calculate tableHeightArmCoords");
+    ROS_DEBUG("Calculate tableHeight base_link");
     double tableHeightArmCoords =
-            collisionObjectArmCoords.primitive_poses[0].position.x
-                    - collisionObjectArmCoords.primitives[0].dimensions[0]
+            collisionObjectArmCoords.primitive_poses[0].position.z
+                    - collisionObjectArmCoords.primitives[0].dimensions[2]
                             / 2.0;
-    ROS_DEBUG_STREAM("tableHeightArmCoords: " <<tableHeightArmCoords);
+    ROS_DEBUG_STREAM("tableHeight bl: " <<tableHeightArmCoords);
     vector<moveit_msgs::Grasp> grasps;
 
     if(graspGenerator->getName() == CENTROID_GRASP_NAME) {
@@ -203,13 +204,42 @@ GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
     return Model::placeObject("", locations, simulate, startPose);
 }
 
-GraspReturnType H2R5::placeObject(const string &obj, bool simulate,
+GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
         const string &startPose) {
-    ROS_INFO("### Invoked placeObject (str) ###");
-    ROS_ERROR("placing with surface string not suppported yet!");
-    GraspReturnType grt;
-    grt.result = GraspReturnType::FAIL;
-    return grt;
+    ROS_INFO("### Invoked placeObject Surface (str) ###");
+
+    vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(surface);
+    rosTools.publish_place_locations_as_markerarray(locations);
+
+    return Model::placeObject("", locations, simulate, startPose);
+}
+
+std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
+        const string &surface) {
+
+    ROS_INFO_STREAM(
+            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
+    geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
+    tf::Quaternion orientation = tf::Quaternion(orientMsg.x, orientMsg.y,
+            orientMsg.z, orientMsg.w);
+    if (orientation.w() == 0.0f && orientation.x() == 0.0f
+            && orientation.y() == 0.0f && orientation.z() == 0.0f) {
+        orientation = tf::createQuaternionFromRPY(0, -M_PI_2, 0);
+    }
+    
+    //TODO: extract surface/bounding box parameters
+    
+    std::vector<moveit_msgs::PlaceLocation> pls;
+    
+    //TODO: Add a for loop that iterates over x and y of surface to generate multiple place locations.
+    moveit_msgs::PlaceLocation pl;    
+    pl.place_pose = lastGraspPose;
+    //TODO: adjust place height by first moving the grasp to the floor with lastTableHeight and then up to the new height with something like:
+    //pl.place_pose.pose.position.z = pl.place_pose.pose.position.z - lastTableHeight + surface.
+    fillPlace(pl);
+    pls.push_back(pl);
+
+    return pls;
 }
 
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
@@ -272,10 +302,10 @@ trajectory_msgs::JointTrajectory H2R5::generate_close_eef_msg() {
     trajectory_msgs::JointTrajectoryPoint p;
 
     vector<double> pos_close = ParamReader::getParamReader().eefPosClosed;
-    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-       msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-       p.positions.push_back(pos_close.at(i));
-    }
+//    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+//       msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+//       p.positions.push_back(pos_close.at(i));
+//    }
 
     p.time_from_start = ros::Duration(1.0); //sec
 
@@ -289,10 +319,10 @@ trajectory_msgs::JointTrajectory H2R5::generate_open_eef_msg() {
     trajectory_msgs::JointTrajectoryPoint p;
 
     vector<double> pos_open = ParamReader::getParamReader().eefPosOpen;
-    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-        p.positions.push_back(pos_open.at(i));
-    }
+//    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+//        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+//        p.positions.push_back(pos_open.at(i));
+//    }
 
     p.time_from_start = ros::Duration(1.0);
 
@@ -300,33 +330,3 @@ trajectory_msgs::JointTrajectory H2R5::generate_open_eef_msg() {
 
     return msg;
 }
-
-void H2R5::fillGrasp(moveit_msgs::Grasp& grasp) {
-
-    ParamReader& params = ParamReader::getParamReader();
-
-    grasp.pre_grasp_approach.direction.vector.z = 1.0;
-    grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
-    grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
-    grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
-    grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
-
-    // direction: lift up
-    grasp.post_grasp_retreat.direction.vector.z = 1.0;
-    grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
-    grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; //base_link!
-    grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
-    grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
-
-    // open on approach and close when reached
-    if (grasp.pre_grasp_posture.points.size()==0)
-    {
-        grasp.pre_grasp_posture = generate_open_eef_msg();
-    }
-    if (grasp.grasp_posture.points.size()==0)
-    {
-        grasp.grasp_posture = generate_close_eef_msg();
-    }
-
-}
-

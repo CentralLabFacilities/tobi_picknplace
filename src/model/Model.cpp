@@ -9,6 +9,8 @@
 #include <ros/ros.h>
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <actionlib/client/simple_action_client.h>
+#include <moveit_msgs/PlaceGoal.h>
+#include <moveit_msgs/Grasp.h>
 
 #include "../grasping/CentroidGrasping.h"
 #include "../interface/AGNIInterface.h"
@@ -26,6 +28,7 @@ Model::Model() {
 		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
 
     lastHeightAboveTable = 0.0;
+    graspedObjectID = "";
 
     for (const string &i : ParamReader::getParamReader().touchLinks)
         touchlinks.push_back(i);
@@ -209,6 +212,8 @@ EefPose Model::getEefPose() const {
 }
 
 void Model::findObjects() {
+    ROS_INFO("Invoked findObjects");
+
     graspGenerator->find_objects(false);
 }
 
@@ -251,6 +256,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             lastGraspPose = resultGrasp.grasp_pose;
 
             lastHeightAboveTable = resultGrasp.grasp_pose.pose.position.x - tableHeightArmCoords;
+            graspedObjectID = resultGrasp.id;
             grt.result = GraspReturnType::SUCCESS;
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
         } else {
@@ -311,11 +317,11 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 
     for (int i = 0; i < 3; i++) {
         placeActionClient->sendGoal(goal);
-        SimpleClientGoalState resultState = placeActionClient->getState();
 
         if (!placeActionClient->waitForResult()) {
             ROS_INFO_STREAM("Place action returned early");
         }
+        SimpleClientGoalState resultState = placeActionClient->getState();
 
         bool isPending = resultState == SimpleClientGoalState::PENDING;
         bool isAborted = resultState == SimpleClientGoalState::ABORTED;
@@ -367,8 +373,8 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
         const vector<moveit_msgs::PlaceLocation>& locations, bool simulate) {
     moveit_msgs::PlaceGoal goal;
-    goal.attached_object_name = rosTools.getDefaultObjectName();
-    goal.allowed_touch_objects.push_back(rosTools.getDefaultObjectName());
+    goal.attached_object_name = graspedObjectID;
+    goal.allowed_touch_objects.push_back(graspedObjectID);
     goal.group_name = groupArm->getName();
     goal.allowed_planning_time = groupArm->getPlanningTime();
     goal.support_surface_name = surface;
@@ -423,4 +429,54 @@ void Model::attachDefaultObject() {
     ros::spinOnce();
     ros::WallDuration sleep_time(1);
     sleep_time.sleep();
+}
+
+void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
+
+    ParamReader& params = ParamReader::getParamReader();
+
+    grasp.pre_grasp_approach.direction.vector.z = 1.0;
+    grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
+    grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
+    grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
+    grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
+
+    // direction: lift up
+    grasp.post_grasp_retreat.direction.vector.z = 1.0;
+    grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
+    grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; //base_link!
+    grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
+    grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
+
+    // open on approach and close when reached
+    if (grasp.pre_grasp_posture.points.size()==0)
+    {
+        grasp.pre_grasp_posture = generate_open_eef_msg();
+    }
+    if (grasp.grasp_posture.points.size()==0)
+    {
+        grasp.grasp_posture = generate_close_eef_msg();
+    }
+
+}
+
+void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
+
+    ParamReader& params = ParamReader::getParamReader();
+
+    // place down in base_link
+    pl.pre_place_approach.direction.vector.z = -1.0;
+    pl.pre_place_approach.direction.header.stamp = ros::Time::now();
+    pl.pre_place_approach.direction.header.frame_id = "base_link";
+    pl.pre_place_approach.min_distance = params.approachMinDistance;
+    pl.pre_place_approach.desired_distance = params.approachDesiredDistance;
+
+    // retreat in negative hand direction
+    pl.post_place_retreat.direction.vector.z = -1.0;
+    pl.post_place_retreat.direction.header.stamp = ros::Time::now();
+    pl.post_place_retreat.direction.header.frame_id = params.frameGripper;
+    pl.post_place_retreat.min_distance = params.liftUpMinDistance;
+    pl.post_place_retreat.desired_distance = params.liftUpDesiredDistance;
+    
+    pl.post_place_posture = generate_open_eef_msg();
 }

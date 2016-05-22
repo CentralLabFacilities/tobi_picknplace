@@ -75,6 +75,8 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
     
     rosTools.clear_collision_objects();
+    rosTools.clear_grasps();
+    rosTools.clear_grasps_markerarray();
     
     if(!results->objects.size()) {
         ROS_ERROR_STREAM("No objects found");
@@ -99,7 +101,9 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object object) {
 
-    vector<moveit_msgs::Grasp> grasps;
+    vector<moveit_msgs::Grasp> grasps; 
+    rosTools.clear_grasps();
+    rosTools.clear_grasps_markerarray();
 
     if (!cl_agni) {
         ROS_ERROR_STREAM("AGNI client not found");
@@ -157,6 +161,16 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(
 		ObjectShape shape) {
 	return generate_grasps("dummy");
 }
+
+std::vector<moveit_msgs::PlaceLocation> AGNIInterface::generate_place_locations(double x, double y, double z, double w, double h, double d, tf::Quaternion targetOrientation) {
+    std::vector<moveit_msgs::PlaceLocation> pls;
+    
+    
+    //TODO: fill method;
+    
+    return pls;
+}
+
 
 
 void AGNIInterface::display_primitives(const vector<grasping_msgs::GraspableObject>& grasps) {

@@ -21,8 +21,6 @@
 
 #include "../Model.h"
 
-#define KATANA_NAME "katana"
-
 class Katana: public Model {
 public:
     typedef boost::shared_ptr<Katana> Ptr;
@@ -43,8 +41,6 @@ public:
 
     virtual void motorsOn();
     virtual void motorsOff();
-
-    virtual void fillGrasp(moveit_msgs::Grasp& grasp);
 
     //virtual ArmPoses getRememberedPoses() const;
     //virtual ArmPose getRememberedPose(const std::string &name) const;
@@ -68,7 +64,8 @@ public:
             const std::string &startPose = "");
     virtual GraspReturnType placeObject(const std::string &surface,
             bool simulate, const std::string &startPose = "");
-
+    virtual trajectory_msgs::JointTrajectory generate_close_eef_msg();
+    virtual trajectory_msgs::JointTrajectory generate_open_eef_msg();
 private:
 
     boost::scoped_ptr<
@@ -88,13 +85,6 @@ private:
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
 
-    std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(
-            ObjectShape shape);
-    std::vector<moveit_msgs::Grasp> generate_grasps_angle_trans(
-            moveit_msgs::CollisionObject shape);
-
     katana_msgs::JointMovementGoal buildMovementGoal(
             const std::string &poseName);
-
-
 };

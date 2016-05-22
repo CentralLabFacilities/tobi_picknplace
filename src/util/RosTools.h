@@ -16,6 +16,9 @@
 #include "../model/ModelTypes.h"
 #include "TransformerTF.h"
 #include <grasping_msgs/Object.h> 
+#include <shape_msgs/Plane.h>
+#include <geometry_msgs/Pose.h>
+
 
 class RosTools {
 private:
@@ -56,7 +59,9 @@ public:
 	void attach_collision_object();
 	bool has_attached_object();
 	void publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color = "blue");
+	void clear_grasps_markerarray();
 	void display_grasps(const std::vector<moveit_msgs::Grasp> &grasps);
+	void clear_grasps();
 	void publish_place_locations_as_markerarray(std::vector<moveit_msgs::PlaceLocation> loc);
 
 	void clear_octomap(double sleep_seconds = 1.0);
