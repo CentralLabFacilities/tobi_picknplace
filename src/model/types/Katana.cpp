@@ -469,7 +469,7 @@ void Katana::fillGrasp(moveit_msgs::Grasp& grasp) {
 
     ParamReader& params = ParamReader::getParamReader();
 
-    grasp.pre_grasp_approach.direction.vector.x = 1.0;
+    grasp.pre_grasp_approach.direction.vector.x = 2.0;
     grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
     grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
     grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
