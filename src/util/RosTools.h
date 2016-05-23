@@ -57,6 +57,7 @@ public:
 	bool has_attached_object();
 	void publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color = "blue");
 	void display_grasps(const std::vector<moveit_msgs::Grasp> &grasps);
+	void clear_grasps();
 	void publish_place_locations_as_markerarray(std::vector<moveit_msgs::PlaceLocation> loc);
 
 	void clear_octomap(double sleep_seconds = 1.0);
