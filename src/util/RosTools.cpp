@@ -256,6 +256,17 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
 	}
 }
 
+void RosTools::clear_grasps_markerarray() {
+	visualization_msgs::MarkerArray markers;
+
+	std::cout << "Invoked clear_grasps_markerarray" << std::endl;
+	grasps_marker_red.publish(markers);
+	grasps_marker_green.publish(markers);
+	grasps_marker_white.publish(markers);
+	grasps_marker.publish(markers);
+
+}
+
 void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps){
 	grasp_viewer::DisplayGraspsRequest disp_req; //note: also possible to use displaygrasps.request...
 	grasp_viewer::DisplayGraspsResponse disp_res;
@@ -264,6 +275,7 @@ void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps){
 }
 
 void RosTools::clear_grasps(){
+	std::cout << "Invoked clear_grasps" << std::endl;
 	grasp_viewer::DisplayGraspsRequest disp_req; //note: also possible to use displaygrasps.request...
 	grasp_viewer::DisplayGraspsResponse disp_res;
 	grasp_viz_client.call(disp_req, disp_res);

@@ -56,6 +56,7 @@ public:
 	void attach_collision_object();
 	bool has_attached_object();
 	void publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color = "blue");
+	void clear_grasps_markerarray();
 	void display_grasps(const std::vector<moveit_msgs::Grasp> &grasps);
 	void clear_grasps();
 	void publish_place_locations_as_markerarray(std::vector<moveit_msgs::PlaceLocation> loc);
