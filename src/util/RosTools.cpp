@@ -258,12 +258,17 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
 
 void RosTools::clear_grasps_markerarray() {
 	visualization_msgs::MarkerArray markers;
+	visualization_msgs::Marker marker;
+	
+	marker.action = 3; // DELETEALL
+	markers.markers.push_back(marker);
 
 	std::cout << "Invoked clear_grasps_markerarray" << std::endl;
 	grasps_marker_red.publish(markers);
 	grasps_marker_green.publish(markers);
 	grasps_marker_white.publish(markers);
 	grasps_marker.publish(markers);
+	
 
 }
 
