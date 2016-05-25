@@ -87,7 +87,7 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ParamReader& params = ParamReader::getParamReader();
-  std::vector<std::string> surface;
+  geometry_msgs::Pose pose;
   
   moveit_msgs::CollisionObject target_object;
   moveit_msgs::AttachedCollisionObject attached_object;
@@ -98,6 +98,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     
   ros::spinOnce();
   
+  ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[a]: " << msg.surface.coef[0]);
 
   vector<geometry_msgs::Pose>::iterator poseIterator;
   vector<shape_msgs::SolidPrimitive>::iterator primIterator;
@@ -118,6 +119,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   target_object.meshes = msg.meshes;
   target_object.operation = target_object.ADD;
   target_object.planes.push_back(msg.surface);
+  target_object.plane_poses.push_back(pose);
   
   object_publisher.publish(target_object);
   
@@ -387,6 +389,8 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
   for(poseIterator = obj.primitive_poses.begin(); poseIterator != obj.primitive_poses.end(); poseIterator++){
     msg.primitive_poses.push_back(*poseIterator);
   }
+  
+  ROS_DEBUG_STREAM("CollisionObject planesize: " << obj.planes.size());
   
   //get first (and only) supporting plane
   planeIterator = obj.planes.begin();

@@ -17,6 +17,7 @@
 #include "TransformerTF.h"
 #include <grasping_msgs/Object.h> 
 #include <shape_msgs/Plane.h>
+#include <geometry_msgs/Pose.h>
 
 class RosTools {
 private:
