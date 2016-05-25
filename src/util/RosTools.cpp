@@ -131,11 +131,11 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 void RosTools::clear_collision_objects() {
   std::vector<std::string> objectids;
   
-    std::cout << "Invoked clear_collision_objects. Removing " << curObjects.size() <<  " objects" << std::endl;
+    ROS_DEBUG_STREAM("Invoked clear_collision_objects. Removing " << curObjects.size() <<  " objects");
    
     for(moveit_msgs::CollisionObject object : curObjects){
 	objectids.push_back(object.id);
-	std::cout << "removing object " << object.id << " from planning scene" << std::endl;
+	ROS_DEBUG_STREAM("removing object " << object.id << " from planning scene");
     }
     
     planningInterface.removeCollisionObjects(objectids);
@@ -263,7 +263,7 @@ void RosTools::clear_grasps_markerarray() {
 	marker.action = 3; // DELETEALL
 	markers.markers.push_back(marker);
 
-	std::cout << "Invoked clear_grasps_markerarray" << std::endl;
+	ROS_DEBUG_STREAM("Invoked clear_grasps_markerarray");
 	grasps_marker_red.publish(markers);
 	grasps_marker_green.publish(markers);
 	grasps_marker_white.publish(markers);
@@ -280,7 +280,7 @@ void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps){
 }
 
 void RosTools::clear_grasps(){
-	std::cout << "Invoked clear_grasps" << std::endl;
+	ROS_DEBUG_STREAM("Invoked clear_grasps");
 	grasp_viewer::DisplayGraspsRequest disp_req; //note: also possible to use displaygrasps.request...
 	grasp_viewer::DisplayGraspsResponse disp_res;
 	grasp_viz_client.call(disp_req, disp_res);
@@ -357,7 +357,9 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
     vector<moveit_msgs::CollisionObject>::iterator colObjIt;
     for (colObjIt = currentPlanningScene.world.collision_objects.begin();
             colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
+	ROS_DEBUG_STREAM("CollisionObject: " << colObjIt->id << "TargetObject: " << id);
         if (colObjIt->id == id) {
+	    ROS_DEBUG_STREAM("Found CollisionObject with id" << colObjIt->id);
             obj = *colObjIt;
             return true;
         }

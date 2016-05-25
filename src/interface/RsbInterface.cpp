@@ -305,7 +305,7 @@ public:
 
     boost::shared_ptr<Dictionary> graspObjectName(
             boost::shared_ptr<string> input) {
-        ROS_DEBUG_STREAM("Invoked graspObjectName: " << input);
+        ROS_DEBUG_STREAM("Invoked graspObjectName: " << *input);
         return graspObjectName(input, false);
     }
 
