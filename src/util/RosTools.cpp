@@ -87,6 +87,7 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ParamReader& params = ParamReader::getParamReader();
+  std::vector<std::string> surface;
   
   moveit_msgs::CollisionObject target_object;
   moveit_msgs::AttachedCollisionObject attached_object;
@@ -120,6 +121,11 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   curObjects.push_back(target_object);
   planningInterface.addCollisionObjects(curObjects);
   
+  surface.push_back(msg.name);
+  surface.push_back(msg.support_surface);
+  
+  surfaces.push_back(surface);
+  
   ros::spinOnce();
 
   clear_octomap(0.1);
@@ -139,6 +145,7 @@ void RosTools::clear_collision_objects() {
     planningInterface.removeCollisionObjects(objectids);
   
     curObjects.clear();
+    surfaces.clear();
     
     ros::spinOnce();
 }
@@ -386,6 +393,13 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
   msg.name = obj.id;
   msg.mesh_poses = obj.mesh_poses;
   msg.meshes = obj.meshes;
+
+  for(int i = 0; i < surfaces.size(); i++){
+    if(surfaces[i][0] == msg.name){
+      msg.support_surface = surfaces[i][1];
+      break;
+    }
+  }
 
   return msg;
 }

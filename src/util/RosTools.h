@@ -39,6 +39,7 @@ private:
     moveit_msgs::PlanningScene currentPlanningScene;
     moveit::planning_interface::PlanningSceneInterface planningInterface; 
     std::vector<moveit_msgs::CollisionObject> curObjects;
+    std::vector<std::vector<std::string>> surfaces;
 
 public:
 	RosTools();
