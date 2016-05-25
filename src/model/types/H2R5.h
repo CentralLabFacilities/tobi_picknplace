@@ -9,8 +9,6 @@
 
 #include "../Model.h"
 
-#define H2R5_NAME "h2r5"
-
 class H2R5: public Model {
 public:
     typedef boost::shared_ptr<H2R5> Ptr;

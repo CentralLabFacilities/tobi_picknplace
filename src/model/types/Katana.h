@@ -21,8 +21,6 @@
 
 #include "../Model.h"
 
-#define KATANA_NAME "katana"
-
 class Katana: public Model {
 public:
     typedef boost::shared_ptr<Katana> Ptr;
