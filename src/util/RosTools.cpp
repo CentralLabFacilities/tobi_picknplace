@@ -111,7 +111,13 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     target_object.primitive_poses.push_back(*poseIterator); 
   }
   
-
+  pose.position.x = 0;
+  pose.position.y = 0;
+  pose.position.z = 0;
+  pose.orientation.w = 0;
+  pose.orientation.x = 0;
+  pose.orientation.y = 0;
+  pose.orientation.z = 0;
   
   target_object.header.frame_id = params.frameArm;
   target_object.id = msg.name;
@@ -376,6 +382,7 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
   
   grasping_msgs::Object msg;
   shape_msgs::Plane plane;
+
   ParamReader& params = ParamReader::getParamReader();
   
   vector<geometry_msgs::Pose>::iterator poseIterator;

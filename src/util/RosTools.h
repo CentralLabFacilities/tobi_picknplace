@@ -19,6 +19,7 @@
 #include <shape_msgs/Plane.h>
 #include <geometry_msgs/Pose.h>
 
+
 class RosTools {
 private:
     TransformerTF tfTransformer;
