@@ -101,7 +101,9 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object object) {
 
-    vector<moveit_msgs::Grasp> grasps;
+    vector<moveit_msgs::Grasp> grasps; 
+    rosTools.clear_grasps();
+    rosTools.clear_grasps_markerarray();
 
     if (!cl_agni) {
         ROS_ERROR_STREAM("AGNI client not found");
