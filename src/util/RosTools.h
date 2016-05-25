@@ -16,6 +16,7 @@
 #include "../model/ModelTypes.h"
 #include "TransformerTF.h"
 #include <grasping_msgs/Object.h> 
+#include <shape_msgs/Plane.h>
 
 class RosTools {
 private:
@@ -39,7 +40,6 @@ private:
     moveit_msgs::PlanningScene currentPlanningScene;
     moveit::planning_interface::PlanningSceneInterface planningInterface; 
     std::vector<moveit_msgs::CollisionObject> curObjects;
-    std::vector<std::vector<std::string>> surfaces;
 
 public:
 	RosTools();

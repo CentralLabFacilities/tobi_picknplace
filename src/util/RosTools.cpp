@@ -110,21 +110,19 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     target_object.primitive_poses.push_back(*poseIterator); 
   }
   
+
+  
   target_object.header.frame_id = params.frameArm;
   target_object.id = msg.name;
   target_object.mesh_poses = msg.mesh_poses;
   target_object.meshes = msg.meshes;
   target_object.operation = target_object.ADD;
+  target_object.planes.push_back(msg.surface);
   
   object_publisher.publish(target_object);
   
   curObjects.push_back(target_object);
   planningInterface.addCollisionObjects(curObjects);
-  
-  surface.push_back(msg.name);
-  surface.push_back(msg.support_surface);
-  
-  surfaces.push_back(surface);
   
   ros::spinOnce();
 
@@ -145,7 +143,6 @@ void RosTools::clear_collision_objects() {
     planningInterface.removeCollisionObjects(objectids);
   
     curObjects.clear();
-    surfaces.clear();
     
     ros::spinOnce();
 }
@@ -376,10 +373,12 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
 grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionObject obj){
   
   grasping_msgs::Object msg;
+  shape_msgs::Plane plane;
   ParamReader& params = ParamReader::getParamReader();
   
   vector<geometry_msgs::Pose>::iterator poseIterator;
   vector<shape_msgs::SolidPrimitive>::iterator primIterator;
+  vector<shape_msgs::Plane>::iterator planeIterator;
   
   for(primIterator = obj.primitives.begin(); primIterator != obj.primitives.end(); primIterator++){
     msg.primitives.push_back(*primIterator);
@@ -389,18 +388,17 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
     msg.primitive_poses.push_back(*poseIterator);
   }
   
+  //get first (and only) supporting plane
+  planeIterator = obj.planes.begin();
+  
+  plane = *planeIterator;
+  
   msg.header.frame_id = params.frameArm;
   msg.name = obj.id;
   msg.mesh_poses = obj.mesh_poses;
   msg.meshes = obj.meshes;
-
-  for(int i = 0; i < surfaces.size(); i++){
-    if(surfaces[i][0] == msg.name){
-      msg.support_surface = surfaces[i][1];
-      break;
-    }
-  }
-
+  msg.surface.coef = plane.coef;
+  
   return msg;
 }
 
