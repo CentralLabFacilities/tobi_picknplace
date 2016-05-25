@@ -88,7 +88,6 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ParamReader& params = ParamReader::getParamReader();
   
-  std::vector<moveit_msgs::CollisionObject> objects;
   moveit_msgs::CollisionObject target_object;
   moveit_msgs::AttachedCollisionObject attached_object;
   
@@ -118,9 +117,8 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   object_publisher.publish(target_object);
   
-  objects.push_back(target_object);
-  planningInterface.addCollisionObjects(objects);
   curObjects.push_back(target_object);
+  planningInterface.addCollisionObjects(curObjects);
   
   ros::spinOnce();
 
