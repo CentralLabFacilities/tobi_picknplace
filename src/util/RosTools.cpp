@@ -99,6 +99,9 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   ros::spinOnce();
   
   ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[a]: " << msg.surface.coef[0]);
+  ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[b]: " << msg.surface.coef[1]);
+  ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[c]: " << msg.surface.coef[2]);
+  ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[d]: " << msg.surface.coef[3]);
 
   vector<geometry_msgs::Pose>::iterator poseIterator;
   vector<shape_msgs::SolidPrimitive>::iterator primIterator;
@@ -124,8 +127,8 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   target_object.mesh_poses = msg.mesh_poses;
   target_object.meshes = msg.meshes;
   target_object.operation = target_object.ADD;
-  target_object.planes.push_back(msg.surface);
-  target_object.plane_poses.push_back(pose);
+  //target_object.planes.push_back(msg.surface); causes move_group to die
+  //target_object.plane_poses.push_back(pose);
   
   object_publisher.publish(target_object);
   
