@@ -87,7 +87,6 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ParamReader& params = ParamReader::getParamReader();
-  geometry_msgs::Pose pose;
   
   moveit_msgs::CollisionObject target_object;
   moveit_msgs::AttachedCollisionObject attached_object;
@@ -114,20 +113,22 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     target_object.primitive_poses.push_back(*poseIterator); 
   }
   
-  pose.position.x = 0;
-  pose.position.y = 0;
-  pose.position.z = 0;
-  pose.orientation.w = 0;
-  pose.orientation.x = 0;
-  pose.orientation.y = 0;
-  pose.orientation.z = 0;
+  //geometry_msgs::Pose pose;
+
+  //pose.position.x = 1.0;
+  //pose.position.y = 1.0;
+  //pose.position.z = 1.0;
+  //pose.orientation.w = 1.0;
+  //pose.orientation.x = 0.0;
+  //pose.orientation.y = 0.0;
+  //pose.orientation.z = 0.0;
   
-  target_object.header.frame_id = params.frameArm;
+  target_object.header.frame_id = msg.header.frame_id;
   target_object.id = msg.name;
   target_object.mesh_poses = msg.mesh_poses;
   target_object.meshes = msg.meshes;
   target_object.operation = target_object.ADD;
-  //target_object.planes.push_back(msg.surface); causes move_group to die
+  //target_object.planes.push_back(msg.surface); //causes move_group to die, see: https://github.com/flexible-collision-library/fcl/issues/12
   //target_object.plane_poses.push_back(pose);
   
   object_publisher.publish(target_object);
@@ -137,7 +138,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
   
   ros::spinOnce();
 
-  clear_octomap(0.1);
+  //clear_octomap(0.1);
 
 }
 
@@ -400,19 +401,29 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
     msg.primitive_poses.push_back(*poseIterator);
   }
   
-  ROS_DEBUG_STREAM("CollisionObject planesize: " << obj.planes.size());
+  //ROS_DEBUG_STREAM("CollisionObject planesize: " << obj.planes.size());
   
-  //get first (and only) supporting plane
-  planeIterator = obj.planes.begin();
-  
-  plane = *planeIterator;
+  //fill hight manually:
+      moveit_msgs::CollisionObject collisionObjectArmCoords;
+
+      tfTransformer.transform(obj, collisionObjectArmCoords,
+            "base_link");
+    ROS_DEBUG("Calculate tableHeight base_link");
+    double tableHeightArmCoords =
+            collisionObjectArmCoords.primitive_poses[0].position.z
+                    - collisionObjectArmCoords.primitives[0].dimensions[2]
+                            / 2.0;
+    ROS_DEBUG_STREAM("tableHeight bl: " <<tableHeightArmCoords);
+    
+    plane.coef[2]=1;
+    plane.coef[3]=-tableHeightArmCoords;
   
   msg.header.frame_id = params.frameArm;
   msg.name = obj.id;
   msg.mesh_poses = obj.mesh_poses;
   msg.meshes = obj.meshes;
-  msg.surface.coef = plane.coef;
-  
+  msg.surface = plane;
+    
   return msg;
 }
 

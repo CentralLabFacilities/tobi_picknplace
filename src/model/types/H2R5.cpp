@@ -154,12 +154,12 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
     ROS_DEBUG("Tranform collision object to ArmCoords");
     tfTransformer.transform(collisionObject, collisionObjectArmCoords,
             ParamReader::getParamReader().frameArm);
-    ROS_DEBUG("Calculate tableHeightArmCoords");
+    ROS_DEBUG("Calculate tableHeight base_link");
     double tableHeightArmCoords =
-            collisionObjectArmCoords.primitive_poses[0].position.x
-                    - collisionObjectArmCoords.primitives[0].dimensions[0]
+            collisionObjectArmCoords.primitive_poses[0].position.z
+                    - collisionObjectArmCoords.primitives[0].dimensions[2]
                             / 2.0;
-    ROS_DEBUG_STREAM("tableHeightArmCoords: " <<tableHeightArmCoords);
+    ROS_DEBUG_STREAM("tableHeight bl: " <<tableHeightArmCoords);
     vector<moveit_msgs::Grasp> grasps;
 
     if(graspGenerator->getName() == CENTROID_GRASP_NAME) {

@@ -272,17 +272,8 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         return grt;
     }
 
-    moveit_msgs::CollisionObject collisionObjectArmCoords;
-    tfTransformer.transform(collisionObject, collisionObjectArmCoords,
-            ParamReader::getParamReader().frameArm);
-    double tableHeightArmCoords =
-            collisionObjectArmCoords.primitive_poses[0].position.x
-                    - collisionObjectArmCoords.primitives[0].dimensions[0]
-                            / 2.0;
-
     vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(
-            collisionObject);
-    
+            collisionObject);    
 
     rosTools.publish_grasps_as_markerarray(grasps,"white");
 
