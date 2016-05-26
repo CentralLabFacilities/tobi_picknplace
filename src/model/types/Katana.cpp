@@ -231,13 +231,6 @@ GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
 
     ROS_INFO("### Invoked graspObject(ObjectShape) ###");
 
-    if (obj.widthMeter > 0.1) {
-        obj.widthMeter = 0.1;
-    }
-    if (obj.depthMeter > 0.1) {
-        obj.depthMeter = 0.1;
-    }
-
     ROS_INFO("Trying to pick object at %.3f, %.3f, %.3f (frame: %s).",
             obj.center.xMeter, obj.center.yMeter, obj.center.zMeter,
             obj.center.frame.c_str());
