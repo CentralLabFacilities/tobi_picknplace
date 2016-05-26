@@ -239,7 +239,7 @@ GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
     // publish collision object
     rosTools.publish_collision_object(objId, obj, 0.5);
 
-    vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(obj);
+    vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(obj);
 
     for(moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
@@ -280,7 +280,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
                     - collisionObjectArmCoords.primitives[0].dimensions[0]
                             / 2.0;
 
-    vector<moveit_msgs::Grasp> grasps = generate_grasps_angle_trans(
+    vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(
             collisionObject);
     
 
@@ -422,20 +422,6 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
     return graspGenerator->generate_place_locations(t.xMeter, t.yMeter, t.zMeter,
             obj.widthMeter, obj.heightMeter, obj.depthMeter, orientation);
 
-}
-
-std::vector<moveit_msgs::Grasp> Katana::generate_grasps_angle_trans(
-        ObjectShape shape) {
-    tfTransformer.transform(shape, shape,
-            ParamReader::getParamReader().frameArm);
-    return graspGenerator->generate_grasps(shape);
-}
-
-std::vector<moveit_msgs::Grasp> Katana::generate_grasps_angle_trans(
-        moveit_msgs::CollisionObject shape) {
-    tfTransformer.transform(shape, shape,
-            ParamReader::getParamReader().frameArm);
-    return graspGenerator->generate_grasps(shape);
 }
 
 void Katana::sensorCallback(const sensor_msgs::JointStatePtr& sensorReadings) {
