@@ -204,13 +204,16 @@ GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
     return Model::placeObject("", locations, simulate, startPose);
 }
 
-GraspReturnType H2R5::placeObject(const string &obj, bool simulate,
+GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
         const string &startPose) {
-    ROS_INFO("### Invoked placeObject (str) ###");
-    ROS_ERROR("placing with surface string not suppported yet!");
-    GraspReturnType grt;
-    grt.result = GraspReturnType::FAIL;
-    return grt;
+    ROS_INFO("### Invoked placeObject Surface (str) ###");
+
+    vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(surface);
+    rosTools.publish_place_locations_as_markerarray(locations);
+
+    return Model::placeObject("", locations, simulate, startPose);
+}
+
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         const string &surface) {
 
