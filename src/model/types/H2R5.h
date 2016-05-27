@@ -28,6 +28,7 @@ public:
     virtual SensorReadings getGripperSensors() const {};
 
     virtual void fillGrasp(moveit_msgs::Grasp& grasp);
+    virtual void fillPlace(moveit_msgs::PlaceLocation& pl);
 
     virtual GraspReturnType graspObject(ObjectShape obj, bool simulate,
             const std::string &startPose = "");

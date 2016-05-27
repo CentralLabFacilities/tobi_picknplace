@@ -330,3 +330,23 @@ void H2R5::fillGrasp(moveit_msgs::Grasp& grasp) {
 
 }
 
+void H2R5::fillPlace(moveit_msgs::PlaceLocation& pl) {
+
+    ParamReader& params = ParamReader::getParamReader();
+
+    // place down in base_link
+    pl.pre_place_approach.direction.vector.z = -1.0;
+    pl.pre_place_approach.direction.header.stamp = ros::Time::now();
+    pl.pre_place_approach.direction.header.frame_id = "base_link";
+    pl.pre_place_approach.min_distance = params.approachMinDistance;
+    pl.pre_place_approach.desired_distance = params.approachDesiredDistance;
+
+    // retreat in negative hand direction
+    pl.post_place_retreat.direction.vector.z = -1.0;
+    pl.post_place_retreat.direction.header.stamp = ros::Time::now();
+    pl.post_place_retreat.direction.header.frame_id = params.frameGripper;
+    pl.post_place_retreat.min_distance = params.liftUpMinDistance;
+    pl.post_place_retreat.desired_distance = params.liftUpDesiredDistance;
+    
+    pl.post_place_posture = generate_open_eef_msg();
+}
