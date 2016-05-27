@@ -102,6 +102,7 @@ protected:
     TransformerTF tfTransformer;
 
     double lastHeightAboveTable;
+    std::string graspedObjectID;
     geometry_msgs::PoseStamped lastGraspPose;
 
 private:

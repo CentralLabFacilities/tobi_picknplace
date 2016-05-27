@@ -9,6 +9,8 @@
 #include <ros/ros.h>
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <actionlib/client/simple_action_client.h>
+#include <moveit_msgs/PlaceGoal.h>
+#include <moveit_msgs/Grasp.h>
 
 #include "../grasping/CentroidGrasping.h"
 #include "../interface/AGNIInterface.h"
@@ -26,6 +28,7 @@ Model::Model() {
 		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
 
     lastHeightAboveTable = 0.0;
+    graspedObjectID = "";
 
     for (const string &i : ParamReader::getParamReader().touchLinks)
         touchlinks.push_back(i);
@@ -251,6 +254,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             lastGraspPose = resultGrasp.grasp_pose;
 
             lastHeightAboveTable = resultGrasp.grasp_pose.pose.position.x - tableHeightArmCoords;
+            graspedObjectID = resultGrasp.id;
             grt.result = GraspReturnType::SUCCESS;
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
         } else {
@@ -367,8 +371,8 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
         const vector<moveit_msgs::PlaceLocation>& locations, bool simulate) {
     moveit_msgs::PlaceGoal goal;
-    goal.attached_object_name = rosTools.getDefaultObjectName();
-    goal.allowed_touch_objects.push_back(rosTools.getDefaultObjectName());
+    goal.attached_object_name = graspedObjectID;
+    goal.allowed_touch_objects.push_back(graspedObjectID);
     goal.group_name = groupArm->getName();
     goal.allowed_planning_time = groupArm->getPlanningTime();
     goal.support_surface_name = surface;
