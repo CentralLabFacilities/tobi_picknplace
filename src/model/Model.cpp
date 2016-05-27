@@ -311,11 +311,11 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 
     for (int i = 0; i < 3; i++) {
         placeActionClient->sendGoal(goal);
-        SimpleClientGoalState resultState = placeActionClient->getState();
 
         if (!placeActionClient->waitForResult()) {
             ROS_INFO_STREAM("Place action returned early");
         }
+        SimpleClientGoalState resultState = placeActionClient->getState();
 
         bool isPending = resultState == SimpleClientGoalState::PENDING;
         bool isAborted = resultState == SimpleClientGoalState::ABORTED;
