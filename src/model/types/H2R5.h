@@ -53,6 +53,8 @@ private:
             EefPose obj);
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
+    std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+            const std::string &surface);
 
     trajectory_msgs::JointTrajectory generate_close_eef_msg();
     trajectory_msgs::JointTrajectory generate_open_eef_msg();
