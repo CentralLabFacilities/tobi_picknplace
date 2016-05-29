@@ -162,6 +162,16 @@ vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(
 	return generate_grasps("dummy");
 }
 
+std::vector<moveit_msgs::PlaceLocation> AGNIInterface::generate_place_locations(double x, double y, double z, double w, double h, double d, tf::Quaternion targetOrientation) {
+    std::vector<moveit_msgs::PlaceLocation> pls;
+    
+    
+    //TODO: fill method;
+    
+    return pls;
+}
+
+
 
 void AGNIInterface::display_primitives(const vector<grasping_msgs::GraspableObject>& grasps) {
 

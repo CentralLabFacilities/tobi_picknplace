@@ -32,7 +32,7 @@ public:
 	virtual std::vector<moveit_msgs::PlaceLocation> generate_placeloc_angle_only(double x, double y, double z) {};
 	virtual std::vector<moveit_msgs::PlaceLocation> generate_placeloc_angle_trans(double x, double y, double z) {};
 	virtual std::vector<moveit_msgs::PlaceLocation> generate_place_locations(double x, double y, double z, tf::Quaternion targetOrientation) {};
-	virtual std::vector<moveit_msgs::PlaceLocation> generate_place_locations(double x, double y, double z, double w, double h, double d, tf::Quaternion targetOrientation) {};
+	virtual std::vector<moveit_msgs::PlaceLocation> generate_place_locations(double x, double y, double z, double w, double h, double d, tf::Quaternion targetOrientation) = 0;
 
 	virtual std::string getName() { return name; }
 

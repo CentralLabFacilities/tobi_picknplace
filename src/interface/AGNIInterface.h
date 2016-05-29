@@ -28,8 +28,11 @@ public:
 
     virtual std::vector<moveit_msgs::Grasp> generate_grasps(grasping_msgs::Object object);
     virtual std::vector<moveit_msgs::Grasp> generate_grasps(std::string object_name);
-	virtual std::vector<moveit_msgs::Grasp> generate_grasps(moveit_msgs::CollisionObject object);
-	virtual std::vector<moveit_msgs::Grasp> generate_grasps(ObjectShape shape);
+    virtual std::vector<moveit_msgs::Grasp> generate_grasps(moveit_msgs::CollisionObject object);
+    virtual std::vector<moveit_msgs::Grasp> generate_grasps(ObjectShape shape);
+        
+    virtual std::vector<moveit_msgs::PlaceLocation> generate_place_locations(double x, double y, double z, double w, double h, double d, tf::Quaternion targetOrientation);
+
 
 private:
 	RosTools rosTools;
