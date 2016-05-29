@@ -311,6 +311,9 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
       new_grasp.grasp_pose.pose.position.x = i.grasp_pose.pose.position.x;
       new_grasp.grasp_pose.pose.position.y = i.grasp_pose.pose.position.y;
       new_grasp.grasp_pose.pose.position.z = i.grasp_pose.pose.position.z;
+      
+      new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+
       grasps.push_back(new_grasp);
     }
     
@@ -332,6 +335,8 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
       new_grasp.grasp_pose.pose.position.x = i.grasp_pose.pose.position.x;
       new_grasp.grasp_pose.pose.position.y = i.grasp_pose.pose.position.y;
       new_grasp.grasp_pose.pose.position.z = i.grasp_pose.pose.position.z;
+      
+      new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
       grasps.push_back(new_grasp);
     }
     
