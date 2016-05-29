@@ -256,7 +256,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             lastGraspPose = resultGrasp.grasp_pose;
 
             lastHeightAboveTable = resultGrasp.grasp_pose.pose.position.x - tableHeightArmCoords;
-            graspedObjectID = resultGrasp.id;
+            graspedObjectID = obj;
             grt.result = GraspReturnType::SUCCESS;
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
         } else {
