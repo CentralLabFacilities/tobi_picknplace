@@ -293,6 +293,48 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
       i.grasp_pose.pose.orientation.z = quatresult.z();
     }
     
+    //create more grasps by varying the angle by 0.2rad around X.
+    vector<moveit_msgs::Grasp> old_grasps = grasps;
+    for(moveit_msgs::Grasp &i : old_grasps)
+    {  
+      moveit_msgs::Grasp new_grasp;
+      Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w,i.grasp_pose.pose.orientation.x,i.grasp_pose.pose.orientation.y,i.grasp_pose.pose.orientation.z);
+      Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitX()));
+
+      Eigen::Matrix3f result= (quat.toRotationMatrix()*rotation.toRotationMatrix());
+      
+      Eigen::Quaternionf quatresult(result);
+      new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
+      new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
+      new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
+      new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
+      new_grasp.grasp_pose.pose.position.x = i.grasp_pose.pose.position.x;
+      new_grasp.grasp_pose.pose.position.y = i.grasp_pose.pose.position.y;
+      new_grasp.grasp_pose.pose.position.z = i.grasp_pose.pose.position.z;
+      grasps.push_back(new_grasp);
+    }
+    
+    //create more grasps by varying the angle by 0.2rad around Y.
+    old_grasps = grasps;
+    for(moveit_msgs::Grasp &i : old_grasps)
+    {  
+      moveit_msgs::Grasp new_grasp;
+      Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w,i.grasp_pose.pose.orientation.x,i.grasp_pose.pose.orientation.y,i.grasp_pose.pose.orientation.z);
+      Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitY()));
+
+      Eigen::Matrix3f result= (quat.toRotationMatrix()*rotation.toRotationMatrix());
+      
+      Eigen::Quaternionf quatresult(result);
+      new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
+      new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
+      new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
+      new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
+      new_grasp.grasp_pose.pose.position.x = i.grasp_pose.pose.position.x;
+      new_grasp.grasp_pose.pose.position.y = i.grasp_pose.pose.position.y;
+      new_grasp.grasp_pose.pose.position.z = i.grasp_pose.pose.position.z;
+      grasps.push_back(new_grasp);
+    }
+    
     for(moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
     
