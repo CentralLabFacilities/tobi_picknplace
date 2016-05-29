@@ -291,6 +291,54 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
       i.grasp_pose.pose.orientation.x = quatresult.x();
       i.grasp_pose.pose.orientation.y = quatresult.y();
       i.grasp_pose.pose.orientation.z = quatresult.z();
+
+    }
+    
+    //create more grasps by varying the angle by 0.2rad around X.
+    vector<moveit_msgs::Grasp> old_grasps = grasps;
+    for(moveit_msgs::Grasp &i : old_grasps)
+    {  
+      moveit_msgs::Grasp new_grasp;
+      Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w,i.grasp_pose.pose.orientation.x,i.grasp_pose.pose.orientation.y,i.grasp_pose.pose.orientation.z);
+      Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitX()));
+
+      Eigen::Matrix3f result= (quat.toRotationMatrix()*rotation.toRotationMatrix());
+      
+      Eigen::Quaternionf quatresult(result);
+      new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
+      new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
+      new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
+      new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
+      new_grasp.grasp_pose.pose.position.x = i.grasp_pose.pose.position.x;
+      new_grasp.grasp_pose.pose.position.y = i.grasp_pose.pose.position.y;
+      new_grasp.grasp_pose.pose.position.z = i.grasp_pose.pose.position.z;
+      
+      new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+
+      grasps.push_back(new_grasp);
+    }
+    
+    //create more grasps by varying the angle by 0.2rad around Y.
+    old_grasps = grasps;
+    for(moveit_msgs::Grasp &i : old_grasps)
+    {  
+      moveit_msgs::Grasp new_grasp;
+      Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w,i.grasp_pose.pose.orientation.x,i.grasp_pose.pose.orientation.y,i.grasp_pose.pose.orientation.z);
+      Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitY()));
+
+      Eigen::Matrix3f result= (quat.toRotationMatrix()*rotation.toRotationMatrix());
+      
+      Eigen::Quaternionf quatresult(result);
+      new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
+      new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
+      new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
+      new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
+      new_grasp.grasp_pose.pose.position.x = i.grasp_pose.pose.position.x;
+      new_grasp.grasp_pose.pose.position.y = i.grasp_pose.pose.position.y;
+      new_grasp.grasp_pose.pose.position.z = i.grasp_pose.pose.position.z;
+      
+      new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+      grasps.push_back(new_grasp);
     }
     
     for(moveit_msgs::Grasp &i : grasps)
@@ -332,13 +380,54 @@ GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
     return Model::placeObject("", locations, simulate, startPose);
 }
 
-GraspReturnType Katana::placeObject(const string &obj, bool simulate,
+GraspReturnType Katana::placeObject(const string &surface, bool simulate,
         const string &startPose) {
-    ROS_INFO("### Invoked placeObject (str) ###");
-    ROS_ERROR("placing with surface string not suppported yet!");
-    GraspReturnType grt;
-    grt.result = GraspReturnType::FAIL;
-    return grt;
+  
+    ROS_INFO("### Invoked placeObject Surface (str) ###");
+
+    vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(surface);
+    rosTools.publish_place_locations_as_markerarray(locations);
+
+    return Model::placeObject("", locations, simulate, startPose);
+}
+
+std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
+        const string &surface) {
+    
+    ROS_INFO_STREAM(
+            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
+    geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
+    tf::Quaternion orientation = tf::Quaternion(orientMsg.x, orientMsg.y,
+            orientMsg.z, orientMsg.w);
+    if (orientation.w() == 0.0f && orientation.x() == 0.0f
+            && orientation.y() == 0.0f && orientation.z() == 0.0f) {
+        orientation = tf::createQuaternionFromRPY(0, -M_PI_2, 0);
+    }
+    
+    moveit_msgs::CollisionObject colSurface;
+    bool success = rosTools.getCollisionObjectByName(surface, colSurface);
+    
+    if(!success)
+    {
+      ROS_ERROR_STREAM("No Plane with Name: " << surface);
+    }
+    colSurface.primitive_poses[0].position.x;
+    std::vector<moveit_msgs::PlaceLocation> pls;
+    ROS_INFO_STREAM("Plane TF: " << colSurface.header.frame_id);
+    ROS_INFO_STREAM("Surfacepos x: " << colSurface.primitive_poses[0].position.x << " Surfacepos y: " <<  colSurface.primitive_poses[0].position.y <<
+             " Surfacepos z: " <<  colSurface.primitive_poses[0].position.z);
+    ROS_INFO_STREAM("Surfacetype: " << colSurface.primitives[0].type << " Surfacesize x: " <<  colSurface.primitives[0].dimensions[0] <<
+             " Surfacesize y: " <<  colSurface.primitives[0].dimensions[1] << "Surfacesize z:" << colSurface.primitives[0].dimensions[2]);    
+    
+    //TODO: Add a for loop that iterates over x and y of surface to generate multiple place locations.
+    moveit_msgs::PlaceLocation pl;    
+    pl.place_pose = lastGraspPose;
+    //TODO: adjust place height by first moving the grasp to the floor with lastTableHeight and then up to the new height with something like:
+    //pl.place_pose.pose.position.z = pl.place_pose.pose.position.z - lastTableHeight + surface.
+    fillPlace(pl);
+    pls.push_back(pl);
+
+    return pls;
 }
 
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
@@ -423,9 +512,9 @@ trajectory_msgs::JointTrajectory Katana::generate_close_eef_msg() {
     msg.joint_names.push_back("katana_r_finger_joint");
     msg.points.resize(1);
     msg.points[0].positions.push_back(
-            params.eefPosOpen.at(0));
+            params.eefPosClosed.at(0));
     msg.points[0].positions.push_back(
-            params.eefPosOpen.at(0));
+            params.eefPosClosed.at(0));
 
     return msg;
 }
@@ -438,9 +527,9 @@ trajectory_msgs::JointTrajectory Katana::generate_open_eef_msg() {
     msg.joint_names.push_back("katana_r_finger_joint");
     msg.points.resize(1);
     msg.points[0].positions.push_back(
-            params.eefPosClosed.at(0));
+            params.eefPosOpen.at(0));
     msg.points[0].positions.push_back(
-            params.eefPosClosed.at(0));
+            params.eefPosOpen.at(0));
 
     return msg;
 }

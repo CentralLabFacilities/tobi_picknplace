@@ -18,6 +18,7 @@ public:
 	static ParamReader& getParamReader();
 
 	std::string model;
+	std::string robot;
 
     std::string groupArm;
     std::string groupEef;

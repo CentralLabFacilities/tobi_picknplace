@@ -12,6 +12,7 @@
   <arg name="graspNode" default="grasp_manager" />  <!--name of grasp generation node-->
   <arg name="transitions" default="" />
   <arg name="use_sim" default="false" />
+  <arg name="robot" default="meka" />
 
   <arg unless="$(arg use_sim)" name="use_sim_args" value="" />
   <arg     if="$(arg use_sim)" name="use_sim_args" value="--sim" />
@@ -27,6 +28,7 @@
     <param name="graspGen"                value="$(arg graspGen)" />
     <param name="fitterNode"              value="$(arg fitterNode)" />
     <param name="graspNode"               value="$(arg graspNode)" />
+    <param name="robot"			  value="$(arg robot)" />
     <rosparam file="$(find tobi_picknplace)/config/$(arg model).yaml" command="load" />
   </node>
 

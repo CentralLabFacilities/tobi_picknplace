@@ -18,6 +18,8 @@
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
 #include <katana_msgs/JointMovementAction.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Pose.h>
+
 
 #include "../Model.h"
 
@@ -73,8 +75,6 @@ private:
 
     ros::Subscriber sensor_subscriber;
 
-    geometry_msgs::PoseStamped lastGraspPose;
-
     mutable boost::mutex sensorMutex;
     std::map<std::string, short> currentSensorReadings;
 
@@ -84,6 +84,8 @@ private:
             EefPose obj);
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
+    std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+            const std::string &surface);
 
     katana_msgs::JointMovementGoal buildMovementGoal(
             const std::string &poseName);
