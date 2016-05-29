@@ -212,6 +212,8 @@ EefPose Model::getEefPose() const {
 }
 
 void Model::findObjects() {
+    ROS_INFO("Invoked findObjects");
+
     graspGenerator->find_objects(false);
 }
 
