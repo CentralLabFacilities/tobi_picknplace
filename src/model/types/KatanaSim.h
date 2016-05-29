@@ -45,13 +45,12 @@ public:
 	virtual bool isSomethingInGripper() const;
 	virtual SensorReadings getGripperSensors() const;
 	
-	virtual void fillGrasp(moveit_msgs::Grasp& grasp);
-
 	virtual GraspReturnType graspObject(ObjectShape obj, bool simulate, const std::string &startPose="");
 	virtual GraspReturnType graspObject(const std::string &obj, const std::string &surface, bool simulate, const std::string &startPose="");
 	virtual GraspReturnType placeObject(ObjectShape obj, bool simulate, const std::string &startPose="");
 	virtual GraspReturnType placeObject(EefPose obj, bool simulate, const std::string &startPose="");
 	virtual GraspReturnType placeObject(const std::string &surface, bool simulate, const std::string &startPose="");
-
+    virtual trajectory_msgs::JointTrajectory generate_close_eef_msg(){};
+    virtual trajectory_msgs::JointTrajectory generate_open_eef_msg(){};
 };
 

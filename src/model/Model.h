@@ -44,8 +44,9 @@ public:
     virtual void motorsOn() = 0;
     virtual void motorsOff() = 0;
 
-    virtual void fillGrasp(moveit_msgs::Grasp& grasp) = 0;
-
+    virtual void fillGrasp(moveit_msgs::Grasp& grasp);
+    virtual void fillPlace(moveit_msgs::PlaceLocation& pl);
+    
     virtual EefPose getEefPose() const;
     virtual ArmPoses getRememberedPoses() const;
     virtual ArmPose getRememberedPose(const std::string &name) const;
@@ -82,6 +83,9 @@ public:
     virtual GraspReturnType placeObject(const std::string &surface,
             std::vector<moveit_msgs::PlaceLocation> placeLocation,
             bool simulate, const std::string &startPose = "");
+    
+    virtual trajectory_msgs::JointTrajectory generate_close_eef_msg() = 0;
+    virtual trajectory_msgs::JointTrajectory generate_open_eef_msg() = 0;
 
 protected:
 
@@ -104,6 +108,8 @@ protected:
     double lastHeightAboveTable;
     std::string graspedObjectID;
     geometry_msgs::PoseStamped lastGraspPose;
+    
+
 
 private:
 

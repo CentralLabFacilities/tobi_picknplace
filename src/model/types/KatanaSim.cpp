@@ -90,11 +90,6 @@ void KatanaSim::stop() const {
 
 }
 
-void KatanaSim::fillGrasp(moveit_msgs::Grasp& grasp)
-{
-
-}
-
 bool KatanaSim::isSomethingInGripper() const {
 	ROS_INFO("Invoked isSomethingInGripper");
 	return false;

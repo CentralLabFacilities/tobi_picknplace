@@ -324,6 +324,13 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     }
     */
     rosTools.publish_grasps_as_markerarray(grasps);
+        moveit_msgs::CollisionObject collisionObjectArmCoords;
+    tfTransformer.transform(collisionObject, collisionObjectArmCoords,
+            ParamReader::getParamReader().frameArm);
+    double tableHeightArmCoords =
+            collisionObjectArmCoords.primitive_poses[0].position.x
+                    - collisionObjectArmCoords.primitives[0].dimensions[0]
+                            / 2.0;
 
     closeEef(false);
     return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
@@ -435,38 +442,32 @@ katana_msgs::JointMovementGoal Katana::buildMovementGoal(
     return goal;
 }
 
-void Katana::fillGrasp(moveit_msgs::Grasp& grasp) {
-
+trajectory_msgs::JointTrajectory Katana::generate_close_eef_msg() {
     ParamReader& params = ParamReader::getParamReader();
+    trajectory_msgs::JointTrajectory msg;
 
-    grasp.pre_grasp_approach.direction.vector.x = 2.0;
-    grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
-    grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
-    grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
-    grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
-
-    // direction: lift up
-    grasp.post_grasp_retreat.direction.vector.z = 1.0;
-    grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
-    grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm;
-    grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
-    grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
-
-    // open gripper before approaching
-    grasp.pre_grasp_posture.joint_names.push_back("katana_l_finger_joint");
-    grasp.pre_grasp_posture.joint_names.push_back("katana_r_finger_joint");
-    grasp.pre_grasp_posture.points.resize(1);
-    grasp.pre_grasp_posture.points[0].positions.push_back(
+    msg.joint_names.push_back("katana_l_finger_joint");
+    msg.joint_names.push_back("katana_r_finger_joint");
+    msg.points.resize(1);
+    msg.points[0].positions.push_back(
             params.eefPosOpen.at(0));
-    grasp.pre_grasp_posture.points[0].positions.push_back(
+    msg.points[0].positions.push_back(
             params.eefPosOpen.at(0));
 
-    // close gripper when reached
-    grasp.grasp_posture.joint_names.push_back("katana_l_finger_joint");
-    grasp.grasp_posture.joint_names.push_back("katana_r_finger_joint");
-    grasp.grasp_posture.points.resize(1);
-    grasp.grasp_posture.points[0].positions.push_back(
+    return msg;
+}
+
+trajectory_msgs::JointTrajectory Katana::generate_open_eef_msg() {
+    ParamReader& params = ParamReader::getParamReader();
+    trajectory_msgs::JointTrajectory msg;
+
+    msg.joint_names.push_back("katana_l_finger_joint");
+    msg.joint_names.push_back("katana_r_finger_joint");
+    msg.points.resize(1);
+    msg.points[0].positions.push_back(
             params.eefPosClosed.at(0));
-    grasp.grasp_posture.points[0].positions.push_back(
+    msg.points[0].positions.push_back(
             params.eefPosClosed.at(0));
+
+    return msg;
 }
