@@ -291,6 +291,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
       i.grasp_pose.pose.orientation.x = quatresult.x();
       i.grasp_pose.pose.orientation.y = quatresult.y();
       i.grasp_pose.pose.orientation.z = quatresult.z();
+
     }
     
     //create more grasps by varying the angle by 0.2rad around X.
@@ -379,13 +380,43 @@ GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
     return Model::placeObject("", locations, simulate, startPose);
 }
 
-GraspReturnType Katana::placeObject(const string &obj, bool simulate,
+GraspReturnType Katana::placeObject(const string &surface, bool simulate,
         const string &startPose) {
-    ROS_INFO("### Invoked placeObject (str) ###");
-    ROS_ERROR("placing with surface string not suppported yet!");
-    GraspReturnType grt;
-    grt.result = GraspReturnType::FAIL;
-    return grt;
+  
+    ROS_INFO("### Invoked placeObject Surface (str) ###");
+
+    vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(surface);
+    rosTools.publish_place_locations_as_markerarray(locations);
+
+    return Model::placeObject("", locations, simulate, startPose);
+}
+
+std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
+        const string &surface) {
+
+    ROS_INFO_STREAM(
+            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
+    geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
+    tf::Quaternion orientation = tf::Quaternion(orientMsg.x, orientMsg.y,
+            orientMsg.z, orientMsg.w);
+    if (orientation.w() == 0.0f && orientation.x() == 0.0f
+            && orientation.y() == 0.0f && orientation.z() == 0.0f) {
+        orientation = tf::createQuaternionFromRPY(0, -M_PI_2, 0);
+    }
+    
+    //TODO: extract surface/bounding box parameters
+    
+    std::vector<moveit_msgs::PlaceLocation> pls;
+    
+    //TODO: Add a for loop that iterates over x and y of surface to generate multiple place locations.
+    moveit_msgs::PlaceLocation pl;    
+    pl.place_pose = lastGraspPose;
+    //TODO: adjust place height by first moving the grasp to the floor with lastTableHeight and then up to the new height with something like:
+    //pl.place_pose.pose.position.z = pl.place_pose.pose.position.z - lastTableHeight + surface.
+    fillPlace(pl);
+    pls.push_back(pl);
+
+    return pls;
 }
 
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(

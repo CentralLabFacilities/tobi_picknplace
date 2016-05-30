@@ -11,6 +11,8 @@ using namespace std;
 
 static const string MODEL = "katana";
 
+static const string ROBOT = "meka";
+
 static const string GROUP_ARM = "left_arm";
 static const string GROUP_END_EFFECTOR = "left_hand";
 
@@ -83,6 +85,7 @@ static const double PLACE_AT_ANGLE_YAW_MAX = M_PI / 16;
 ParamReader::ParamReader():private_nh_("~") {
 
     private_nh_.param("model", model, MODEL);
+    private_nh_.param("robot", robot, ROBOT);
 
     private_nh_.param("groupArm", groupArm, GROUP_ARM);
     private_nh_.param("groupEe", groupEef, GROUP_END_EFFECTOR);

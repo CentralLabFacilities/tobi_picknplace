@@ -310,10 +310,11 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
         grt.result = GraspReturnType::FAIL;
         return grt;
     }
-
+    
     rosTools.clear_octomap();
 
     moveit_msgs::PlaceGoal goal = buildPlaceGoal(surface, locations, simulate);
+
 
     for (int i = 0; i < 3; i++) {
         placeActionClient->sendGoal(goal);
@@ -434,8 +435,17 @@ void Model::attachDefaultObject() {
 void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
 
     ParamReader& params = ParamReader::getParamReader();
+    if(params.robot == "tobi"){
+      grasp.pre_grasp_approach.direction.vector.x = 1.0;
+      grasp.pre_grasp_approach.direction.vector.y = 0.0;
+      grasp.pre_grasp_approach.direction.vector.z = 0.0;}
+    else if(params.robot == "meka"){
+      grasp.pre_grasp_approach.direction.vector.x = 0.0;
+      grasp.pre_grasp_approach.direction.vector.y = 0.0;
+      grasp.pre_grasp_approach.direction.vector.z = 1.0;}
+      else { ROS_ERROR("No known robot name, robot name should be tobi or meka");}
 
-    grasp.pre_grasp_approach.direction.vector.z = 1.0;
+    
     grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
     grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
     grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
