@@ -84,6 +84,8 @@ private:
             EefPose obj);
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
+    std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+            const std::string &surface);
 
     katana_msgs::JointMovementGoal buildMovementGoal(
             const std::string &poseName);
