@@ -73,8 +73,6 @@ private:
 
     ros::Subscriber sensor_subscriber;
 
-    geometry_msgs::PoseStamped lastGraspPose;
-
     mutable boost::mutex sensorMutex;
     std::map<std::string, short> currentSensorReadings;
 
