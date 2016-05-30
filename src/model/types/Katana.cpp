@@ -501,9 +501,9 @@ trajectory_msgs::JointTrajectory Katana::generate_close_eef_msg() {
     msg.joint_names.push_back("katana_r_finger_joint");
     msg.points.resize(1);
     msg.points[0].positions.push_back(
-            params.eefPosOpen.at(0));
+            params.eefPosClosed.at(0));
     msg.points[0].positions.push_back(
-            params.eefPosOpen.at(0));
+            params.eefPosClosed.at(0));
 
     return msg;
 }
@@ -516,9 +516,9 @@ trajectory_msgs::JointTrajectory Katana::generate_open_eef_msg() {
     msg.joint_names.push_back("katana_r_finger_joint");
     msg.points.resize(1);
     msg.points[0].positions.push_back(
-            params.eefPosClosed.at(0));
+            params.eefPosOpen.at(0));
     msg.points[0].positions.push_back(
-            params.eefPosClosed.at(0));
+            params.eefPosOpen.at(0));
 
     return msg;
 }
