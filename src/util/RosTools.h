@@ -51,6 +51,7 @@ public:
 	GraspReturnType::GraspResult graspResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 
 	void clear_collision_objects();
+        void clear_collision_objects_withTable();
 	void publish_collision_object(grasping_msgs::Object msg);
 	
 	void publish_collision_object(const std::string &id, ObjectShape shape, double sleep_seconds);
