@@ -272,7 +272,7 @@ void RosTools::clear_octomap(double sleep_seconds) {
 
 void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
     boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_DEBUG_STREAM("sceneCallback");
+    ROS_DEBUG_STREAM("sceneCallback: " << currentScene.world.collision_objects.size());
     currentPlanningScene = currentScene;
 }
 
