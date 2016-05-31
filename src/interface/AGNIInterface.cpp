@@ -51,7 +51,7 @@ AGNIInterface::~AGNIInterface() {
 vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = false) {
 
     vector<grasping_msgs::Object> graspable_objects;
-/**
+
     if (!cl_object_fitter) {
         ROS_ERROR_STREAM("Object fitter client not found");
         return graspable_objects;
@@ -95,8 +95,6 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");
 
     display_primitives(results->objects);
-**/
-    rosTools.clear_collision_objects(false);
 
     return graspable_objects;
 }
