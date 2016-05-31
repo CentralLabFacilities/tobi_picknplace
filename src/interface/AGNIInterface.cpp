@@ -75,8 +75,8 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
     
     rosTools.clear_collision_objects(false);
-    rosTools.clear_grasps();
-    rosTools.clear_grasps_markerarray();
+    //rosTools.clear_grasps();
+    //rosTools.clear_grasps_markerarray();
     
     if(!results->objects.size()) {
         ROS_ERROR_STREAM("No objects found");
