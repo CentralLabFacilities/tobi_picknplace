@@ -74,7 +74,7 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
 
     grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
     
-    rosTools.clear_collision_objects();
+    rosTools.clear_collision_objects(false);
     rosTools.clear_grasps();
     rosTools.clear_grasps_markerarray();
     

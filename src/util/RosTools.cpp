@@ -8,7 +8,6 @@
 #include "RosTools.h"
 #include "ParamReader.h"
 #include <../../opt/ros/indigo/include/grasping_msgs/Object.h>
-
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
 #include <grasp_viewer/DisplayGrasps.h>
@@ -29,7 +28,6 @@ RosTools::RosTools() {
     grasps_marker_green = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_green", 10);
     grasps_marker_white = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_white", 10);
 
-
     clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
 
     std::string service = "/display_grasp";
@@ -42,10 +40,6 @@ RosTools::RosTools() {
 }
 
 RosTools::~RosTools() {
-}
-
-string RosTools::getDefaultObjectName() const {
-    return OBJECT_NAME;
 }
 
 MoveResult RosTools::moveResultFromMoveit(
@@ -91,19 +85,11 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     ParamReader& params = ParamReader::getParamReader();
 
     moveit_msgs::CollisionObject target_object;
-    moveit_msgs::AttachedCollisionObject attached_object;
-
-    attached_object.object.id = msg.name;
-    attached_object.object.operation = attached_object.object.REMOVE;
-    object_att_publisher.publish(attached_object);
+    target_object.id = msg.name;
+    target_object.operation = target_object.REMOVE;
+    object_publisher.publish(target_object);
 
     ros::spinOnce();
-
-    ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[a]: " << msg.surface.coef[0]);
-    ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[b]: " << msg.surface.coef[1]);
-    ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[c]: " << msg.surface.coef[2]);
-    ROS_DEBUG_STREAM("grasping_msgs::Object planecoef[d]: " << msg.surface.coef[3]);
-
     vector<geometry_msgs::Pose>::iterator poseIterator;
     vector<shape_msgs::SolidPrimitive>::iterator primIterator;
 
@@ -115,101 +101,35 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
         target_object.primitive_poses.push_back(*poseIterator);
     }
 
-    //geometry_msgs::Pose pose;
-
-    //pose.position.x = 1.0;
-    //pose.position.y = 1.0;
-    //pose.position.z = 1.0;
-    //pose.orientation.w = 1.0;
-    //pose.orientation.x = 0.0;
-    //pose.orientation.y = 0.0;
-    //pose.orientation.z = 0.0;
-
     target_object.header.frame_id = msg.header.frame_id;
     target_object.id = msg.name;
     target_object.mesh_poses = msg.mesh_poses;
     target_object.meshes = msg.meshes;
     target_object.operation = target_object.ADD;
-    //target_object.planes.push_back(msg.surface); //causes move_group to die, see: https://github.com/flexible-collision-library/fcl/issues/12
-    //target_object.plane_poses.push_back(pose);
 
-    object_publisher.publish(target_object);
-
+    std::vector<moveit_msgs::CollisionObject> curObjects;
     curObjects.push_back(target_object);
     planningInterface.addCollisionObjects(curObjects);
 
     ros::spinOnce();
-
-    //clear_octomap(0.1);
-
 }
 
-void RosTools::clear_collision_objects() {
+void RosTools::clear_collision_objects(bool with_surface) {
     std::vector<std::string> objectids;
+    std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
+    ROS_DEBUG_STREAM("Invoked clear_collision_objects. Have " << knownCollisionObjects.size() << " objects");
 
-    ROS_DEBUG_STREAM("Invoked clear_collision_objects. Removing " << curObjects.size() << " objects");
-
-    for (moveit_msgs::CollisionObject object : curObjects) {
-            objectids.push_back(object.id);
-        ROS_DEBUG_STREAM("removing object " << object.id << " from planning scene");
+    for (string object : knownCollisionObjects) {
+        if (object.find("surface") != std::string::npos && !with_surface) {
+            ROS_DEBUG_STREAM("Didnt't clear surface");
+        } else {
+        objectids.push_back(object);
+        ROS_DEBUG_STREAM("removing object " << object << " from planning scene");
+        }
     }
-
+    ROS_DEBUG_STREAM("Invoked clear_collision_objects. Remove " << objectids.size() << " objects");
     planningInterface.removeCollisionObjects(objectids);
-
-    curObjects.clear();
-
     ros::spinOnce();
-}
-
-void RosTools::publish_collision_object(const string &id, ObjectShape shape, double sleep_seconds) {
-
-    ParamReader& params = ParamReader::getParamReader();
-
-    //declare attached_object attribute
-    moveit_msgs::CollisionObject target_object;
-    target_object.id = id;
-    target_object.header.frame_id = params.frameArm;
-
-    // first remove any leftovers
-    target_object.operation = target_object.REMOVE;
-    object_publisher.publish(target_object);
-
-    moveit_msgs::AttachedCollisionObject attached_object;
-    attached_object.object.id = id;
-    attached_object.object.operation = attached_object.object.REMOVE;
-    object_att_publisher.publish(attached_object);
-
-    ros::spinOnce();
-
-    tfTransformer.transform(shape, shape, params.frameArm);
-
-    geometry_msgs::Pose pose;
-    pose.orientation.w = 1.0;
-    pose.position.x = shape.center.xMeter + 0.015;
-    pose.position.y = shape.center.yMeter;
-    pose.position.z = shape.center.zMeter;
-
-    shape_msgs::SolidPrimitive primitive;
-    primitive.type = primitive.BOX;
-    primitive.dimensions.resize(3);
-    primitive.dimensions[0] = shape.heightMeter - 0.03;
-    primitive.dimensions[1] = shape.widthMeter;
-    primitive.dimensions[2] = shape.depthMeter;
-    //	primitive.dimensions[1] = 0.02;
-    //	primitive.dimensions[2] = 0.02;
-    target_object.primitives.push_back(primitive);
-    target_object.primitive_poses.push_back(pose);
-    target_object.operation = target_object.ADD;
-    target_object.header.frame_id = params.frameArm;
-    object_publisher.publish(target_object);
-
-    ROS_INFO("Publish collision object at %.3f,%.3f,%.3f (frame: %s) - h:%.3f w:%.3f d:%.3f",
-            pose.position.x, pose.position.y, pose.position.z, params.frameArm.c_str(),
-            shape.heightMeter, shape.widthMeter, shape.depthMeter);
-
-    ros::spinOnce();
-
-    clear_octomap(sleep_seconds);
 }
 
 void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color) {
@@ -227,45 +147,38 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
         marker.scale.x = -0.1;
         marker.scale.y = 0.002;
         marker.scale.z = 0.002;
+
         if (color == "red") {
             marker.color.r = 1.0;
             marker.color.g = 0.0;
             marker.color.b = 0.0;
+        } else if (color == "green") {
+            marker.color.r = 0.0;
+            marker.color.g = 1.0;
+            marker.color.b = 0.0;
+        } else if (color == "white") {
+            marker.color.r = 1.0;
+            marker.color.g = 1.0;
+            marker.color.b = 1.0;
         } else {
-            if (color == "green") {
-                marker.color.r = 0.0;
-                marker.color.g = 1.0;
-                marker.color.b = 0.0;
-            } else {
-                if (color == "white") {
-                    marker.color.r = 1.0;
-                    marker.color.g = 1.0;
-                    marker.color.b = 1.0;
-                } else {
-                    marker.color.r = 0.0;
-                    marker.color.g = 0.0;
-                    marker.color.b = 1.0;
-                }
-            }
+            marker.color.r = 0.0;
+            marker.color.g = 0.0;
+            marker.color.b = 1.0;
         }
-        marker.color.a = 1.0;
 
+        marker.color.a = 1.0;
         markers.markers.push_back(marker);
         i++;
     }
 
     if (color == "red") {
         grasps_marker_red.publish(markers);
+    } else if (color == "green") {
+        grasps_marker_green.publish(markers);
+    } else if (color == "white") {
+        grasps_marker_white.publish(markers);
     } else {
-        if (color == "green") {
-            grasps_marker_green.publish(markers);
-        } else {
-            if (color == "white") {
-                grasps_marker_white.publish(markers);
-            } else {
-                grasps_marker.publish(markers);
-            }
-        }
+        grasps_marker.publish(markers);
     }
 }
 
@@ -281,8 +194,6 @@ void RosTools::clear_grasps_markerarray() {
     grasps_marker_green.publish(markers);
     grasps_marker_white.publish(markers);
     grasps_marker.publish(markers);
-
-
 }
 
 void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps) {
@@ -320,7 +231,6 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
         markers.markers.push_back(marker);
         i++;
     }
-
     grasps_marker.publish(markers);
 }
 
@@ -356,7 +266,6 @@ void RosTools::clear_octomap(double sleep_seconds) {
         ROS_WARN("Failed to call clear octomap service.");
 
     ros::spinOnce();
-
     ros::WallDuration sleep_time(sleep_seconds);
     sleep_time.sleep();
 }
@@ -443,4 +352,62 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
         }
     }
     return false;
+}
+
+
+/////ALT
+
+string RosTools::getDefaultObjectName() const {
+    return OBJECT_NAME;
+}
+
+void RosTools::publish_collision_object(const string &id, ObjectShape shape, double sleep_seconds) {
+
+    ParamReader& params = ParamReader::getParamReader();
+
+    //declare attached_object attribute
+    moveit_msgs::CollisionObject target_object;
+    target_object.id = id;
+    target_object.header.frame_id = params.frameArm;
+
+    // first remove any leftovers
+    target_object.operation = target_object.REMOVE;
+    object_publisher.publish(target_object);
+
+    moveit_msgs::AttachedCollisionObject attached_object;
+    attached_object.object.id = id;
+    attached_object.object.operation = attached_object.object.REMOVE;
+    object_att_publisher.publish(attached_object);
+
+    ros::spinOnce();
+
+    tfTransformer.transform(shape, shape, params.frameArm);
+
+    geometry_msgs::Pose pose;
+    pose.orientation.w = 1.0;
+    pose.position.x = shape.center.xMeter + 0.015;
+    pose.position.y = shape.center.yMeter;
+    pose.position.z = shape.center.zMeter;
+
+    shape_msgs::SolidPrimitive primitive;
+    primitive.type = primitive.BOX;
+    primitive.dimensions.resize(3);
+    primitive.dimensions[0] = shape.heightMeter - 0.03;
+    primitive.dimensions[1] = shape.widthMeter;
+    primitive.dimensions[2] = shape.depthMeter;
+    //	primitive.dimensions[1] = 0.02;
+    //	primitive.dimensions[2] = 0.02;
+    target_object.primitives.push_back(primitive);
+    target_object.primitive_poses.push_back(pose);
+    target_object.operation = target_object.ADD;
+    target_object.header.frame_id = params.frameArm;
+    object_publisher.publish(target_object);
+
+    ROS_INFO("Publish collision object at %.3f,%.3f,%.3f (frame: %s) - h:%.3f w:%.3f d:%.3f",
+            pose.position.x, pose.position.y, pose.position.z, params.frameArm.c_str(),
+            shape.heightMeter, shape.widthMeter, shape.depthMeter);
+
+    ros::spinOnce();
+
+    clear_octomap(sleep_seconds);
 }
