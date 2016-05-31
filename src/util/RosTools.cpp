@@ -118,10 +118,13 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 void RosTools::clear_collision_objects(bool with_surface) {
     std::vector<std::string> objectids;
     std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
+    std::vector<moveit_msgs::CollisionObject> surfaceObjects;
     ROS_DEBUG_STREAM("Invoked clear_collision_objects. Have " << knownCollisionObjects.size() << " objects");
 
     for (string object : knownCollisionObjects) {
         if (object.find("surface") != std::string::npos && !with_surface) {
+            moveit_msgs::CollisionObject surfaceObject = currentPlanningScene.world.collision_objects;
+            surfaceObjects.push_back(surfaceObject);
             ROS_DEBUG_STREAM("Didnt't clear surface");
         } else {
         objectids.push_back(object);
@@ -130,6 +133,8 @@ void RosTools::clear_collision_objects(bool with_surface) {
     }
     ROS_DEBUG_STREAM("Invoked clear_collision_objects. Remove " << objectids.size() << " objects");
     planningInterface.removeCollisionObjects(objectids);
+    ros::spinOnce();
+    planningInterface.addCollisionObjects(surfaceObjects);
     ros::spinOnce();
 }
 
