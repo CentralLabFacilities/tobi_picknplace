@@ -133,7 +133,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     //target_object.planes.push_back(msg.surface); //causes move_group to die, see: https://github.com/flexible-collision-library/fcl/issues/12
     //target_object.plane_poses.push_back(pose);
 
-    //object_publisher.publish(target_object);
+    object_publisher.publish(target_object);
 
     curObjects.push_back(target_object);
     planningInterface.addCollisionObjects(curObjects);
@@ -150,26 +150,7 @@ void RosTools::clear_collision_objects() {
     ROS_DEBUG_STREAM("Invoked clear_collision_objects. Removing " << curObjects.size() << " objects");
 
     for (moveit_msgs::CollisionObject object : curObjects) {
-        if (!(object.id.find("surface") != string::npos)) {
             objectids.push_back(object.id);
-        }
-        ROS_DEBUG_STREAM("removing object " << object.id << " from planning scene");
-    }
-
-    planningInterface.removeCollisionObjects(objectids);
-
-    curObjects.clear();
-
-    ros::spinOnce();
-}
-
-void RosTools::clear_collision_objects_withTable() {
-    std::vector<std::string> objectids;
-
-    ROS_DEBUG_STREAM("Invoked clear_collision_objects. Removing " << curObjects.size() << " objects");
-
-    for (moveit_msgs::CollisionObject object : curObjects) {
-        objectids.push_back(object.id);
         ROS_DEBUG_STREAM("removing object " << object.id << " from planning scene");
     }
 
