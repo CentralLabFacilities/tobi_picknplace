@@ -18,6 +18,8 @@
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
 #include <katana_msgs/JointMovementAction.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Pose.h>
+
 
 #include "../Model.h"
 

@@ -393,7 +393,7 @@ GraspReturnType Katana::placeObject(const string &surface, bool simulate,
 
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
         const string &surface) {
-
+    
     ROS_INFO_STREAM(
             "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
     geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
@@ -404,9 +404,20 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
         orientation = tf::createQuaternionFromRPY(0, -M_PI_2, 0);
     }
     
-    //TODO: extract surface/bounding box parameters
+    moveit_msgs::CollisionObject colSurface;
+    bool success = rosTools.getCollisionObjectByName(surface, colSurface);
     
+    if(!success)
+    {
+      ROS_ERROR_STREAM("No Plane with Name: " << surface);
+    }
+    colSurface.primitive_poses[0].position.x;
     std::vector<moveit_msgs::PlaceLocation> pls;
+    ROS_INFO_STREAM("Plane TF: " << colSurface.header.frame_id);
+    ROS_INFO_STREAM("Surfacepos x: " << colSurface.primitive_poses[0].position.x << " Surfacepos y: " <<  colSurface.primitive_poses[0].position.y <<
+             " Surfacepos z: " <<  colSurface.primitive_poses[0].position.z);
+    ROS_INFO_STREAM("Surfacetype: " << colSurface.primitives[0].type << " Surfacesize x: " <<  colSurface.primitives[0].dimensions[0] <<
+             " Surfacesize y: " <<  colSurface.primitives[0].dimensions[1] << "Surfacesize z:" << colSurface.primitives[0].dimensions[2]);    
     
     //TODO: Add a for loop that iterates over x and y of surface to generate multiple place locations.
     moveit_msgs::PlaceLocation pl;    
