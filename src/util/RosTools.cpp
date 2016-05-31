@@ -82,6 +82,8 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 
+    
+    ROS_DEBUG_STREAM("Publish object with name " << msg.name);
     ParamReader& params = ParamReader::getParamReader();
 
     moveit_msgs::CollisionObject target_object;
