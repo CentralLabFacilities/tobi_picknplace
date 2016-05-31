@@ -11,6 +11,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <moveit_msgs/PlaceGoal.h>
 #include <moveit_msgs/Grasp.h>
+#include <eigen3/Eigen/src/Core/PlainObjectBase.h>
+#include <eigen3/Eigen/src/Geometry/Quaternion.h>
 
 #include "../grasping/CentroidGrasping.h"
 #include "../interface/AGNIInterface.h"
@@ -22,18 +24,16 @@ using namespace moveit::planning_interface;
 
 Model::Model() {
 
-	if(ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
-		graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
-	if(ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME)
-		graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
+    if (ParamReader::getParamReader().graspGen == CENTROID_GRASP_NAME)
+        graspGenerator = CentroidGrasping::Ptr(new CentroidGrasping());
+    if (ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME)
+        graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
 
     lastHeightAboveTable = 0.0;
     graspedObjectID = "";
 
     for (const string &i : ParamReader::getParamReader().touchLinks)
         touchlinks.push_back(i);
-
-    frame = ParamReader::getParamReader().frameGripper;
 
     groupArm = new moveit::planning_interface::MoveGroup(
             ParamReader::getParamReader().groupArm);
@@ -58,10 +58,10 @@ Model::Model() {
 
     pickActionClient.reset(
             new actionlib::SimpleActionClient<moveit_msgs::PickupAction>(nh,
-                    move_group::PICKUP_ACTION, false));
+            move_group::PICKUP_ACTION, false));
     placeActionClient.reset(
             new actionlib::SimpleActionClient<moveit_msgs::PlaceAction>(nh,
-                    move_group::PLACE_ACTION, false));
+            move_group::PLACE_ACTION, false));
 
     rosTools.waitForAction(pickActionClient, ros::Duration(0, 0),
             move_group::PICKUP_ACTION);
@@ -128,7 +128,7 @@ void Model::setJointAngles(const vector<double> &angles) {
 
     vector<string> joints = groupArm->getJoints();
     if (angles.size() < 0 || angles.size() > joints.size()) {
-        ROS_ERROR("Requested number of joints wrong! (%i)", (int )angles.size());
+        ROS_ERROR("Requested number of joints wrong! (%i)", (int) angles.size());
         return;
     }
 
@@ -177,13 +177,13 @@ ArmPoses Model::getRememberedPoses() const {
         jmg->getVariableDefaultPositions(name, angles);
         poses[name] = angles;
     }
-    ROS_DEBUG("poses %d, names %d", (int )poses.size(), (int )names.size());
+    ROS_DEBUG("poses %d, names %d", (int) poses.size(), (int) names.size());
     return poses;
 }
 
 ArmPose Model::getRememberedPose(const std::string &name) const {
     const robot_model::JointModelGroup* jmg =
-                groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(groupArm->getName());
+            groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(groupArm->getName());
     map<string, double> angles;
     jmg->getVariableDefaultPositions(name, angles);
     return angles;
@@ -217,7 +217,7 @@ void Model::findObjects() {
     graspGenerator->find_objects(false);
 }
 
-GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
+GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, bool simulate, const string &startPose) {
 
     //ROS_DEBUG("Trying to pick object %s on %s (height: %.3f).", obj, surface, tableHeightArmCoords);
 
@@ -255,7 +255,10 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             grt.point.frame = resultGrasp.grasp_pose.header.frame_id;
             lastGraspPose = resultGrasp.grasp_pose;
 
-            lastHeightAboveTable = resultGrasp.grasp_pose.pose.position.x - tableHeightArmCoords;
+            moveit_msgs::CollisionObject colSurface;
+
+            rosTools.getCollisionObjectByName(surface, colSurface);
+            lastHeightAboveTable = colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z;
             graspedObjectID = obj;
             grt.result = GraspReturnType::SUCCESS;
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
@@ -278,7 +281,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
         }
     } else {
         ROS_WARN_STREAM(
-                "  Pick Action failed: " << pickActionClient->getState().toString() << " (" << pickActionClient->getResult()->error_code.val  << "): " << pickActionClient->getState().getText());
+                "  Pick Action failed: " << pickActionClient->getState().toString() << " (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
         grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
     }
     ROS_INFO("###########################");
@@ -287,7 +290,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
         grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
     }
 
-    rosTools.remove_collision_object();
+    rosTools.remove_collision_object(obj);
 
     if (grt.result != GraspReturnType::SUCCESS) {
         rosTools.detach_collision_object();
@@ -310,7 +313,7 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
         grt.result = GraspReturnType::FAIL;
         return grt;
     }
-    
+
     rosTools.clear_octomap();
 
     moveit_msgs::PlaceGoal goal = buildPlaceGoal(surface, locations, simulate);
@@ -365,12 +368,13 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
     if (!isSomethingInGripper()) {
         rosTools.detach_collision_object();
     }
-    rosTools.remove_collision_object();
+    //rosTools.remove_collision_object("");
 
     return grt;
 }
 
 //TODO: params
+
 moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
         const vector<moveit_msgs::PlaceLocation>& locations, bool simulate) {
     moveit_msgs::PlaceGoal goal;
@@ -392,6 +396,7 @@ moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
 }
 
 //TODO: params
+
 moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
         const string &supportSurface, const vector<moveit_msgs::Grasp> &grasps, bool simulate) {
 
@@ -400,7 +405,7 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
     goal.target_name = obj;
     goal.support_surface_name = supportSurface;
 
-    for(const string &i : touchlinks)
+    for (const string &i : touchlinks)
         goal.attached_object_touch_links.push_back(i);
     goal.group_name = groupArm->getName();
     goal.end_effector = ParamReader::getParamReader().endEffector;
@@ -416,16 +421,24 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
 }
 
 //TODO: params
+
 void Model::attachDefaultObject() {
+    ParamReader& params = ParamReader::getParamReader();
+    
     ROS_INFO("Publishing default object!");
+    //moveit_msgs::CollisionObject attachDefaultObj;
+    
+    //attachDefaultObj.header.frame_id = params.frameGripper;
+    //attachDefaultObj.id = rosTools.getDefaultObjectName();
+            
     ObjectShape shape;
     shape.heightMeter = 0.05;
     shape.widthMeter = 0.05;
     shape.depthMeter = 0.05;
-    shape.center.frame = frame;
+    shape.center.frame = params.frameGripper;
     rosTools.publish_collision_object(rosTools.getDefaultObjectName(), shape, 0.5);
 
-    groupEe->attachObject(rosTools.getDefaultObjectName(), frame, touchlinks);
+    groupEe->attachObject(rosTools.getDefaultObjectName(), params.frameGripper, touchlinks);
 
     ros::spinOnce();
     ros::WallDuration sleep_time(1);
@@ -435,17 +448,19 @@ void Model::attachDefaultObject() {
 void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
 
     ParamReader& params = ParamReader::getParamReader();
-    if(params.robot == "tobi"){
-      grasp.pre_grasp_approach.direction.vector.x = 1.0;
-      grasp.pre_grasp_approach.direction.vector.y = 0.0;
-      grasp.pre_grasp_approach.direction.vector.z = 0.0;}
-    else if(params.robot == "meka"){
-      grasp.pre_grasp_approach.direction.vector.x = 0.0;
-      grasp.pre_grasp_approach.direction.vector.y = 0.0;
-      grasp.pre_grasp_approach.direction.vector.z = 1.0;}
-      else { ROS_ERROR("No known robot name, robot name should be tobi or meka");}
+    if (params.robot == "tobi") {
+        grasp.pre_grasp_approach.direction.vector.x = 1.0;
+        grasp.pre_grasp_approach.direction.vector.y = 0.0;
+        grasp.pre_grasp_approach.direction.vector.z = 0.0;
+    } else if (params.robot == "meka") {
+        grasp.pre_grasp_approach.direction.vector.x = 0.0;
+        grasp.pre_grasp_approach.direction.vector.y = 0.0;
+        grasp.pre_grasp_approach.direction.vector.z = 1.0;
+    } else {
+        ROS_ERROR("No known robot name, robot name should be tobi or meka");
+    }
 
-    
+
     grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
     grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
     grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
@@ -459,12 +474,10 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
     grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
 
     // open on approach and close when reached
-    if (grasp.pre_grasp_posture.points.size()==0)
-    {
+    if (grasp.pre_grasp_posture.points.size() == 0) {
         grasp.pre_grasp_posture = generate_open_eef_msg();
     }
-    if (grasp.grasp_posture.points.size()==0)
-    {
+    if (grasp.grasp_posture.points.size() == 0) {
         grasp.grasp_posture = generate_close_eef_msg();
     }
 
@@ -477,7 +490,7 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
     // place down in base_link
     pl.pre_place_approach.direction.vector.z = -1.0;
     pl.pre_place_approach.direction.header.stamp = ros::Time::now();
-    pl.pre_place_approach.direction.header.frame_id = "base_link";
+    pl.pre_place_approach.direction.header.frame_id = params.frameArm;
     pl.pre_place_approach.min_distance = params.approachMinDistance;
     pl.pre_place_approach.desired_distance = params.approachDesiredDistance;
 
@@ -487,6 +500,75 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
     pl.post_place_retreat.direction.header.frame_id = params.frameGripper;
     pl.post_place_retreat.min_distance = params.liftUpMinDistance;
     pl.post_place_retreat.desired_distance = params.liftUpDesiredDistance;
-    
+
     pl.post_place_posture = generate_open_eef_msg();
+}
+
+std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
+        const string &surface) {
+
+    ROS_INFO_STREAM(
+            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
+    geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
+  /**  tf::Quaternion orientation = tf::Quaternion();
+    if (orientation.w() == 0.0f && orientation.x() == 0.0f
+            && orientation.y() == 0.0f && orientation.z() == 0.0f) {
+        ROS_INFO_STREAM("Use default orientation");
+        orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
+    }
+    if (lastHeightAboveTable == 0.0) {
+        lastHeightAboveTable = -0.15;
+        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
+    }**/
+
+        std::vector<moveit_msgs::PlaceLocation> pls;
+
+    moveit_msgs::CollisionObject colSurface;
+    bool success = rosTools.getCollisionObjectByName(surface, colSurface);
+
+    if (!success) {
+        ROS_ERROR_STREAM("No Plane with Name: " << surface);
+        return pls;
+    }
+    colSurface.primitive_poses[0].position.x;
+
+    float rounds = 5;
+    int place_rot = 8;
+    int rotation = 7;
+
+    float surfaceSizeX = colSurface.primitives[0].dimensions[0];
+    float surfaceSizeY = colSurface.primitives[0].dimensions[1];
+    float surfaceSizeZ = colSurface.primitives[0].dimensions[2];
+    float surfaceCenterX = colSurface.primitive_poses[0].position.x;
+    float surfaceCenterY = colSurface.primitive_poses[0].position.y;
+    float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
+
+    for (int x = 0; x < rounds; x++) {
+        for (int y = 0; y < place_rot; y++) {
+            moveit_msgs::PlaceLocation pl;
+            pl.place_pose.header.frame_id = colSurface.header.frame_id;
+            float param = y * 2 * M_PI / place_rot;
+            pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
+            pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
+            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable + surfaceSizeZ;
+            Eigen::Quaternionf quat(orientMsg.w,orientMsg.x, orientMsg.y, orientMsg.z);
+
+            for (int r = 0; r < rotation; r++) {
+                float rot = 2 * M_PI * r / rotation;
+                Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
+                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix()); 
+                Eigen::Quaternionf quatresult(result);
+                quatresult.normalize();
+                pl.place_pose.pose.orientation.x = quatresult.x();
+                pl.place_pose.pose.orientation.y = quatresult.y();
+                pl.place_pose.pose.orientation.z = quatresult.z();
+                pl.place_pose.pose.orientation.w = quatresult.w();
+                ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.orientation.x << " y: " << pl.place_pose.pose.orientation.y
+                        << " z: " << pl.place_pose.pose.orientation.z << " w: " << pl.place_pose.pose.orientation.y);
+                fillPlace(pl);
+                pls.push_back(pl);
+            }
+        }
+    }
+    return pls;
 }

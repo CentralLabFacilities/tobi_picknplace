@@ -317,9 +317,9 @@ public:
                 boost::algorithm::token_compress_on);
         GraspReturnType grt;
         if (items.size() == 0) {
-            grt = listener->requestGraspObject("", "", sim);
+            grt = listener->requestGraspObject("", "surface0", sim);
         } else if (items.size() == 1) {
-            grt = listener->requestGraspObject(items[0], "", sim);
+            grt = listener->requestGraspObject(items[0], "surface0", sim);
         } else {
             grt = listener->requestGraspObject(items[0], items[1], sim);
         }

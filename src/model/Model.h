@@ -46,6 +46,8 @@ public:
 
     virtual void fillGrasp(moveit_msgs::Grasp& grasp);
     virtual void fillPlace(moveit_msgs::PlaceLocation& pl);
+    virtual std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+        const std::string &surface);
     
     virtual EefPose getEefPose() const;
     virtual ArmPoses getRememberedPoses() const;
@@ -70,8 +72,7 @@ public:
     virtual GraspReturnType graspObject(const std::string &obj,
             const std::string &surface,
             const std::vector<moveit_msgs::Grasp> &grasps,
-            double tableHeightArmCoords, bool simulate,
-            const std::string &startPose);
+            bool simulate, const std::string &startPose);
 
     virtual GraspReturnType placeObject(ObjectShape obj, bool simulate,
             const std::string &startPose = "") = 0;

@@ -19,7 +19,6 @@
 #include <shape_msgs/Plane.h>
 #include <geometry_msgs/Pose.h>
 
-
 class RosTools {
 private:
     TransformerTF tfTransformer;
@@ -41,7 +40,6 @@ private:
     mutable boost::mutex sceneMutex;
     moveit_msgs::PlanningScene currentPlanningScene;
     moveit::planning_interface::PlanningSceneInterface planningInterface; 
-    std::vector<moveit_msgs::CollisionObject> curObjects;
 
 public:
 	RosTools();
@@ -50,12 +48,11 @@ public:
 	MoveResult moveResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 	GraspReturnType::GraspResult graspResultFromMoveit(moveit::planning_interface::MoveItErrorCode errorCode);
 
-	void clear_collision_objects();
-        void clear_collision_objects_withTable();
+	void clear_collision_objects(bool with_surface = false);
 	void publish_collision_object(grasping_msgs::Object msg);
 	
 	void publish_collision_object(const std::string &id, ObjectShape shape, double sleep_seconds);
-	void remove_collision_object();
+	void remove_collision_object(const std::string obj);
 	void detach_collision_object();
 	void attach_collision_object();
 	bool has_attached_object();

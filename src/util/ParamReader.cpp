@@ -17,7 +17,7 @@ static const string GROUP_ARM = "left_arm";
 static const string GROUP_END_EFFECTOR = "left_hand";
 
 static const string FRAME_ARM = "base_link";
-static const string FRAME_GRIPPER = "left_palm";
+static const string FRAME_GRIPPER = "left_hand";
 static const string END_EFFECTOR = "end_effector";
 
 static const string EEF_CMD_SCOPE = "/meka_roscontrol/left_hand_position_trajectory_controller/command";
