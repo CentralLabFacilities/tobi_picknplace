@@ -247,13 +247,7 @@ GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
 
     rosTools.publish_grasps_as_markerarray(grasps);
 
-    ObjectShape objArmFrame;
-    tfTransformer.transform(obj, objArmFrame,
-            ParamReader::getParamReader().frameArm);
-    double tableHeightArmFrame = objArmFrame.center.xMeter
-            - objArmFrame.heightMeter / 2.0;
-
-    return Model::graspObject(objId, "", grasps, tableHeightArmFrame, simulate,
+    return Model::graspObject(objId, "", grasps, simulate,
             startPose);
 }
 
@@ -343,17 +337,9 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         fillGrasp(i);
 
     rosTools.publish_grasps_as_markerarray(grasps);
-    moveit_msgs::CollisionObject collisionObjectArmCoords;
-    tfTransformer.transform(collisionObject, collisionObjectArmCoords,
-            ParamReader::getParamReader().frameArm);
-    double tableHeightArmCoords =
-            collisionObjectArmCoords.primitive_poses[0].position.x
-            - collisionObjectArmCoords.primitives[0].dimensions[0]
-            / 2.0;
-
+    
     closeEef(false);
-    return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
-            simulate, startPose);
+    return Model::graspObject(obj, surface, grasps, simulate, startPose);
 }
 
 GraspReturnType Katana::placeObject(EefPose obj, bool simulate,
@@ -418,8 +404,8 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
     ROS_INFO_STREAM("frame and orientation last grasp pose: " << lastGraspPose.header.frame_id << " x: " << lastGraspPose.pose.orientation.x << " y: "
             << lastGraspPose.pose.orientation.y << " z:" << lastGraspPose.pose.orientation.z << " w: " << lastGraspPose.pose.orientation.w);
 
-    int x_place_mass = 20;
-    int y_place_mass = 20;
+    int rounds = 20;
+    int place_rot = 16;
     int rotation = 30;
 
     float surfaceSizeX = colSurface.primitives[0].dimensions[0];
@@ -429,12 +415,12 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
     float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
 
 
-    for (int x = 0; x < x_place_mass; x++) {
-        for (int y = 0; y < y_place_mass; y++) {
+    for (int x = 0; x < rounds; x++) {
+        for (int y = 0; y < place_rot; y++) {
             moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = colSurface.header.frame_id;
-            pl.place_pose.pose.position.x = surfaceCenterX - surfaceSizeX / 2 + surfaceSizeX * x / x_place_mass + surfaceSizeX/(2*x_place_mass);
-            pl.place_pose.pose.position.y = surfaceCenterY - surfaceSizeY / 2 + surfaceSizeY * y / y_place_mass + surfaceSizeY/(2*y_place_mass);
+            pl.place_pose.pose.position.x = surfaceCenterX + (x/rounds) * sin(y*2*M_PI/place_rot);
+            pl.place_pose.pose.position.y = surfaceCenterY + (x/rounds) * cos(y*2*M_PI/place_rot);
             pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
             ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
             Eigen::Quaternionf quat(lastGraspPose.pose.orientation.w, lastGraspPose.pose.orientation.x, lastGraspPose.pose.orientation.y, lastGraspPose.pose.orientation.z);

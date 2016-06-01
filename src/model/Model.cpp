@@ -217,7 +217,7 @@ void Model::findObjects() {
     graspGenerator->find_objects(false);
 }
 
-GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, double tableHeightArmCoords, bool simulate, const string &startPose) {
+GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, bool simulate, const string &startPose) {
 
     //ROS_DEBUG("Trying to pick object %s on %s (height: %.3f).", obj, surface, tableHeightArmCoords);
 
@@ -254,8 +254,11 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             grt.point.zMeter = resultGrasp.grasp_pose.pose.position.z;
             grt.point.frame = resultGrasp.grasp_pose.header.frame_id;
             lastGraspPose = resultGrasp.grasp_pose;
+    
+            moveit_msgs::CollisionObject colSurface;
 
-            lastHeightAboveTable = resultGrasp.grasp_pose.pose.position.z - tableHeightArmCoords;
+            rosTools.getCollisionObjectByName(surface, colSurface);
+            lastHeightAboveTable = colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z;
             graspedObjectID = obj;
             grt.result = GraspReturnType::SUCCESS;
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
