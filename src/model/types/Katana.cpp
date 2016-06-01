@@ -450,7 +450,8 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
                 pl.place_pose.pose.orientation.y = quatresult.y();
                 pl.place_pose.pose.orientation.z = quatresult.z();
                 pl.place_pose.pose.orientation.w = quatresult.w();
-                ROS_DEBUG_STREAM("x: " << quatresult.x << " y: " << quatresult.y << " z: " << quatresult.z << " w: " << quatresult.w);
+                ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.orientation.x << " y: " << pl.place_pose.pose.orientation.y 
+                        << " z: " << pl.place_pose.pose.orientation.z << " w: " << pl.place_pose.pose.orientation.y);
                 fillPlace(pl);
                 pls.push_back(pl);
             }
