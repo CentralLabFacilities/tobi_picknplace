@@ -447,7 +447,7 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
     //pl.place_pose.pose.position.z = pl.place_pose.pose.position.z - lastTableHeight + surface.
     fillPlace(pl);
     pls.push_back(pl);
-
+    rosTools.publish_place_locations_as_markerarray(pls);
     return pls;
 }
 
