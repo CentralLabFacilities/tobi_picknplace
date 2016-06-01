@@ -294,7 +294,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     }
 
     //create more grasps by varying the angle by 0.2rad around X.
-    /**vector<moveit_msgs::Grasp> old_grasps = grasps;
+    vector<moveit_msgs::Grasp> old_grasps = grasps;
     for(moveit_msgs::Grasp &i : old_grasps)
     {  
       moveit_msgs::Grasp new_grasp;
@@ -338,7 +338,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
       
       new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
       grasps.push_back(new_grasp);
-    }**/
+    }
 
     for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
