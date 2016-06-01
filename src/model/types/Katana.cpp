@@ -420,7 +420,7 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 
     int x_place_mass = 20;
     int y_place_mass = 20;
-    int rotation = 10;
+    int rotation = 30;
 
     float surfaceSizeX = colSurface.primitives[0].dimensions[0];
     float surfaceSizeY = colSurface.primitives[0].dimensions[1];
@@ -443,7 +443,7 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
                 float rot = 2*M_PI*r/rotation;
                 Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
 
-                Eigen::Matrix3f result = (quat.toRotationMatrix() * rotate.toRotationMatrix());
+                Eigen::Matrix3f result = ( rotate.toRotationMatrix() * quat.toRotationMatrix());
 
                 Eigen::Quaternionf quatresult(result);
                 pl.place_pose.pose.orientation.x = quatresult.x();
