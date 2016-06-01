@@ -440,7 +440,8 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
             Eigen::Quaternionf quat(lastGraspPose.pose.orientation.w, lastGraspPose.pose.orientation.x, lastGraspPose.pose.orientation.y, lastGraspPose.pose.orientation.z);
 
             for (int r = 0; r < rotation; r++) {
-                Eigen::Quaternionf rotation(Eigen::AngleAxisf(2*M_PI*r/rotation, Eigen::Vector3f::UnitX()));
+                float rot = 2*M_PI*r/rotation;
+                Eigen::Quaternionf rotation(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitX()));
 
                 Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
 
