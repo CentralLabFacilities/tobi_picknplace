@@ -234,6 +234,7 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
     visualization_msgs::MarkerArray markers;
     int i = 0;
 
+    ROS_DEBUG_STREAM("Display place locations.");
     for (std::vector<moveit_msgs::PlaceLocation>::iterator it = loc.begin(); it != loc.end(); ++it) {
 
         visualization_msgs::Marker marker;
