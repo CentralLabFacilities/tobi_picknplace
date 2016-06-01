@@ -433,23 +433,24 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
         for (int y = 0; y < y_place_mass; y++) {
             moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = colSurface.header.frame_id;
-            pl.place_pose.pose.position.x = surfaceCenterX - surfaceSizeX / 2 + surfaceSizeX * x / 20;
-            pl.place_pose.pose.position.y = surfaceCenterY - surfaceSizeY / 2 + surfaceSizeY * y / 20;
+            pl.place_pose.pose.position.x = surfaceCenterX - surfaceSizeX / 2 + surfaceSizeX * x / x_place_mass + surfaceSizeX/(2*x_place_mass);
+            pl.place_pose.pose.position.y = surfaceCenterY - surfaceSizeY / 2 + surfaceSizeY * y / y_place_mass + surfaceSizeY/(2*y_place_mass);
             pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
             ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
             Eigen::Quaternionf quat(lastGraspPose.pose.orientation.w, lastGraspPose.pose.orientation.x, lastGraspPose.pose.orientation.y, lastGraspPose.pose.orientation.z);
 
             for (int r = 0; r < rotation; r++) {
                 float rot = 2*M_PI*r/rotation;
-                Eigen::Quaternionf rotation(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitX()));
+                Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
 
-                Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
+                Eigen::Matrix3f result = (quat.toRotationMatrix() * rotate.toRotationMatrix());
 
                 Eigen::Quaternionf quatresult(result);
                 pl.place_pose.pose.orientation.x = quatresult.x();
                 pl.place_pose.pose.orientation.y = quatresult.y();
                 pl.place_pose.pose.orientation.z = quatresult.z();
                 pl.place_pose.pose.orientation.w = quatresult.w();
+                ROS_DEBUG_STREAM("x: " << quatresult.x << " y: " << quatresult.y << " z: " << quatresult.z << " w: " << quatresult.w);
                 fillPlace(pl);
                 pls.push_back(pl);
             }
