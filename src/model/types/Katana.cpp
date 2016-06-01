@@ -15,6 +15,7 @@
 #include <control_msgs/GripperCommandAction.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <moveit/common_planning_interface_objects/common_objects.h>
+#include <eigen3/Eigen/src/Geometry/Quaternion.h>
 
 using namespace std;
 using namespace moveit;
@@ -427,17 +428,27 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
     float surfaceCenterY = colSurface.primitive_poses[0].position.y;
     float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
 
-    moveit_msgs::PlaceLocation pl;
 
     for (int x = 0; x < x_place_mass; x++) {
         for (int y = 0; y < y_place_mass; y++) {
+            moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = colSurface.header.frame_id;
             pl.place_pose.pose.position.x = surfaceCenterX - surfaceSizeX / 2 + surfaceSizeX * x / 20;
             pl.place_pose.pose.position.y = surfaceCenterY - surfaceSizeY / 2 + surfaceSizeY * y / 20;
             pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
             ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
+            Eigen::Quaternionf quat(lastGraspPose.pose.orientation.w, lastGraspPose.pose.orientation.x, lastGraspPose.pose.orientation.y, lastGraspPose.pose.orientation.z);
+
             for (int r = 0; r < rotation; r++) {
-                pl.place_pose.pose.orientation = lastGraspPose.pose.orientation.;
+                Eigen::Quaternionf rotation(Eigen::AngleAxisf(2*M_PI*r/rotation, Eigen::Vector3f::UnitX()));
+
+                Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
+
+                Eigen::Quaternionf quatresult(result);
+                pl.place_pose.pose.orientation.x = quatresult.x();
+                pl.place_pose.pose.orientation.y = quatresult.y();
+                pl.place_pose.pose.orientation.z = quatresult.z();
+                pl.place_pose.pose.orientation.w = quatresult.w();
                 fillPlace(pl);
                 pls.push_back(pl);
             }
