@@ -86,11 +86,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     ParamReader& params = ParamReader::getParamReader();
 
     moveit_msgs::CollisionObject target_object;
-    std::vector<std::string> remObjects;
-    remObjects.push_back(msg.name);
-    planningInterface.removeCollisionObjects(remObjects);
 
-    ros::spinOnce();
     vector<geometry_msgs::Pose>::iterator poseIterator;
     vector<shape_msgs::SolidPrimitive>::iterator primIterator;
 
