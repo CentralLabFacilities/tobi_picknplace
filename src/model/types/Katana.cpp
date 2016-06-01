@@ -30,7 +30,7 @@ Katana::Katana() : Model() {
 
     movementActionClient.reset(
             new actionlib::SimpleActionClient<katana_msgs::JointMovementAction>(
-                    nh, "katana_arm_controller/joint_movement_action", false));
+            nh, "katana_arm_controller/joint_movement_action", false));
 
     rosTools.waitForAction(movementActionClient, ros::Duration(0, 0),
             "katana_arm_controller/joint_movement_action");
@@ -174,14 +174,14 @@ bool Katana::isSomethingInGripper() const {
         ROS_ERROR("Cannot read current sensor values");
         return false;
     }
-//	ROS_DEBUG("sensor right distance inside near: %d",
-//			currentSensorReadings.at("katana_r_inside_near_distance_sensor"));
-//	ROS_DEBUG("sensor right distance inside far: %d",
-//			currentSensorReadings.at("katana_r_inside_far_distance_sensor"));
-//	ROS_DEBUG("sensor left distance inside near: %d",
-//			currentSensorReadings.at("katana_l_inside_near_distance_sensor"));
-//	ROS_DEBUG("sensor left distance inside far: height%d",
-//			currentSensorReadings.at("katana_l_inside_far_distance_sensor"));
+    //	ROS_DEBUG("sensor right distance inside near: %d",
+    //			currentSensorReadings.at("katana_r_inside_near_distance_sensor"));
+    //	ROS_DEBUG("sensor right distance inside far: %d",
+    //			currentSensorReadings.at("katana_r_inside_far_distance_sensor"));
+    //	ROS_DEBUG("sensor left distance inside near: %d",
+    //			currentSensorReadings.at("katana_l_inside_near_distance_sensor"));
+    //	ROS_DEBUG("sensor left distance inside far: height%d",
+    //			currentSensorReadings.at("katana_l_inside_far_distance_sensor"));
     ROS_DEBUG("sensor right force inside near: %d",
             currentSensorReadings.at("katana_r_inside_near_force_sensor"));
     ROS_DEBUG("sensor right force inside far: %d",
@@ -194,20 +194,20 @@ bool Katana::isSomethingInGripper() const {
     bool force = currentSensorReadings.at("katana_r_inside_near_force_sensor")
             > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_r_inside_far_force_sensor")
-                    > ParamReader::getParamReader().gripperThresholdDistance
+            > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_l_inside_near_force_sensor")
-                    > ParamReader::getParamReader().gripperThresholdDistance
+            > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_l_inside_far_force_sensor")
-                    > ParamReader::getParamReader().gripperThresholdDistance;
+            > ParamReader::getParamReader().gripperThresholdDistance;
 
-//	bool distance = currentSensorReadings.at("katana_r_inside_near_distance_sensor")
-//			< GRIPPER_THRESHOLD_DISTANCE
-//			|| currentSensorReadings.at("katana_r_inside_far_distance_sensor")
-//					< GRIPPER_THRESHOLD_DISTANCE
-//			|| currentSensorReadings.at("katana_l_inside_near_distance_sensor")
-//					< GRIPPER_THRESHOLD_DISTANCE
-//			|| currentSensorReadings.at("katana_l_inside_far_distance_sensor")
-//					< GRIPPER_THRESHOLD_DISTANCE;
+    //	bool distance = currentSensorReadings.at("katana_r_inside_near_distance_sensor")
+    //			< GRIPPER_THRESHOLD_DISTANCE
+    //			|| currentSensorReadings.at("katana_r_inside_far_distance_sensor")
+    //					< GRIPPER_THRESHOLD_DISTANCE
+    //			|| currentSensorReadings.at("katana_l_inside_near_distance_sensor")
+    //					< GRIPPER_THRESHOLD_DISTANCE
+    //			|| currentSensorReadings.at("katana_l_inside_far_distance_sensor")
+    //					< GRIPPER_THRESHOLD_DISTANCE;
 
     bool gripperClosed = fabs(
             fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed[0])
@@ -216,7 +216,7 @@ bool Katana::isSomethingInGripper() const {
             fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed[0])
             < 0.15;
 
-//	return (force && !gripperClosed) || (distance && !gripperNearClosed);
+    //	return (force && !gripperClosed) || (distance && !gripperNearClosed);
     return (force && !gripperClosed);
 }
 
@@ -241,7 +241,7 @@ GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
 
     vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(obj);
 
-    for(moveit_msgs::Grasp &i : grasps)
+    for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
 
     rosTools.publish_grasps_as_markerarray(grasps);
@@ -273,29 +273,28 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     }
 
     vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(
-            collisionObject);    
+            collisionObject);
 
-    rosTools.publish_grasps_as_markerarray(grasps,"white");
+    rosTools.publish_grasps_as_markerarray(grasps, "white");
 
-    
+
     //rotate all grasps by 90deg around Y to bring them into the correct coordinate system.
-    for(moveit_msgs::Grasp &i : grasps)
-    {
-      Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w,i.grasp_pose.pose.orientation.x,i.grasp_pose.pose.orientation.y,i.grasp_pose.pose.orientation.z);
-      Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5*M_PI, Eigen::Vector3f::UnitY()));
+    for (moveit_msgs::Grasp &i : grasps) {
+        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitY()));
 
-      Eigen::Matrix3f result= (quat.toRotationMatrix()*rotation.toRotationMatrix());
-      
-      Eigen::Quaternionf quatresult(result);
-      i.grasp_pose.pose.orientation.w = quatresult.w();
-      i.grasp_pose.pose.orientation.x = quatresult.x();
-      i.grasp_pose.pose.orientation.y = quatresult.y();
-      i.grasp_pose.pose.orientation.z = quatresult.z();
+        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
+
+        Eigen::Quaternionf quatresult(result);
+        i.grasp_pose.pose.orientation.w = quatresult.w();
+        i.grasp_pose.pose.orientation.x = quatresult.x();
+        i.grasp_pose.pose.orientation.y = quatresult.y();
+        i.grasp_pose.pose.orientation.z = quatresult.z();
 
     }
-    
+
     //create more grasps by varying the angle by 0.2rad around X.
-    vector<moveit_msgs::Grasp> old_grasps = grasps;
+    /**vector<moveit_msgs::Grasp> old_grasps = grasps;
     for(moveit_msgs::Grasp &i : old_grasps)
     {  
       moveit_msgs::Grasp new_grasp;
@@ -339,19 +338,19 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
       
       new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
       grasps.push_back(new_grasp);
-    }
-    
-    for(moveit_msgs::Grasp &i : grasps)
+    }**/
+
+    for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
-    
+
     rosTools.publish_grasps_as_markerarray(grasps);
-        moveit_msgs::CollisionObject collisionObjectArmCoords;
+    moveit_msgs::CollisionObject collisionObjectArmCoords;
     tfTransformer.transform(collisionObject, collisionObjectArmCoords,
             ParamReader::getParamReader().frameArm);
     double tableHeightArmCoords =
             collisionObjectArmCoords.primitive_poses[0].position.x
-                    - collisionObjectArmCoords.primitives[0].dimensions[0]
-                            / 2.0;
+            - collisionObjectArmCoords.primitives[0].dimensions[0]
+            / 2.0;
 
     closeEef(false);
     return Model::graspObject(obj, surface, grasps, tableHeightArmCoords,
@@ -382,7 +381,7 @@ GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
 
 GraspReturnType Katana::placeObject(const string &surface, bool simulate,
         const string &startPose) {
-  
+
     ROS_INFO("### Invoked placeObject Surface (str) ###");
 
     vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(surface);
@@ -393,7 +392,7 @@ GraspReturnType Katana::placeObject(const string &surface, bool simulate,
 
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
         const string &surface) {
-    
+
     ROS_INFO_STREAM(
             "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
     geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
@@ -403,24 +402,46 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
             && orientation.y() == 0.0f && orientation.z() == 0.0f) {
         orientation = tf::createQuaternionFromRPY(0, -M_PI_2, 0);
     }
-    
+
     moveit_msgs::CollisionObject colSurface;
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
-    
-    if(!success)
-    {
-      ROS_ERROR_STREAM("No Plane with Name: " << surface);
+
+    if (!success) {
+        ROS_ERROR_STREAM("No Plane with Name: " << surface);
     }
     colSurface.primitive_poses[0].position.x;
     std::vector<moveit_msgs::PlaceLocation> pls;
     ROS_INFO_STREAM("Plane TF: " << colSurface.header.frame_id);
-    ROS_INFO_STREAM("Surfacepos x: " << colSurface.primitive_poses[0].position.x << " Surfacepos y: " <<  colSurface.primitive_poses[0].position.y <<
-             " Surfacepos z: " <<  colSurface.primitive_poses[0].position.z);
-    ROS_INFO_STREAM("Surfacetype: " << colSurface.primitives[0].type << " Surfacesize x: " <<  colSurface.primitives[0].dimensions[0] <<
-             " Surfacesize y: " <<  colSurface.primitives[0].dimensions[1] << "Surfacesize z:" << colSurface.primitives[0].dimensions[2]);    
-    
-    //TODO: Add a for loop that iterates over x and y of surface to generate multiple place locations.
-    moveit_msgs::PlaceLocation pl;    
+    ROS_INFO_STREAM("Surfacepos x: " << colSurface.primitive_poses[0].position.x << " Surfacepos y: " << colSurface.primitive_poses[0].position.y <<
+            " Surfacepos z: " << colSurface.primitive_poses[0].position.z);
+    ROS_INFO_STREAM("Surfacetype: " << colSurface.primitives[0].type << " Surfacesize x: " << colSurface.primitives[0].dimensions[0] <<
+            " Surfacesize y: " << colSurface.primitives[0].dimensions[1] << "Surfacesize z:" << colSurface.primitives[0].dimensions[2]);
+    ROS_INFO_STREAM("frame and orientation last grasp pose: " << lastGraspPose.header.frame_id << " x: " << lastGraspPose.pose.orientation.x << " y: "
+            << lastGraspPose.pose.orientation.y << " z:" << lastGraspPose.pose.orientation.z << " w: " << lastGraspPose.pose.orientation.w);
+
+    int x_place_mass = 20;
+    int y_place_mass = 20;
+
+    float surfaceSizeX = colSurface.primitives[0].dimensions[0];
+    float surfaceSizeY = colSurface.primitives[0].dimensions[1];
+    float surfaceCenterX = colSurface.primitive_poses[0].position.x;
+    float surfaceCenterY = colSurface.primitive_poses[0].position.y;
+    float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
+
+    moveit_msgs::PlaceLocation pl;
+
+    for (int x; x < x_place_mass; x++) {
+        for (int y; y < y_place_mass; y++) {
+            pl.place_pose.header.frame_id = colSurface.header.frame_id;
+            pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
+            pl.place_pose.pose.position.x = surfaceCenterX - surfaceSizeX / 2 + surfaceSizeX * x / 20;
+            pl.place_pose.pose.position.y = surfaceCenterY - surfaceSizeY / 2 + surfaceSizeY * y / 20;
+            pl.place_pose.pose.position.z = surfaceCenterZ + lastHeightAboveTable;
+            ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
+            fillPlace(pl);
+            pls.push_back(pl);
+        }
+    }
     pl.place_pose = lastGraspPose;
     //TODO: adjust place height by first moving the grasp to the floor with lastTableHeight and then up to the new height with something like:
     //pl.place_pose.pose.position.z = pl.place_pose.pose.position.z - lastTableHeight + surface.
@@ -446,11 +467,11 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
     }
 
     Vec t = obj.translation;
-//	if (lastHeightAboveTable == 0.0) {
-//		t.xMeter += DEFAULT_PLACE_HEIGHT;
-//	} else {
-//		t.xMeter += lastHeightAboveTable;
-//	}
+    //	if (lastHeightAboveTable == 0.0) {
+    //		t.xMeter += DEFAULT_PLACE_HEIGHT;
+    //	} else {
+    //		t.xMeter += lastHeightAboveTable;
+    //	}
 
     return graspGenerator->generate_placeloc_angle_trans(t.xMeter, t.yMeter,
             t.zMeter);
