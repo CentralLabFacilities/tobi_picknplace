@@ -521,14 +521,16 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
         ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
     }**/
 
+        std::vector<moveit_msgs::PlaceLocation> pls;
+
     moveit_msgs::CollisionObject colSurface;
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
 
     if (!success) {
         ROS_ERROR_STREAM("No Plane with Name: " << surface);
+        return pls;
     }
     colSurface.primitive_poses[0].position.x;
-    std::vector<moveit_msgs::PlaceLocation> pls;
 
     float rounds = 5;
     int place_rot = 8;
@@ -548,7 +550,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
             pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
             pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
-            Eigen::Quaternionf quat(orientMsg.w,orientMsg.x, orientMsg.y, orientMsg.z+);
+            Eigen::Quaternionf quat(orientMsg.w,orientMsg.x, orientMsg.y, orientMsg.z);
 
             for (int r = 0; r < rotation; r++) {
                 float rot = 2 * M_PI * r / rotation;
