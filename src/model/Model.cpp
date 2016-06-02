@@ -290,7 +290,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
         grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
     }
 
-    rosTools.remove_collision_object();
+    rosTools.remove_collision_object(obj);
 
     if (grt.result != GraspReturnType::SUCCESS) {
         rosTools.detach_collision_object();
@@ -368,7 +368,7 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
     if (!isSomethingInGripper()) {
         rosTools.detach_collision_object();
     }
-    rosTools.remove_collision_object();
+    rosTools.remove_collision_object("");
 
     return grt;
 }

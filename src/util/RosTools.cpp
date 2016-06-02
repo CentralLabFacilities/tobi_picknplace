@@ -256,13 +256,38 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
     grasps_marker.publish(markers);
 }
 
-void RosTools::remove_collision_object() {
+void RosTools::remove_collision_object(const string obj) {
 
-    moveit_msgs::CollisionObject target_object;
-    target_object.id = OBJECT_NAME;
-    target_object.header.frame_id = ParamReader::getParamReader().frameArm;
-    target_object.operation = target_object.REMOVE;
-    object_publisher.publish(target_object);
+    if (obj == "") {
+        moveit_msgs::CollisionObject target_object;
+        target_object.id = obj;
+        target_object.header.frame_id = ParamReader::getParamReader().frameArm;
+        target_object.operation = target_object.REMOVE;
+        object_publisher.publish(target_object);
+    } else {
+        std::vector<std::string> removedObj;
+        std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
+        std::vector<moveit_msgs::CollisionObject> saveObj;
+        ROS_DEBUG_STREAM("Invoked clear_collision_objects. Have " << knownCollisionObjects.size() << " objects");
+
+        for (string object : knownCollisionObjects) {
+            if (object != obj) {
+                moveit_msgs::CollisionObject Objects;
+                if (getCollisionObjectByName(object, Objects)) {
+                    ROS_DEBUG_STREAM("Save: " << object);
+                    saveObj.push_back(Objects);
+                }
+            } else {
+                removedObj.push_back(object);
+                ROS_DEBUG_STREAM("removing object " << object << " from planning scene");
+            }
+        }
+        ROS_DEBUG_STREAM("Invoked clear_collision_objects. Remove " << removedObj.size() << " objects");
+        planningInterface.removeCollisionObjects(removedObj);
+        ros::spinOnce();
+        planningInterface.addCollisionObjects(saveObj);
+        ros::spinOnce();
+    }
 }
 
 void RosTools::detach_collision_object() {

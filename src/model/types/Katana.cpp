@@ -373,7 +373,7 @@ GraspReturnType Katana::placeObject(const string &surface, bool simulate,
     vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(surface);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject("", locations, simulate, startPose);
+    return Model::placeObject(surface, locations, simulate, startPose);
 }
 
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
@@ -432,8 +432,8 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
             pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
             ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
             Eigen::Quaternionf quat(orientation.w(), orientation.x(), orientation.y(), orientation.z());
-
-            for (int r = 0; r < rotation; r++) {
+ 
+           for (int r = 0; r < rotation; r++) {
                 float rot = 2*M_PI*r/rotation;
                 Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
 
@@ -451,7 +451,6 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
             }
         }
     }
-    rosTools.publish_place_locations_as_markerarray(pls);
     return pls;
 }
 
