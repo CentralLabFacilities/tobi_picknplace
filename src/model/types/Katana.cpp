@@ -16,6 +16,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <moveit/common_planning_interface_objects/common_objects.h>
 #include <eigen3/Eigen/src/Geometry/Quaternion.h>
+#include <math.h>
 
 using namespace std;
 using namespace moveit;
@@ -387,6 +388,11 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
             && orientation.y() == 0.0f && orientation.z() == 0.0f) {
         orientation = tf::createQuaternionFromRPY(0, -M_PI_2, 0);
     }
+    if(lastHeightAboveTable == 0.0)
+    {
+        lastHeightAboveTable = 0.15;
+        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
+    }
 
     moveit_msgs::CollisionObject colSurface;
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
@@ -404,7 +410,7 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
     ROS_INFO_STREAM("frame and orientation last grasp pose: " << lastGraspPose.header.frame_id << " x: " << lastGraspPose.pose.orientation.x << " y: "
             << lastGraspPose.pose.orientation.y << " z:" << lastGraspPose.pose.orientation.z << " w: " << lastGraspPose.pose.orientation.w);
 
-    int rounds = 20;
+    float rounds = 20;
     int place_rot = 16;
     int rotation = 30;
 
@@ -419,11 +425,12 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
         for (int y = 0; y < place_rot; y++) {
             moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = colSurface.header.frame_id;
-            pl.place_pose.pose.position.x = surfaceCenterX + (x/rounds) * sin(y*2*M_PI/place_rot);
-            pl.place_pose.pose.position.y = surfaceCenterY + (x/rounds) * cos(y*2*M_PI/place_rot);
+            float param = y*2*M_PI/place_rot;
+            pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX * (x/rounds) * sin(param);
+            pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY * (x/rounds) * cos(param);
             pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
             ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
-            Eigen::Quaternionf quat(lastGraspPose.pose.orientation.w, lastGraspPose.pose.orientation.x, lastGraspPose.pose.orientation.y, lastGraspPose.pose.orientation.z);
+            Eigen::Quaternionf quat(orientation.w(), orientation.x(), orientation.y(), orientation.z());
 
             for (int r = 0; r < rotation; r++) {
                 float rot = 2*M_PI*r/rotation;
