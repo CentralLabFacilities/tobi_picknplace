@@ -33,8 +33,6 @@ Model::Model() {
     for (const string &i : ParamReader::getParamReader().touchLinks)
         touchlinks.push_back(i);
 
-    frame = ParamReader::getParamReader().frameGripper;
-
     groupArm = new moveit::planning_interface::MoveGroup(
             ParamReader::getParamReader().groupArm);
     groupArm->setPlanningTime(ParamReader::getParamReader().planningTime);
@@ -420,15 +418,17 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
 
 //TODO: params
 void Model::attachDefaultObject() {
+    ParamReader& params = ParamReader::getParamReader();
+
     ROS_INFO("Publishing default object!");
     ObjectShape shape;
     shape.heightMeter = 0.05;
     shape.widthMeter = 0.05;
     shape.depthMeter = 0.05;
-    shape.center.frame = frame;
+    shape.center.frame = params.frameGripper;
     rosTools.publish_collision_object(rosTools.getDefaultObjectName(), shape, 0.5);
 
-    groupEe->attachObject(rosTools.getDefaultObjectName(), frame, touchlinks);
+    groupEe->attachObject(rosTools.getDefaultObjectName(), params.frameGripper, touchlinks);
 
     ros::spinOnce();
     ros::WallDuration sleep_time(1);
