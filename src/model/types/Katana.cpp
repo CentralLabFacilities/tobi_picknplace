@@ -292,6 +292,9 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     //create more grasps by varying the angle by 0.2rad around X.
     vector<moveit_msgs::Grasp> old_grasps = grasps;
     for (moveit_msgs::Grasp &i : old_grasps) {
+        ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << i.grasp_pose.pose.position.x << " y: " << i.grasp_pose.pose.position.y 
+                << " z: " i.grasp_pose.pose.position.z << "Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y 
+                << " z: " i.grasp_pose.pose.position.z << " w: " << i.grasp_pose.pose.orientation.w);
         moveit_msgs::Grasp new_grasp;
         Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
         Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitX()));
