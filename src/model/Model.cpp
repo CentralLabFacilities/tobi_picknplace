@@ -11,6 +11,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <moveit_msgs/PlaceGoal.h>
 #include <moveit_msgs/Grasp.h>
+#include <eigen3/Eigen/src/Core/PlainObjectBase.h>
+#include <eigen3/Eigen/src/Geometry/Quaternion.h>
 
 #include "../grasping/CentroidGrasping.h"
 #include "../interface/AGNIInterface.h"
@@ -508,8 +510,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     ROS_INFO_STREAM(
             "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
     geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
-    tf::Quaternion orientation = tf::Quaternion(orientMsg.x, orientMsg.y,
-            orientMsg.z, orientMsg.w);
+  /**  tf::Quaternion orientation = tf::Quaternion();
     if (orientation.w() == 0.0f && orientation.x() == 0.0f
             && orientation.y() == 0.0f && orientation.z() == 0.0f) {
         ROS_INFO_STREAM("Use default orientation");
@@ -518,7 +519,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     if (lastHeightAboveTable == 0.0) {
         lastHeightAboveTable = -0.15;
         ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
-    }
+    }**/
 
     moveit_msgs::CollisionObject colSurface;
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
@@ -547,16 +548,14 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
             pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
             pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
-            ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
-            Eigen::Quaternionf quat(orientation.w(), orientation.x(), orientation.y(), orientation.z());
+            Eigen::Quaternionf quat(orientMsg.w,orientMsg.x, orientMsg.y, orientMsg.z+);
 
             for (int r = 0; r < rotation; r++) {
                 float rot = 2 * M_PI * r / rotation;
                 Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
-
                 Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix());
-
                 Eigen::Quaternionf quatresult(result);
+                quatresult.normalize();
                 pl.place_pose.pose.orientation.x = quatresult.x();
                 pl.place_pose.pose.orientation.y = quatresult.y();
                 pl.place_pose.pose.orientation.z = quatresult.z();
