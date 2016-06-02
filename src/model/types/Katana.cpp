@@ -386,11 +386,12 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
             orientMsg.z, orientMsg.w);
     if (orientation.w() == 0.0f && orientation.x() == 0.0f
             && orientation.y() == 0.0f && orientation.z() == 0.0f) {
-        orientation = tf::createQuaternionFromRPY(0, -M_PI_2, 0);
+        ROS_INFO_STREAM("Use default orientation");
+        orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
     }
     if(lastHeightAboveTable == 0.0)
     {
-        lastHeightAboveTable = 0.15;
+        lastHeightAboveTable = -0.15;
         ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
     }
 
@@ -426,8 +427,8 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
             moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = colSurface.header.frame_id;
             float param = y*2*M_PI/place_rot;
-            pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX * (x/rounds) * sin(param);
-            pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY * (x/rounds) * cos(param);
+            pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX/2 * (x/rounds) * sin(param);
+            pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY/2 * (x/rounds) * cos(param);
             pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
             ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
             Eigen::Quaternionf quat(orientation.w(), orientation.x(), orientation.y(), orientation.z());
@@ -436,7 +437,7 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
                 float rot = 2*M_PI*r/rotation;
                 Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
 
-                Eigen::Matrix3f result = ( rotate.toRotationMatrix() * quat.toRotationMatrix());
+                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix());
 
                 Eigen::Quaternionf quatresult(result);
                 pl.place_pose.pose.orientation.x = quatresult.x();
@@ -450,11 +451,6 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
             }
         }
     }
-    //pl.place_pose = lastGraspPose;
-    //TODO: adjust place height by first moving the grasp to the floor with lastTableHeight and then up to the new height with something like:
-    //pl.place_pose.pose.position.z = pl.place_pose.pose.position.z - lastTableHeight + surface.
-    //fillPlace(pl);
-    //pls.push_back(pl);
     rosTools.publish_place_locations_as_markerarray(pls);
     return pls;
 }
