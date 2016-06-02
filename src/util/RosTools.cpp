@@ -268,7 +268,7 @@ void RosTools::remove_collision_object(const string obj) {
         std::vector<std::string> removedObj;
         std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
         std::vector<moveit_msgs::CollisionObject> saveObj;
-        ROS_DEBUG_STREAM("Invoked clear_collision_objects. Have " << knownCollisionObjects.size() << " objects");
+        ROS_DEBUG_STREAM("Invoked remove_collision_object. Have " << knownCollisionObjects.size() << " objects");
 
         for (string object : knownCollisionObjects) {
             if (object != obj) {
@@ -282,7 +282,7 @@ void RosTools::remove_collision_object(const string obj) {
                 ROS_DEBUG_STREAM("removing object " << object << " from planning scene");
             }
         }
-        ROS_DEBUG_STREAM("Invoked clear_collision_objects. Remove " << removedObj.size() << " objects");
+        ROS_DEBUG_STREAM("Invoked remove_collision_object. Remove " << removedObj.size() << " objects");
         planningInterface.removeCollisionObjects(removedObj);
         ros::spinOnce();
         planningInterface.addCollisionObjects(saveObj);

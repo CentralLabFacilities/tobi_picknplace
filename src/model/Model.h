@@ -46,6 +46,8 @@ public:
 
     virtual void fillGrasp(moveit_msgs::Grasp& grasp);
     virtual void fillPlace(moveit_msgs::PlaceLocation& pl);
+    virtual std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+        const std::string &surface);
     
     virtual EefPose getEefPose() const;
     virtual ArmPoses getRememberedPoses() const;

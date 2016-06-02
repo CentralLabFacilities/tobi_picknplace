@@ -373,88 +373,10 @@ GraspReturnType Katana::placeObject(const string &surface, bool simulate,
 
     ROS_INFO("### Invoked placeObject Surface (str) ###");
 
-    vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(surface);
+    vector<moveit_msgs::PlaceLocation> locations = Model::generate_place_locations(surface);
     rosTools.publish_place_locations_as_markerarray(locations);
 
     return Model::placeObject(surface, locations, simulate, startPose);
-}
-
-std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
-        const string &surface) {
-
-    ROS_INFO_STREAM(
-            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
-    geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
-    tf::Quaternion orientation = tf::Quaternion(orientMsg.x, orientMsg.y,
-            orientMsg.z, orientMsg.w);
-    if (orientation.w() == 0.0f && orientation.x() == 0.0f
-            && orientation.y() == 0.0f && orientation.z() == 0.0f) {
-        ROS_INFO_STREAM("Use default orientation");
-        orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
-    }
-    if(lastHeightAboveTable == 0.0)
-    {
-        lastHeightAboveTable = -0.15;
-        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
-    }
-
-    moveit_msgs::CollisionObject colSurface;
-    bool success = rosTools.getCollisionObjectByName(surface, colSurface);
-
-    if (!success) {
-        ROS_ERROR_STREAM("No Plane with Name: " << surface);
-    }
-    colSurface.primitive_poses[0].position.x;
-    std::vector<moveit_msgs::PlaceLocation> pls;
-    ROS_INFO_STREAM("Plane TF: " << colSurface.header.frame_id);
-    ROS_INFO_STREAM("Surfacepos x: " << colSurface.primitive_poses[0].position.x << " Surfacepos y: " << colSurface.primitive_poses[0].position.y <<
-            " Surfacepos z: " << colSurface.primitive_poses[0].position.z);
-    ROS_INFO_STREAM("Surfacetype: " << colSurface.primitives[0].type << " Surfacesize x: " << colSurface.primitives[0].dimensions[0] <<
-            " Surfacesize y: " << colSurface.primitives[0].dimensions[1] << "Surfacesize z:" << colSurface.primitives[0].dimensions[2]);
-    ROS_INFO_STREAM("frame and orientation last grasp pose: " << lastGraspPose.header.frame_id << " x: " << lastGraspPose.pose.orientation.x << " y: "
-            << lastGraspPose.pose.orientation.y << " z:" << lastGraspPose.pose.orientation.z << " w: " << lastGraspPose.pose.orientation.w);
-
-    float rounds = 20;
-    int place_rot = 16;
-    int rotation = 30;
-
-    float surfaceSizeX = colSurface.primitives[0].dimensions[0];
-    float surfaceSizeY = colSurface.primitives[0].dimensions[1];
-    float surfaceCenterX = colSurface.primitive_poses[0].position.x;
-    float surfaceCenterY = colSurface.primitive_poses[0].position.y;
-    float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
-
-
-    for (int x = 0; x < rounds; x++) {
-        for (int y = 0; y < place_rot; y++) {
-            moveit_msgs::PlaceLocation pl;
-            pl.place_pose.header.frame_id = colSurface.header.frame_id;
-            float param = y*2*M_PI/place_rot;
-            pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX/2 * (x/rounds) * sin(param);
-            pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY/2 * (x/rounds) * cos(param);
-            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
-            ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.position.x << " y: " << pl.place_pose.pose.position.y << " z: " << pl.place_pose.pose.position.z);
-            Eigen::Quaternionf quat(orientation.w(), orientation.x(), orientation.y(), orientation.z());
- 
-           for (int r = 0; r < rotation; r++) {
-                float rot = 2*M_PI*r/rotation;
-                Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
-
-                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix());
-
-                Eigen::Quaternionf quatresult(result);
-                pl.place_pose.pose.orientation.x = quatresult.x();
-                pl.place_pose.pose.orientation.y = quatresult.y();
-                pl.place_pose.pose.orientation.z = quatresult.z();
-                pl.place_pose.pose.orientation.w = quatresult.w();
-                ROS_DEBUG_STREAM("x: " << pl.place_pose.pose.orientation.x << " y: " << pl.place_pose.pose.orientation.y 
-                        << " z: " << pl.place_pose.pose.orientation.z << " w: " << pl.place_pose.pose.orientation.y);
-                fillPlace(pl);
-                pls.push_back(pl);
-            }
-        }
-    }
-    return pls;
 }
 
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
@@ -560,3 +482,9 @@ trajectory_msgs::JointTrajectory Katana::generate_open_eef_msg() {
 
     return msg;
 }
+
+
+/**deprecated 
+
+  
+ **/
