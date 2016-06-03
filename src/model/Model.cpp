@@ -368,7 +368,7 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
     if (!isSomethingInGripper()) {
         rosTools.detach_collision_object();
     }
-    rosTools.remove_collision_object("");
+    //rosTools.remove_collision_object("");
 
     return grt;
 }
@@ -550,7 +550,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             float param = y * 2 * M_PI / place_rot;
             pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
             pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
-            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable + surfaceSizeZ / 2;
+            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable + surfaceSizeZ;
             Eigen::Quaternionf quat(orientMsg.w,orientMsg.x, orientMsg.y, orientMsg.z);
 
             for (int r = 0; r < rotation; r++) {
