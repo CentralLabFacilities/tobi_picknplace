@@ -292,18 +292,82 @@ void RosTools::remove_collision_object(const string obj) {
 
 void RosTools::detach_collision_object() {
 
-    moveit_msgs::AttachedCollisionObject attached_object;
+    ROS_INFO_STREAM("Detach_collision_object");
+    
+    //TODO detach all objects
+    
+    /**moveit_msgs::AttachedCollisionObject attached_object;
     attached_object.object.id = OBJECT_NAME;
     attached_object.object.operation = attached_object.object.REMOVE;
     object_att_publisher.publish(attached_object);
+    ros::spinOnce();
+    
+    remove_collision_object(OBJECT_NAME);**/
+    
+    boost::mutex::scoped_lock lock(sceneMutex);
+    vector<moveit_msgs::AttachedCollisionObject>::iterator colObjIt;
+    moveit_msgs::AttachedCollisionObject test;
+    for (colObjIt = currentPlanningScene.robot_state.attached_collision_objects.begin();
+            colObjIt != currentPlanningScene.robot_state.attached_collision_objects.end(); ++colObjIt) {
+        ROS_DEBUG_STREAM("AttachedObject: " << colObjIt->object.id);
+        moveit_msgs::AttachedCollisionObject attached_object;
+        attached_object.object.id = colObjIt->object.id;
+        attached_object.object.operation = attached_object.object.REMOVE;
+        object_att_publisher.publish(attached_object);
+        ros::spinOnce();
+        remove_collision_object(attached_object.object.id);
+    }
 }
 
 void RosTools::attach_collision_object() {
 
+    ParamReader& params = ParamReader::getParamReader();
+
+
     moveit_msgs::AttachedCollisionObject attached_object;
     attached_object.object.id = OBJECT_NAME;
     attached_object.object.operation = attached_object.object.ADD;
+    attached_object.object.header.frame_id = ParamReader::getParamReader().frameGripper;
+    shape_msgs::SolidPrimitive primitive;
+    primitive.type = primitive.BOX;
+    primitive.dimensions.resize(3);
+    primitive.dimensions[0] = 0.07;
+    primitive.dimensions[1] = 0.07;
+    primitive.dimensions[2] = 0.07;
+
+    attached_object.object.primitives.push_back(primitive);
+
+    geometry_msgs::Pose pose;
+    if (params.robot == "tobi") {
+        attached_object.link_name = "katana_gripper_tool_agni_frame";
+
+        pose.orientation.w = 1.0;
+        pose.orientation.x = 0.0;
+        pose.orientation.y = 0.0;
+        pose.orientation.z = 0.0;
+        pose.position.x = -0.05;
+        pose.position.y = 0;
+        pose.position.z = 0;
+    } else if (params.robot == "meka") {
+        //TODO
+        attached_object.link_name = "";
+
+        pose.orientation.w = 1.0;
+        pose.orientation.x = 0.0;
+        pose.orientation.y = 0.0;
+        pose.orientation.z = 0.0;
+        pose.position.x = 0;
+        pose.position.y = 0;
+        pose.position.z = 0;
+    } else {
+        ROS_ERROR("No known robot name, robot name should be tobi or meka");
+    }
+
+    attached_object.object.primitive_poses.push_back(pose);
+
     object_att_publisher.publish(attached_object);
+    ros::spinOnce();
+
 }
 
 bool RosTools::has_attached_object() {

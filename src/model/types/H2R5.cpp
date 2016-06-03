@@ -72,6 +72,8 @@ void H2R5::openEef(bool withSensors = false) {
     ROS_INFO("### Invoked openGripper ###");
 
     target_publisher.publish(generate_open_eef_msg());
+    rosTools.detach_collision_object();
+
 }
 
 void H2R5::closeEef(bool withSensors = false) {
@@ -80,7 +82,7 @@ void H2R5::closeEef(bool withSensors = false) {
     target_publisher.publish(generate_close_eef_msg());
 }
 
-GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
+/**GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
         const string &startPose) {
 
     ROS_INFO("### Invoked graspObject(ObjectShape) ###");
@@ -116,7 +118,7 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
 
     return Model::graspObject(objId, "", grasps, simulate,
             startPose);
-}
+}**/
 
 GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
         bool simulate, const string &startPose) {
@@ -195,7 +197,7 @@ GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
     return Model::placeObject(surface, locations, simulate, startPose);
 }
 
-/**
+
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         const string &surface) {
 
@@ -222,7 +224,7 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
     pls.push_back(pl);
 
     return pls;
-}**/
+}
 
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         EefPose obj) {
@@ -285,10 +287,10 @@ trajectory_msgs::JointTrajectory H2R5::generate_close_eef_msg() {
     trajectory_msgs::JointTrajectoryPoint p;
 
     vector<double> pos_close = ParamReader::getParamReader().eefPosClosed;
-    //    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-    //       msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-    //       p.positions.push_back(pos_close.at(i));
-    //    }
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+        p.positions.push_back(pos_close.at(i));
+    }
 
     p.time_from_start = ros::Duration(1.0); //sec
 
@@ -302,10 +304,10 @@ trajectory_msgs::JointTrajectory H2R5::generate_open_eef_msg() {
     trajectory_msgs::JointTrajectoryPoint p;
 
     vector<double> pos_open = ParamReader::getParamReader().eefPosOpen;
-    //    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-    //        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-    //        p.positions.push_back(pos_open.at(i));
-    //    }
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+        p.positions.push_back(pos_open.at(i));
+    }
 
     p.time_from_start = ros::Duration(1.0);
 

@@ -76,12 +76,15 @@ int Katana::getNumJoints() const {
 void Katana::openEef(bool withSensors) {
     ROS_INFO("### Invoked openGripper ###");
     moveToGripper(ParamReader::getParamReader().eefPosOpen.at(0), withSensors);
+    rosTools.detach_collision_object();
 }
 
 void Katana::closeEef(bool withSensors) {
     ROS_INFO("### Invoked closeGripper ###");
     moveToGripper(ParamReader::getParamReader().eefPosClosed.at(0),
             withSensors);
+    if(isSomethingInGripper())
+        rosTools.attach_collision_object();
 }
 
 void Katana::moveToGripper(double target, bool withSensors) {
@@ -227,7 +230,7 @@ map<string, short> Katana::getGripperSensors() const {
     boost::mutex::scoped_lock lock(sensorMutex);
     return currentSensorReadings;
 }
-
+/**
 GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
         const string &startPose) {
 
@@ -250,7 +253,7 @@ GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
 
     return Model::graspObject(objId, "", grasps, simulate,
             startPose);
-}
+}**/
 
 GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         bool simulate, const string &startPose) {
@@ -342,7 +345,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 
     rosTools.publish_grasps_as_markerarray(grasps);
     
-    closeEef(false);
+    //closeEef(false);
     return Model::graspObject(obj, surface, grasps, simulate, startPose);
 }
 
@@ -483,8 +486,3 @@ trajectory_msgs::JointTrajectory Katana::generate_open_eef_msg() {
     return msg;
 }
 
-
-/**deprecated 
-
-  
- **/

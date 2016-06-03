@@ -150,7 +150,9 @@ bool TransformerTF::transform(const CollisionObject &obj, CollisionObject &objOu
         boost::algorithm::replace_all(from, "/", "");
         myObj.header.frame_id = from;
         ROS_INFO_STREAM("transform " << from << " to " << to);
-        tfBuffer.transform(myObj, objOut, to);
+        if(from != ""){
+            tfBuffer.transform(myObj, objOut, to);
+        }
         return true;
     } catch (tf2::TransformException &ex) {
         ROS_ERROR("%s", ex.what());

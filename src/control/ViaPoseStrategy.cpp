@@ -33,7 +33,7 @@ void ViaPoseStrategy::setTransitions(const std::vector<Transition>& transitions)
 	}
 }
 
-GraspReturnType ViaPoseStrategy::graspObject(ObjectShape obj, bool simulate) {
+/**GraspReturnType ViaPoseStrategy::graspObject(ObjectShape obj, bool simulate) {
 	//model->openEef(false);
 	GraspReturnType ret = model->graspObject(obj, simulate);
 
@@ -52,10 +52,10 @@ GraspReturnType ViaPoseStrategy::graspObject(ObjectShape obj, bool simulate) {
 	}
 
 	return ret;
-}
+}**/
 
 GraspReturnType ViaPoseStrategy::graspObject(const string &obj, const std::string &surface, bool simulate) {
-    //model->openEef(false);
+    model->openEef(false);
     GraspReturnType ret = model->graspObject(obj, surface, simulate);
 
     if (ret.result == GraspReturnType::ROBOT_CRASHED) {

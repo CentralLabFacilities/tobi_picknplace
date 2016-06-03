@@ -12,6 +12,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/smart_ptr/make_shared_object.hpp>
 
+#include <rsc/misc/SignalWaiter.h>
+
 #include <ros/ros.h>
 
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
@@ -186,6 +188,8 @@ public:
         listener->requestCloseGripper(false);
         return boost::shared_ptr<void>();
     }
+    
+    
 
     boost::shared_ptr<void> closeGripperByForce() {
         ROS_DEBUG_STREAM("Invoked closeGripperByForce");
@@ -275,33 +279,36 @@ public:
         return success;
     }
 
-    boost::shared_ptr<void> findObjects() {
+    boost::shared_ptr<int> findObjects() {
        ROS_DEBUG_STREAM("Invoked findObjects");
-       listener->requestFindObjects();
-       return boost::shared_ptr<void>();
+       int y = 1;
+       boost::shared_ptr<int> grasps(new int(1));
+       int x = listener->requestFindObjects();
+       ROS_DEBUG_STREAM("Objects: " + x);
+       return grasps;
     }
 
-    boost::shared_ptr<Dictionary> isObjectGraspable(
+    /**boost::shared_ptr<Dictionary> isObjectGraspable(
             boost::shared_ptr<BoundingBox3DFloat> input) {
         ObjectShape objectToGrasp;
         ROS_DEBUG_STREAM("Invoked isObjectGraspable");
         GraspReturnType grt = listener->requestGraspObject(convert(input),
                 true);
         return convert(grt);
-    }
+    }**/
     boost::shared_ptr<Dictionary> isObjectNameGraspable(
             boost::shared_ptr<string> input) {
         ROS_DEBUG_STREAM("Invoked isObjectGraspable");
         return graspObjectName(input, true);
     }
 
-    boost::shared_ptr<Dictionary> graspObject(
+    /**boost::shared_ptr<Dictionary> graspObject(
             boost::shared_ptr<BoundingBox3DFloat> input) {
         ROS_DEBUG_STREAM("Invoked graspObject: " << input->DebugString());
         GraspReturnType grt = listener->requestGraspObject(convert(input),
                 false);
         return convert(grt);
-    }
+    }**/
 
     boost::shared_ptr<Dictionary> graspObjectName(
             boost::shared_ptr<string> input) {
@@ -485,6 +492,15 @@ void RsbInterface::removeListener() {
 	boost::shared_ptr<rsb::converter::ProtocolBufferConverter<Type> >( \
 		new rsb::converter::ProtocolBufferConverter<Type>())
 
+
+
+//class VoidVoidCallback: public LocalServer::Callback<void, void> {
+//    void call(const std::string& /*methodName*/) {
+//        std::cout << "void-void method called" << std::endl;
+//    }
+//};
+
+
 void RsbInterface::init() {
 
     ROS_DEBUG_STREAM("registering methods");
@@ -499,9 +515,16 @@ void RsbInterface::init() {
     converterRepository<string>()->registerConverter(
             CREATE_PB_CONVERTER(BoundingBox3DFloat));
 
+    rsc::misc::initSignalWaiter();
+    
     Factory& factory = getFactory();
     d->server = factory.createLocalServer(serverScope);
 
+    
+    //d->server->registerMethod("closeGripper", LocalServer::CallbackPtr(new VoidVoidCallback()));
+    
+    d->server->registerMethod("closeGripper",
+            CREATE_CALLBACK_0(void, closeGripper));
     d->server->registerMethod("listAngles",
             CREATE_CALLBACK_0(JointAngles, listAngles));
     d->server->registerMethod("moveJoints",
@@ -533,8 +556,6 @@ void RsbInterface::init() {
             CREATE_CALLBACK_0(void, openGripper));
     d->server->registerMethod("openGripperWhenTouching",
             CREATE_CALLBACK_0(void, openGripperWhenTouching));
-    d->server->registerMethod("closeGripper",
-            CREATE_CALLBACK_0(void, closeGripper));
     d->server->registerMethod("closeGripperByForce",
             CREATE_CALLBACK_0(void, closeGripperByForce));
     d->server->registerMethod("motorsOff", CREATE_CALLBACK_0(void, motorsOff));
@@ -548,22 +569,22 @@ void RsbInterface::init() {
     //d->server->registerMethod("calculateGraspablePose", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("setObstacles", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("findObjects",
-            CREATE_CALLBACK_0(void, findObjects));
-    d->server->registerMethod("isObjectGraspable",
-            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
-                    isObjectGraspable));
+            CREATE_CALLBACK_0(int, findObjects));
+    //d->server->registerMethod("isObjectGraspable",
+    //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
+    //                isObjectGraspable));
     d->server->registerMethod("isObjectNameGraspable",
             CREATE_CALLBACK_1(string, Dictionary, isObjectNameGraspable));
-    d->server->registerMethod("graspObject",
-            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, graspObject));
+    //d->server->registerMethod("graspObject",
+    //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, graspObject));
     d->server->registerMethod("graspObjectName",
             CREATE_CALLBACK_1(string, Dictionary, graspObjectName));
     //d->server->registerMethod("graspObjectOrientation", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("placeObjectAt",
             CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, placeObject));
-    d->server->registerMethod("placeObjectInRegion",
-            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
-                    placeObjectInRegion));
+    //d->server->registerMethod("placeObjectInRegion",
+    //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
+    //                placeObjectInRegion));
     d->server->registerMethod("placeObjectOnSurface",
             CREATE_CALLBACK_1(string, Dictionary, placeObjectOnSurface));
     //d->server->registerMethod("placeObjectAtExact", CREATE_CALLBACK(string, string, echo));

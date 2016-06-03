@@ -211,10 +211,12 @@ EefPose Model::getEefPose() const {
     return pose;
 }
 
-void Model::findObjects() {
+int Model::findObjects() {
     ROS_INFO("Invoked findObjects");
 
-    graspGenerator->find_objects(false);
+    vector<grasping_msgs::Object> grasps;
+    grasps = graspGenerator->find_objects(false);
+    return grasps.size();
 }
 
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, bool simulate, const string &startPose) {
@@ -290,9 +292,9 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
         grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
     }
 
-    rosTools.remove_collision_object(obj);
 
     if (grt.result != GraspReturnType::SUCCESS) {
+        rosTools.remove_collision_object(obj);
         rosTools.detach_collision_object();
     }
 
@@ -368,8 +370,6 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
     if (!isSomethingInGripper()) {
         rosTools.detach_collision_object();
     }
-    //rosTools.remove_collision_object("");
-
     return grt;
 }
 

@@ -27,8 +27,8 @@ public:
     virtual bool isSomethingInGripper() const {return true;};
     virtual SensorReadings getGripperSensors() const {};
 
-    virtual GraspReturnType graspObject(ObjectShape obj, bool simulate,
-            const std::string &startPose = "");
+    //virtual GraspReturnType graspObject(ObjectShape obj, bool simulate,
+    //        const std::string &startPose = "");
     virtual GraspReturnType graspObject(const std::string &obj,
             const std::string &surface, bool simulate,
             const std::string &startPose = "");
@@ -51,6 +51,6 @@ private:
             EefPose obj);
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
-    //std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
-    //        const std::string &surface);
+    std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+            const std::string &surface);
 };
