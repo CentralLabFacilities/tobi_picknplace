@@ -342,7 +342,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 
     rosTools.publish_grasps_as_markerarray(grasps);
     
-    closeEef(false);
+    //closeEef(false);
     return Model::graspObject(obj, surface, grasps, simulate, startPose);
 }
 
