@@ -538,6 +538,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 
     float surfaceSizeX = colSurface.primitives[0].dimensions[0];
     float surfaceSizeY = colSurface.primitives[0].dimensions[1];
+    float surfaceSizeZ = colSurface.primitives[0].dimensions[2];
     float surfaceCenterX = colSurface.primitive_poses[0].position.x;
     float surfaceCenterY = colSurface.primitive_poses[0].position.y;
     float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
@@ -549,13 +550,13 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             float param = y * 2 * M_PI / place_rot;
             pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
             pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
-            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable;
+            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable + surfaceSizeZ / 2;
             Eigen::Quaternionf quat(orientMsg.w,orientMsg.x, orientMsg.y, orientMsg.z);
 
             for (int r = 0; r < rotation; r++) {
                 float rot = 2 * M_PI * r / rotation;
                 Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
-                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix());
+                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix()); 
                 Eigen::Quaternionf quatresult(result);
                 quatresult.normalize();
                 pl.place_pose.pose.orientation.x = quatresult.x();
