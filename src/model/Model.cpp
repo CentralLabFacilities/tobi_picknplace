@@ -424,13 +424,13 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
 
 void Model::attachDefaultObject() {
     ParamReader& params = ParamReader::getParamReader();
-    
+
     ROS_INFO("Publishing default object!");
     //moveit_msgs::CollisionObject attachDefaultObj;
-    
+
     //attachDefaultObj.header.frame_id = params.frameGripper;
     //attachDefaultObj.id = rosTools.getDefaultObjectName();
-            
+
     ObjectShape shape;
     shape.heightMeter = 0.05;
     shape.widthMeter = 0.05;
@@ -468,6 +468,7 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
 
     // direction: lift up
     grasp.post_grasp_retreat.direction.vector.z = 1.0;
+    grasp.post_grasp_retreat.direction.vector.x = -1.0;
     grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
     grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; //base_link!
     grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
@@ -495,7 +496,18 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
     pl.pre_place_approach.desired_distance = params.approachDesiredDistance;
 
     // retreat in negative hand direction
-    pl.post_place_retreat.direction.vector.z = -1.0;
+
+    if (params.robot == "tobi") {
+        pl.post_place_retreat.direction.vector.x = -1.0;
+        pl.post_place_retreat.direction.vector.y = 0.0;
+        pl.post_place_retreat.direction.vector.z = 0.0;
+    } else if (params.robot == "meka") {
+        pl.post_place_retreat.direction.vector.x = 0.0;
+        pl.post_place_retreat.direction.vector.y = 0.0;
+        pl.post_place_retreat.direction.vector.z = -1.0;
+    } else {
+        ROS_ERROR("No known robot name, robot name should be tobi or meka");
+    }
     pl.post_place_retreat.direction.header.stamp = ros::Time::now();
     pl.post_place_retreat.direction.header.frame_id = params.frameGripper;
     pl.post_place_retreat.min_distance = params.liftUpMinDistance;
@@ -510,18 +522,18 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     ROS_INFO_STREAM(
             "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightAboveTable);
     geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
-  /**  tf::Quaternion orientation = tf::Quaternion();
-    if (orientation.w() == 0.0f && orientation.x() == 0.0f
-            && orientation.y() == 0.0f && orientation.z() == 0.0f) {
-        ROS_INFO_STREAM("Use default orientation");
-        orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
-    }
-    if (lastHeightAboveTable == 0.0) {
-        lastHeightAboveTable = -0.15;
-        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
-    }**/
+    /**  tf::Quaternion orientation = tf::Quaternion();
+      if (orientation.w() == 0.0f && orientation.x() == 0.0f
+              && orientation.y() == 0.0f && orientation.z() == 0.0f) {
+          ROS_INFO_STREAM("Use default orientation");
+          orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
+      }
+      if (lastHeightAboveTable == 0.0) {
+          lastHeightAboveTable = -0.15;
+          ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
+      }**/
 
-        std::vector<moveit_msgs::PlaceLocation> pls;
+    std::vector<moveit_msgs::PlaceLocation> pls;
 
     moveit_msgs::CollisionObject colSurface;
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
@@ -550,13 +562,13 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             float param = y * 2 * M_PI / place_rot;
             pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
             pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
-            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable + surfaceSizeZ;
-            Eigen::Quaternionf quat(orientMsg.w,orientMsg.x, orientMsg.y, orientMsg.z);
+            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable + surfaceSizeZ / 2;
+            Eigen::Quaternionf quat(orientMsg.w, orientMsg.x, orientMsg.y, orientMsg.z);
 
             for (int r = 0; r < rotation; r++) {
                 float rot = 2 * M_PI * r / rotation;
                 Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
-                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix()); 
+                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix());
                 Eigen::Quaternionf quatresult(result);
                 quatresult.normalize();
                 pl.place_pose.pose.orientation.x = quatresult.x();

@@ -30,7 +30,7 @@ using namespace moveit::planning_interface;
 static const double DEFAULT_PLACE_HEIGHT = 0.15;
 
 H2R5::H2R5() :
-        Model() {
+Model() {
 
     string group = ParamReader::getParamReader().groupArm;
     string substr;
@@ -102,7 +102,7 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
 
     vector<moveit_msgs::Grasp> grasps;
 
-    if(graspGenerator->getName() == CENTROID_GRASP_NAME) {
+    if (graspGenerator->getName() == CENTROID_GRASP_NAME) {
         tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameArm);
         grasps = graspGenerator->generate_grasps(obj);
     } else { //agni
@@ -145,19 +145,19 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
 
     vector<moveit_msgs::Grasp> grasps;
 
-    if(graspGenerator->getName() == CENTROID_GRASP_NAME) {
+    if (graspGenerator->getName() == CENTROID_GRASP_NAME) {
         tfTransformer.transform(collisionObject, collisionObject,
-                    ParamReader::getParamReader().frameArm);
+                ParamReader::getParamReader().frameArm);
         grasps = graspGenerator->generate_grasps(collisionObject);
     } else { //agni
         grasps = graspGenerator->generate_grasps(obj);
         //todo: do we have to do a transformation?
     }
-    
+
     //fill up with pre and post grasp postures, model specific!
     for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
-    
+
     ROS_INFO("Publish grasps.");
     rosTools.publish_grasps_as_markerarray(grasps);
     return Model::graspObject(obj, surface, grasps, simulate, startPose);
@@ -189,12 +189,13 @@ GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
         const string &startPose) {
     ROS_INFO("### Invoked placeObject Surface (str) ###");
 
-    vector<moveit_msgs::PlaceLocation> locations = generate_place_locations(surface);
+    vector<moveit_msgs::PlaceLocation> locations = Model::generate_place_locations(surface);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject("", locations, simulate, startPose);
+    return Model::placeObject(surface, locations, simulate, startPose);
 }
 
+/**
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         const string &surface) {
 
@@ -221,7 +222,7 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
     pls.push_back(pl);
 
     return pls;
-}
+}**/
 
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         EefPose obj) {
@@ -239,11 +240,11 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
     }
 
     Vec t = obj.translation;
-//  if (lastHeightAboveTable == 0.0) {
-//      t.xMeter += DEFAULT_PLACE_HEIGHT;
-//  } else {
-//      t.xMeter += lastHeightAboveTable;
-//  }
+    //  if (lastHeightAboveTable == 0.0) {
+    //      t.xMeter += DEFAULT_PLACE_HEIGHT;
+    //  } else {
+    //      t.xMeter += lastHeightAboveTable;
+    //  }
 
     return graspGenerator->generate_placeloc_angle_trans(t.xMeter, t.yMeter,
             t.zMeter);
@@ -278,15 +279,16 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
 }
 
 //todo: generalize
+
 trajectory_msgs::JointTrajectory H2R5::generate_close_eef_msg() {
     trajectory_msgs::JointTrajectory msg;
     trajectory_msgs::JointTrajectoryPoint p;
 
     vector<double> pos_close = ParamReader::getParamReader().eefPosClosed;
-//    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-//       msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-//       p.positions.push_back(pos_close.at(i));
-//    }
+    //    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+    //       msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+    //       p.positions.push_back(pos_close.at(i));
+    //    }
 
     p.time_from_start = ros::Duration(1.0); //sec
 
@@ -300,10 +302,10 @@ trajectory_msgs::JointTrajectory H2R5::generate_open_eef_msg() {
     trajectory_msgs::JointTrajectoryPoint p;
 
     vector<double> pos_open = ParamReader::getParamReader().eefPosOpen;
-//    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-//        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-//        p.positions.push_back(pos_open.at(i));
-//    }
+    //    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+    //        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+    //        p.positions.push_back(pos_open.at(i));
+    //    }
 
     p.time_from_start = ros::Duration(1.0);
 
