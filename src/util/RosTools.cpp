@@ -294,7 +294,15 @@ void RosTools::detach_collision_object() {
 
     ROS_INFO_STREAM("Detach_collision_object");
     
-    boost::mutex::scoped_lock lock(sceneMutex);
+    moveit_msgs::AttachedCollisionObject attached_object;
+    attached_object.object.id = OBJECT_NAME;
+    attached_object.object.operation = attached_object.object.REMOVE;
+    object_att_publisher.publish(attached_object);
+    ros::spinOnce();
+    
+    
+    
+    /**boost::mutex::scoped_lock lock(sceneMutex);
     vector<moveit_msgs::AttachedCollisionObject>::iterator colObjIt;
     moveit_msgs::AttachedCollisionObject test;
     for (colObjIt = currentPlanningScene.robot_state.attached_collision_objects.begin();
@@ -305,7 +313,7 @@ void RosTools::detach_collision_object() {
         attached_object.object.operation = attached_object.object.REMOVE;
         object_att_publisher.publish(attached_object);
         ros::spinOnce();
-    }
+    }**/
 }
 
 void RosTools::attach_collision_object() {
@@ -334,7 +342,7 @@ void RosTools::attach_collision_object() {
         pose.orientation.x = 0.0;
         pose.orientation.y = 0.0;
         pose.orientation.z = 0.0;
-        pose.position.x = -0.1;
+        pose.position.x = -0.05;
         pose.position.y = 0;
         pose.position.z = 0;
     } else if (params.robot == "meka") {
