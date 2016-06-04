@@ -300,7 +300,7 @@ void RosTools::detach_collision_object() {
     object_att_publisher.publish(attached_object);
     ros::spinOnce();
     
-    
+    remove_collision_object(OBJECT_NAME);
     
     /**boost::mutex::scoped_lock lock(sceneMutex);
     vector<moveit_msgs::AttachedCollisionObject>::iterator colObjIt;
