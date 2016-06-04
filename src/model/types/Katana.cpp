@@ -76,12 +76,15 @@ int Katana::getNumJoints() const {
 void Katana::openEef(bool withSensors) {
     ROS_INFO("### Invoked openGripper ###");
     moveToGripper(ParamReader::getParamReader().eefPosOpen.at(0), withSensors);
+    rosTools.detach_collision_object();
 }
 
 void Katana::closeEef(bool withSensors) {
     ROS_INFO("### Invoked closeGripper ###");
     moveToGripper(ParamReader::getParamReader().eefPosClosed.at(0),
             withSensors);
+    if(isSomethingInGripper())
+        rosTools.attach_collision_object();
 }
 
 void Katana::moveToGripper(double target, bool withSensors) {
