@@ -292,6 +292,8 @@ void RosTools::remove_collision_object(const string obj) {
 
 void RosTools::detach_collision_object() {
 
+    ROS_INFO_STREAM("Detach_collision_object");
+    
     boost::mutex::scoped_lock lock(sceneMutex);
     vector<moveit_msgs::AttachedCollisionObject>::iterator colObjIt;
     moveit_msgs::AttachedCollisionObject test;
@@ -326,6 +328,8 @@ void RosTools::attach_collision_object() {
 
     geometry_msgs::Pose pose;
     if (params.robot == "tobi") {
+        attached_object.link_name = "katana_gripper_tool_agni_frame";
+
         pose.orientation.w = 1.0;
         pose.orientation.x = 0.0;
         pose.orientation.y = 0.0;
@@ -335,6 +339,8 @@ void RosTools::attach_collision_object() {
         pose.position.z = 0;
     } else if (params.robot == "meka") {
         //TODO
+        attached_object.link_name = "";
+
         pose.orientation.w = 1.0;
         pose.orientation.x = 0.0;
         pose.orientation.y = 0.0;
