@@ -23,8 +23,8 @@ public:
 	}
 
 	virtual GraspReturnType graspObject(const std::string &obj, const std::string &surface, bool simulate) = 0;
-	virtual GraspReturnType graspObject(ObjectShape obj, bool simulate) = 0;
-	virtual GraspReturnType placeObject(ObjectShape obj, bool simulate) = 0;
+	//virtual GraspReturnType graspObject(ObjectShape obj, bool simulate) = 0;
+	//virtual GraspReturnType placeObject(ObjectShape obj, bool simulate) = 0;
 	virtual GraspReturnType placeObject(EefPose obj, bool simulate) = 0;
 	virtual GraspReturnType placeObject(const std::string &surface, bool simulate) = 0;
     virtual std::string findNearestPose() const = 0;

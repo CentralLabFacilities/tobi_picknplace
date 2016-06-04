@@ -80,7 +80,7 @@ void H2R5::closeEef(bool withSensors = false) {
     target_publisher.publish(generate_close_eef_msg());
 }
 
-GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
+/**GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
         const string &startPose) {
 
     ROS_INFO("### Invoked graspObject(ObjectShape) ###");
@@ -116,7 +116,7 @@ GraspReturnType H2R5::graspObject(ObjectShape obj, bool simulate,
 
     return Model::graspObject(objId, "", grasps, simulate,
             startPose);
-}
+}**/
 
 GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
         bool simulate, const string &startPose) {
@@ -174,7 +174,7 @@ GraspReturnType H2R5::placeObject(EefPose obj, bool simulate,
     return Model::placeObject("", locations, simulate, startPose);
 }
 
-GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
+/**GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
         const string &startPose) {
     ROS_INFO("### Invoked placeObject (bb) ###");
 
@@ -183,7 +183,7 @@ GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
     rosTools.publish_place_locations_as_markerarray(locations);
 
     return Model::placeObject("", locations, simulate, startPose);
-}
+}**/
 
 GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
         const string &startPose) {

@@ -44,10 +44,10 @@ public:
 
 	void requestFindObjects() const;
 
-	GraspReturnType requestGraspObject(ObjectShape obj, bool simulate);
+	//GraspReturnType requestGraspObject(ObjectShape obj, bool simulate);
 	GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate);
 	GraspReturnType requestPlaceObject(EefPose obj, bool simulate);
-	GraspReturnType requestPlaceObject(ObjectShape obj, bool simulate);
+	//GraspReturnType requestPlaceObject(ObjectShape obj, bool simulate);
 	GraspReturnType requestPlaceObject(const std::string &surface, bool simulate);
 	std::string requestNearestPose() const;
 	ArmPoses requestPoses() const;

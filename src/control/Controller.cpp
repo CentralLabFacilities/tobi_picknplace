@@ -55,17 +55,17 @@ void Controller::requestFindObjects() const {
     model->findObjects();
 }
 
-GraspReturnType Controller::requestGraspObject(ObjectShape obj, bool simulate) {
+/**GraspReturnType Controller::requestGraspObject(ObjectShape obj, bool simulate) {
 	return strategy->graspObject(obj, simulate);
-}
+}**/
 
 GraspReturnType Controller::requestGraspObject(const string &obj, const string &surface, bool simulate) {
     return strategy->graspObject(obj, surface, simulate);
 }
 
-GraspReturnType Controller::requestPlaceObject(ObjectShape obj, bool simulate) {
+/**GraspReturnType Controller::requestPlaceObject(ObjectShape obj, bool simulate) {
 	return strategy->placeObject(obj, simulate);
-}
+}**/
 GraspReturnType Controller::requestPlaceObject(EefPose obj, bool simulate) {
 	return strategy->placeObject(obj, simulate);
 }

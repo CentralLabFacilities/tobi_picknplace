@@ -101,22 +101,22 @@ map<string, short> KatanaSim::getGripperSensors() const {
 	return sensors;
 }
 
-GraspReturnType KatanaSim::graspObject(ObjectShape obj, bool simulate, const std::string &startPose) {
+/**GraspReturnType KatanaSim::graspObject(ObjectShape obj, bool simulate, const std::string &startPose) {
 	ROS_INFO("Invoked graspObject");
 	GraspReturnType grt;
 	return grt;
-}
+}**/
 GraspReturnType KatanaSim::graspObject(const string &obj, const string &surface, bool simulate, const std::string &startPose) {
 	ROS_INFO("Invoked graspObject");
 	GraspReturnType grt;
 	return grt;
 }
 
-GraspReturnType KatanaSim::placeObject(ObjectShape obj, bool simulate, const std::string &startPose) {
+/**GraspReturnType KatanaSim::placeObject(ObjectShape obj, bool simulate, const std::string &startPose) {
 	ROS_INFO("Invoked placeObject");
 	GraspReturnType grt;
 	return grt;
-}
+}**/
 
 GraspReturnType KatanaSim::placeObject(EefPose obj, bool simulate, const std::string &startPose) {
 	ROS_INFO("Invoked placeObject");

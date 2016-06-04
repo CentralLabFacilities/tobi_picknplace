@@ -281,27 +281,27 @@ public:
        return boost::shared_ptr<void>();
     }
 
-    boost::shared_ptr<Dictionary> isObjectGraspable(
+    /**boost::shared_ptr<Dictionary> isObjectGraspable(
             boost::shared_ptr<BoundingBox3DFloat> input) {
         ObjectShape objectToGrasp;
         ROS_DEBUG_STREAM("Invoked isObjectGraspable");
         GraspReturnType grt = listener->requestGraspObject(convert(input),
                 true);
         return convert(grt);
-    }
+    }**/
     boost::shared_ptr<Dictionary> isObjectNameGraspable(
             boost::shared_ptr<string> input) {
         ROS_DEBUG_STREAM("Invoked isObjectGraspable");
         return graspObjectName(input, true);
     }
 
-    boost::shared_ptr<Dictionary> graspObject(
+    /**boost::shared_ptr<Dictionary> graspObject(
             boost::shared_ptr<BoundingBox3DFloat> input) {
         ROS_DEBUG_STREAM("Invoked graspObject: " << input->DebugString());
         GraspReturnType grt = listener->requestGraspObject(convert(input),
                 false);
         return convert(grt);
-    }
+    }**/
 
     boost::shared_ptr<Dictionary> graspObjectName(
             boost::shared_ptr<string> input) {
@@ -334,13 +334,13 @@ public:
         return convert(grt);
     }
 
-    boost::shared_ptr<Dictionary> placeObjectInRegion(
+    /**boost::shared_ptr<Dictionary> placeObjectInRegion(
             boost::shared_ptr<BoundingBox3DFloat> input) {
         ROS_DEBUG_STREAM("Invoked placeObject");
         GraspReturnType grt = listener->requestPlaceObject(convert(input),
                 false);
         return convert(grt);
-    }
+    }**/
 
     boost::shared_ptr<Dictionary> placeObjectOnSurface(
             boost::shared_ptr<string> input) {
@@ -445,7 +445,7 @@ public:
         return retPose;
     }
 
-    ObjectShape convert(boost::shared_ptr<BoundingBox3DFloat> input) {
+    /**ObjectShape convert(boost::shared_ptr<BoundingBox3DFloat> input) {
         ObjectShape objectToGrasp;
         objectToGrasp.widthMeter = input->width();
         objectToGrasp.heightMeter = input->height();
@@ -456,7 +456,7 @@ public:
         objectToGrasp.center.frame =
                 input->transformation().translation().frame_id();
         return objectToGrasp;
-    }
+    }**/
 };
 
 RsbInterface::RsbInterface(const string &serverScope) :
@@ -549,21 +549,21 @@ void RsbInterface::init() {
     //d->server->registerMethod("setObstacles", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("findObjects",
             CREATE_CALLBACK_0(void, findObjects));
-    d->server->registerMethod("isObjectGraspable",
-            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
-                    isObjectGraspable));
+    //d->server->registerMethod("isObjectGraspable",
+    //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
+    //                isObjectGraspable));
     d->server->registerMethod("isObjectNameGraspable",
             CREATE_CALLBACK_1(string, Dictionary, isObjectNameGraspable));
-    d->server->registerMethod("graspObject",
-            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, graspObject));
+    //d->server->registerMethod("graspObject",
+    //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, graspObject));
     d->server->registerMethod("graspObjectName",
             CREATE_CALLBACK_1(string, Dictionary, graspObjectName));
     //d->server->registerMethod("graspObjectOrientation", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("placeObjectAt",
             CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, placeObject));
-    d->server->registerMethod("placeObjectInRegion",
-            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
-                    placeObjectInRegion));
+    //d->server->registerMethod("placeObjectInRegion",
+    //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
+    //                placeObjectInRegion));
     d->server->registerMethod("placeObjectOnSurface",
             CREATE_CALLBACK_1(string, Dictionary, placeObjectOnSurface));
     //d->server->registerMethod("placeObjectAtExact", CREATE_CALLBACK(string, string, echo));

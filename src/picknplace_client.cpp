@@ -71,8 +71,8 @@ void callServerMethod(int argc, char* argv[]) {
                 ("findNearestPose", "no arguments needed; seems to return string with nearest pose (description has to be revised)")
 				("listPoses", "list available poses")
 
-                ("isObjectGraspable", "returns if the object is graspable")
-                ("graspObject", "tries to grasp the Object specified through a BoundingBox\nargs:w h d x y z")
+                //("isObjectGraspable", "returns if the object is graspable")
+                //("graspObject", "tries to grasp the Object specified through a BoundingBox\nargs:w h d x y z")
                 ("graspObjectOrientation", "tries to grasp the Object specified through a BoundingBox. Trys to grasp from the top\nargs:w h d x y z")
                 ("placeObjectAt", "places the object at the position given\n"
                 "args: x y z phi theta psi")
@@ -285,7 +285,7 @@ void callServerMethod(int argc, char* argv[]) {
         } else {
             std::cout << "Nothing in the Gripper!" << std::endl;
         }
-    } else if (vm.count("isObjectGraspable")) {
+    } /**else if (vm.count("isObjectGraspable")) {
         if (argc != 8) {
             std::cout << "Too many/few coordinates entered-6 (width,height,depth,x,y,z) are expected! use --help for more information " << argc << std::endl;
         } else {
@@ -309,7 +309,8 @@ void callServerMethod(int argc, char* argv[]) {
             result = remoteServer->call<rst::generic::Dictionary>("isObjectGraspable", object);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
-    } else if (vm.count("graspObjectName")){
+    } **/
+    else if (vm.count("graspObjectName")){
         if (argc >= 4) {
             std::cout << "Too many/few arguments entered nothing, object or object;surface is expected! use --help for more information " << argc << std::endl;
         } else {
@@ -322,7 +323,7 @@ void callServerMethod(int argc, char* argv[]) {
         boost::shared_ptr< void > request;
         boost::shared_ptr< void > result = remoteServer->call< void >("findObjects", request);
     }
-    else if (vm.count("graspObject")) {
+    /**else if (vm.count("graspObject")) {
         if (argc != 8) {
             std::cout << "Too many/few coordinates entered-6 (width,height,depth,x,y,z) are expected! use --help for more information " << argc << std::endl;
         } else {
@@ -345,7 +346,7 @@ void callServerMethod(int argc, char* argv[]) {
             result = remoteServer->call<rst::generic::Dictionary>("graspObject", object, 60);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
-    } else if (vm.count("graspObjectOrientation")) {
+    } **/ else if (vm.count("graspObjectOrientation")) {
         if (argc != 8) {
             std::cout << "Too many/few coordinates entered-6 (width,height,depth,x,y,z) are expected! use --help for more information " << argc << std::endl;
         } else {
