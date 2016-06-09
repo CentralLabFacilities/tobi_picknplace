@@ -294,6 +294,8 @@ void RosTools::detach_collision_object() {
 
     ROS_INFO_STREAM("Detach_collision_object");
     
+    //TODO detach all objects
+    
     moveit_msgs::AttachedCollisionObject attached_object;
     attached_object.object.id = OBJECT_NAME;
     attached_object.object.operation = attached_object.object.REMOVE;
