@@ -12,6 +12,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/smart_ptr/make_shared_object.hpp>
 
+#include <rsc/misc/SignalWaiter.h>
+
 #include <ros/ros.h>
 
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
