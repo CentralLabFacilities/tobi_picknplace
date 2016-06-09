@@ -491,11 +491,11 @@ void RsbInterface::removeListener() {
 
 
 
-class VoidVoidCallback: public LocalServer::Callback<void, void> {
-    void call(const std::string& /*methodName*/) {
-        std::cout << "void-void method called" << std::endl;
-    }
-};
+//class VoidVoidCallback: public LocalServer::Callback<void, void> {
+//    void call(const std::string& /*methodName*/) {
+//        std::cout << "void-void method called" << std::endl;
+//    }
+//};
 
 
 void RsbInterface::init() {
@@ -518,10 +518,10 @@ void RsbInterface::init() {
     d->server = factory.createLocalServer(serverScope);
 
     
-    d->server->registerMethod("closeGripper", LocalServer::CallbackPtr(new VoidVoidCallback()));
+    //d->server->registerMethod("closeGripper", LocalServer::CallbackPtr(new VoidVoidCallback()));
     
-    //d->server->registerMethod("closeGripper",
-    //        CREATE_CALLBACK_0(void, closeGripper));
+    d->server->registerMethod("closeGripper",
+            CREATE_CALLBACK_0(void, closeGripper));
     d->server->registerMethod("listAngles",
             CREATE_CALLBACK_0(JointAngles, listAngles));
     d->server->registerMethod("moveJoints",
