@@ -38,7 +38,6 @@ public:
 	virtual bool requestIsSomethingInGripper() const = 0;
 
 	virtual void requestFindObjects() const = 0;
-        virtual void testvoid() const = 0;
 
 	//virtual GraspReturnType requestGraspObject(ObjectShape obj, bool simulate) = 0;
 	virtual GraspReturnType requestGraspObject(const std::string &obj, const std::string &surface, bool simulate) = 0;
@@ -60,8 +59,6 @@ public:
 
 	void requestMotorsOn(){}
 	void requestMotorsOff(){}
-
-        void testvoid();
         
 	EefPose requestEefPose() const{return EefPose();}
 	bool requestMoveTo(const EefPose &pose, bool linear, bool orientation){return false;}

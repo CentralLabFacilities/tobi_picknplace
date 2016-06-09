@@ -488,9 +488,10 @@ void RsbInterface::removeListener() {
 		new rsb::converter::ProtocolBufferConverter<Type>())
 
 
-void testvoid(){
-    std::cout << "call" << std::endl;
-}
+//void testvoid(){
+//    std::cout << "call" << std::endl;
+//}
+
 void RsbInterface::init() {
 
     ROS_DEBUG_STREAM("registering methods");
@@ -511,7 +512,7 @@ void RsbInterface::init() {
     d->server = factory.createLocalServer(serverScope);
 
     
-    d->server->registerMethod("closeGripper", LocalServer::CallbackPtr(new LocalServer::FunctionCallback<void, void>(testvoid)));
+    //d->server->registerMethod("closeGripper", LocalServer::CallbackPtr(new LocalServer::FunctionCallback<void, void>(testvoid)));
     
     d->server->registerMethod("closeGripper",
             CREATE_CALLBACK_0(void, closeGripper));
