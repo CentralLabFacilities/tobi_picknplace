@@ -186,6 +186,8 @@ public:
         listener->requestCloseGripper(false);
         return boost::shared_ptr<void>();
     }
+    
+    
 
     boost::shared_ptr<void> closeGripperByForce() {
         ROS_DEBUG_STREAM("Invoked closeGripperByForce");
@@ -485,6 +487,10 @@ void RsbInterface::removeListener() {
 	boost::shared_ptr<rsb::converter::ProtocolBufferConverter<Type> >( \
 		new rsb::converter::ProtocolBufferConverter<Type>())
 
+
+void testvoid(){
+    std::cout << "call" << std::endl;
+}
 void RsbInterface::init() {
 
     ROS_DEBUG_STREAM("registering methods");
@@ -499,9 +505,16 @@ void RsbInterface::init() {
     converterRepository<string>()->registerConverter(
             CREATE_PB_CONVERTER(BoundingBox3DFloat));
 
+    rsc::misc::initSignalWaiter();
+    
     Factory& factory = getFactory();
     d->server = factory.createLocalServer(serverScope);
 
+    
+    d->server->registerMethod("closeGripper", LocalServer::CallbackPtr(new LocalServer::FunctionCallback<void, void>(testvoid)));
+    
+    d->server->registerMethod("closeGripper",
+            CREATE_CALLBACK_0(void, closeGripper));
     d->server->registerMethod("listAngles",
             CREATE_CALLBACK_0(JointAngles, listAngles));
     d->server->registerMethod("moveJoints",
@@ -533,8 +546,6 @@ void RsbInterface::init() {
             CREATE_CALLBACK_0(void, openGripper));
     d->server->registerMethod("openGripperWhenTouching",
             CREATE_CALLBACK_0(void, openGripperWhenTouching));
-    d->server->registerMethod("closeGripper",
-            CREATE_CALLBACK_0(void, closeGripper));
     d->server->registerMethod("closeGripperByForce",
             CREATE_CALLBACK_0(void, closeGripperByForce));
     d->server->registerMethod("motorsOff", CREATE_CALLBACK_0(void, motorsOff));
