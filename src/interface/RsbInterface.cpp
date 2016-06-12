@@ -281,7 +281,8 @@ public:
 
     boost::shared_ptr<int> findObjects() {
        ROS_DEBUG_STREAM("Invoked findObjects");
-       boost::shared_ptr<int> grasps = 1;
+       int y = 1;
+       boost::shared_ptr<int> grasps(new int(1));
        int x = listener->requestFindObjects();
        ROS_DEBUG_STREAM("Objects: " + x);
        return grasps;
