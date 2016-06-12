@@ -211,10 +211,12 @@ EefPose Model::getEefPose() const {
     return pose;
 }
 
-void Model::findObjects() {
+int Model::findObjects() {
     ROS_INFO("Invoked findObjects");
 
-    graspGenerator->find_objects(false);
+    vector<grasping_msgs::Object> grasps;
+    grasps = graspGenerator->find_objects(false);
+    return grasps.size();
 }
 
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, bool simulate, const string &startPose) {

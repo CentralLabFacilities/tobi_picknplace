@@ -279,10 +279,11 @@ public:
         return success;
     }
 
-    boost::shared_ptr<void> findObjects() {
+    boost::shared_ptr<int> findObjects() {
        ROS_DEBUG_STREAM("Invoked findObjects");
-       listener->requestFindObjects();
-       return boost::shared_ptr<void>();
+       boost::shared_ptr<int> grasps;
+       *grasps= listener->requestFindObjects();
+       return grasps;
     }
 
     /**boost::shared_ptr<Dictionary> isObjectGraspable(
