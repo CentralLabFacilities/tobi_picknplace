@@ -321,7 +321,7 @@ void callServerMethod(int argc, char* argv[]) {
         }
     } else if (vm.count("findObjects")) {
         boost::shared_ptr< void > request;
-        boost::shared_ptr< int > result = remoteServer->call< int >("findObjects", request);
+        boost::shared_ptr< bool > result = remoteServer->call< bool >("findObjects", request);
         std::cout << "Found Objects: " << *result << std::endl;
     }
     /**else if (vm.count("graspObject")) {
