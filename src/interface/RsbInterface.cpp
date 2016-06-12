@@ -279,13 +279,18 @@ public:
         return success;
     }
 
-    boost::shared_ptr<int> findObjects() {
+    boost::shared_ptr<bool> findObjects() {
        ROS_DEBUG_STREAM("Invoked findObjects");
-       int y = 1;
-       boost::shared_ptr<int> grasps(new int(1));
+       boost::shared_ptr<bool> fail(new bool(false));
+       boost::shared_ptr<bool> success(new bool(true));
        int x = listener->requestFindObjects();
        ROS_DEBUG_STREAM("Objects: " + x);
-       return grasps;
+       if(x == 0)
+       {
+           return fail;
+       } else {
+           return success;
+       }
     }
 
     /**boost::shared_ptr<Dictionary> isObjectGraspable(
@@ -569,7 +574,7 @@ void RsbInterface::init() {
     //d->server->registerMethod("calculateGraspablePose", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("setObstacles", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("findObjects",
-            CREATE_CALLBACK_0(int, findObjects));
+            CREATE_CALLBACK_0(bool, findObjects));
     //d->server->registerMethod("isObjectGraspable",
     //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
     //                isObjectGraspable));
