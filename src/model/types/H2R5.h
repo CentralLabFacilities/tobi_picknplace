@@ -33,8 +33,8 @@ public:
             const std::string &surface, bool simulate,
             const std::string &startPose = "");
 
-    //virtual GraspReturnType placeObject(ObjectShape obj, bool simulate,
-    //        const std::string &startPose = "");
+    virtual GraspReturnType placeObject(ObjectShape obj, bool simulate,
+            const std::string &startPose = "");
     virtual GraspReturnType placeObject(EefPose obj, bool simulate,
             const std::string &startPose = "");
     virtual GraspReturnType placeObject(const std::string &surface,
@@ -51,6 +51,6 @@ private:
             EefPose obj);
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
-    //std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
-    //        const std::string &surface);
+    std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+            const std::string &surface);
 };

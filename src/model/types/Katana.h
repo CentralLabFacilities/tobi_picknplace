@@ -60,8 +60,8 @@ public:
             const std::string &surface, bool simulate,
             const std::string &startPose = "");
 
-    //virtual GraspReturnType placeObject(ObjectShape obj, bool simulate,
-    //        const std::string &startPose = "");
+    virtual GraspReturnType placeObject(ObjectShape obj, bool simulate,
+            const std::string &startPose = "");
     virtual GraspReturnType placeObject(EefPose obj, bool simulate,
             const std::string &startPose = "");
     virtual GraspReturnType placeObject(const std::string &surface,

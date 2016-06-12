@@ -341,13 +341,13 @@ public:
         return convert(grt);
     }
 
-    /**boost::shared_ptr<Dictionary> placeObjectInRegion(
+    boost::shared_ptr<Dictionary> placeObjectInRegion(
             boost::shared_ptr<BoundingBox3DFloat> input) {
         ROS_DEBUG_STREAM("Invoked placeObject");
         GraspReturnType grt = listener->requestPlaceObject(convert(input),
                 false);
         return convert(grt);
-    }**/
+    }
 
     boost::shared_ptr<Dictionary> placeObjectOnSurface(
             boost::shared_ptr<string> input) {
@@ -452,7 +452,7 @@ public:
         return retPose;
     }
 
-    /**ObjectShape convert(boost::shared_ptr<BoundingBox3DFloat> input) {
+    ObjectShape convert(boost::shared_ptr<BoundingBox3DFloat> input) {
         ObjectShape objectToGrasp;
         objectToGrasp.widthMeter = input->width();
         objectToGrasp.heightMeter = input->height();
@@ -463,7 +463,7 @@ public:
         objectToGrasp.center.frame =
                 input->transformation().translation().frame_id();
         return objectToGrasp;
-    }**/
+    }
 };
 
 RsbInterface::RsbInterface(const string &serverScope) :

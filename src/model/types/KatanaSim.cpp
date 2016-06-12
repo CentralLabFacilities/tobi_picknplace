@@ -112,11 +112,11 @@ GraspReturnType KatanaSim::graspObject(const string &obj, const string &surface,
 	return grt;
 }
 
-/**GraspReturnType KatanaSim::placeObject(ObjectShape obj, bool simulate, const std::string &startPose) {
+GraspReturnType KatanaSim::placeObject(ObjectShape obj, bool simulate, const std::string &startPose) {
 	ROS_INFO("Invoked placeObject");
 	GraspReturnType grt;
 	return grt;
-}**/
+}
 
 GraspReturnType KatanaSim::placeObject(EefPose obj, bool simulate, const std::string &startPose) {
 	ROS_INFO("Invoked placeObject");

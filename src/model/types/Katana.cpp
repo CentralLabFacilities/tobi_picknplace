@@ -360,7 +360,7 @@ GraspReturnType Katana::placeObject(EefPose obj, bool simulate,
     return Model::placeObject("", locations, simulate, startPose);
 }
 
-/**GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
+GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
         const string &startPose) {
     ROS_INFO("### Invoked placeObject (bb) ###");
 
@@ -369,7 +369,7 @@ GraspReturnType Katana::placeObject(EefPose obj, bool simulate,
     rosTools.publish_place_locations_as_markerarray(locations);
 
     return Model::placeObject("", locations, simulate, startPose);
-}**/
+}
 
 GraspReturnType Katana::placeObject(const string &surface, bool simulate,
         const string &startPose) {
@@ -486,8 +486,3 @@ trajectory_msgs::JointTrajectory Katana::generate_open_eef_msg() {
     return msg;
 }
 
-
-/**deprecated 
-
-  
- **/

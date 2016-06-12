@@ -176,7 +176,7 @@ GraspReturnType H2R5::placeObject(EefPose obj, bool simulate,
     return Model::placeObject("", locations, simulate, startPose);
 }
 
-/**GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
+GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
         const string &startPose) {
     ROS_INFO("### Invoked placeObject (bb) ###");
 
@@ -185,7 +185,7 @@ GraspReturnType H2R5::placeObject(EefPose obj, bool simulate,
     rosTools.publish_place_locations_as_markerarray(locations);
 
     return Model::placeObject("", locations, simulate, startPose);
-}**/
+}
 
 GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
         const string &startPose) {
@@ -197,7 +197,7 @@ GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
     return Model::placeObject(surface, locations, simulate, startPose);
 }
 
-/**
+
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         const string &surface) {
 
@@ -224,7 +224,7 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
     pls.push_back(pl);
 
     return pls;
-}**/
+}
 
 std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         EefPose obj) {

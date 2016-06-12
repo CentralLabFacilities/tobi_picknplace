@@ -75,7 +75,7 @@ GraspReturnType ViaPoseStrategy::graspObject(const string &obj, const std::strin
     return ret;
 }
 
-/**GraspReturnType ViaPoseStrategy::placeObject(ObjectShape obj, bool simulate) {
+GraspReturnType ViaPoseStrategy::placeObject(ObjectShape obj, bool simulate) {
 	GraspReturnType ret = model->placeObject(obj, simulate);
 
 	if (ret.result == GraspReturnType::ROBOT_CRASHED) {
@@ -92,7 +92,7 @@ GraspReturnType ViaPoseStrategy::graspObject(const string &obj, const std::strin
 		}
 	}
 	return ret;
-}**/
+}
 
 GraspReturnType ViaPoseStrategy::placeObject(EefPose obj, bool simulate) {
 	GraspReturnType ret = model->placeObject(obj, simulate);
