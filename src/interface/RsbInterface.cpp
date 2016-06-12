@@ -567,7 +567,7 @@ void RsbInterface::init() {
     //d->server->registerMethod("calculateGraspablePose", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("setObstacles", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("findObjects",
-            CREATE_CALLBACK_0(void, findObjects));
+            CREATE_CALLBACK_0(int, findObjects));
     //d->server->registerMethod("isObjectGraspable",
     //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
     //                isObjectGraspable));
