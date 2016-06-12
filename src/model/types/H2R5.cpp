@@ -72,6 +72,8 @@ void H2R5::openEef(bool withSensors = false) {
     ROS_INFO("### Invoked openGripper ###");
 
     target_publisher.publish(generate_open_eef_msg());
+    rosTools.detach_collision_object();
+
 }
 
 void H2R5::closeEef(bool withSensors = false) {
@@ -285,10 +287,10 @@ trajectory_msgs::JointTrajectory H2R5::generate_close_eef_msg() {
     trajectory_msgs::JointTrajectoryPoint p;
 
     vector<double> pos_close = ParamReader::getParamReader().eefPosClosed;
-        for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-           msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-           p.positions.push_back(pos_close.at(i));
-        }
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+        p.positions.push_back(pos_close.at(i));
+    }
 
     p.time_from_start = ros::Duration(1.0); //sec
 
@@ -302,10 +304,10 @@ trajectory_msgs::JointTrajectory H2R5::generate_open_eef_msg() {
     trajectory_msgs::JointTrajectoryPoint p;
 
     vector<double> pos_open = ParamReader::getParamReader().eefPosOpen;
-        for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
-            msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
-            p.positions.push_back(pos_open.at(i));
-        }
+    for (uint i = 0; i < groupEe->getActiveJoints().size(); i++) {
+        msg.joint_names.push_back(groupEe->getActiveJoints().at(i));
+        p.positions.push_back(pos_open.at(i));
+    }
 
     p.time_from_start = ros::Duration(1.0);
 
