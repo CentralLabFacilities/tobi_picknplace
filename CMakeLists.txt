@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tobi_picknplace)
 
-option(WITH_KATANA "Use the katana gripper" OFF)
+option(USE_KATANA "Use the katana gripper" OFF)
 option(USE_H2R5 "Use the h2r5 hand" ON)
 
 include(CheckCXXCompilerFlag)

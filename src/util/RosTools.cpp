@@ -61,6 +61,24 @@ MoveResult RosTools::moveResultFromMoveit(
     }
 }
 
+MoveResult RosTools::moveResultFromMoveit(
+		moveit::planning_interface::MoveItErrorCode errorCode) {
+	switch (errorCode.val) {
+	case moveit_msgs::MoveItErrorCodes::SUCCESS:
+		return SUCCESS;
+	case moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN:
+	case moveit_msgs::MoveItErrorCodes::PLANNING_FAILED:
+		return NOPLAN;
+	case moveit_msgs::MoveItErrorCodes::FAILURE:
+	case moveit_msgs::MoveItErrorCodes::CONTROL_FAILED:
+		return CRASH;
+	case moveit_msgs::MoveItErrorCodes::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE:
+		return ENV_CHANGE;
+	default:
+		ROS_WARN_STREAM("unknown error code: " << errorCode.val);
+		return OTHER;
+	}
+}
 GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
         moveit::planning_interface::MoveItErrorCode errorCode) {
     switch (errorCode.val) {
@@ -318,7 +336,6 @@ void RosTools::detach_collision_object() {
         remove_collision_object(attached_object.object.id);
     }
 }
-
 void RosTools::attach_collision_object() {
 
     ParamReader& params = ParamReader::getParamReader();
@@ -386,7 +403,6 @@ void RosTools::clear_octomap(double sleep_seconds) {
 }
 
 void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
-
     boost::mutex::scoped_lock lock(sceneMutex);
     ROS_DEBUG_STREAM("sceneCallback: " << currentScene.world.collision_objects.size());
     currentPlanningScene = currentScene;
@@ -401,7 +417,6 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
         if (colObjIt->id == id) {
             ROS_DEBUG_STREAM("Found CollisionObject with id" << colObjIt->id);
             obj = *colObjIt;
-
             return true;
         }
     }

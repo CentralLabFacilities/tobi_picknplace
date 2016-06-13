@@ -179,14 +179,14 @@ bool Katana::isSomethingInGripper() const {
         ROS_ERROR("Cannot read current sensor values");
         return false;
     }
-    //	ROS_DEBUG("sensor right distance inside near: %d",
-    //			currentSensorReadings.at("katana_r_inside_near_distance_sensor"));
-    //	ROS_DEBUG("sensor right distance inside far: %d",
-    //			currentSensorReadings.at("katana_r_inside_far_distance_sensor"));
-    //	ROS_DEBUG("sensor left distance inside near: %d",
-    //			currentSensorReadings.at("katana_l_inside_near_distance_sensor"));
-    //	ROS_DEBUG("sensor left distance inside far: height%d",
-    //			currentSensorReadings.at("katana_l_inside_far_distance_sensor"));
+//	ROS_DEBUG("sensor right distance inside near: %d",
+//			currentSensorReadings.at("katana_r_inside_near_distance_sensor"));
+//	ROS_DEBUG("sensor right distance inside far: %d",
+//			currentSensorReadings.at("katana_r_inside_far_distance_sensor"));
+//	ROS_DEBUG("sensor left distance inside near: %d",
+//			currentSensorReadings.at("katana_l_inside_near_distance_sensor"));
+//	ROS_DEBUG("sensor left distance inside far: height%d",
+//			currentSensorReadings.at("katana_l_inside_far_distance_sensor"));
     ROS_DEBUG("sensor right force inside near: %d",
             currentSensorReadings.at("katana_r_inside_near_force_sensor"));
     ROS_DEBUG("sensor right force inside far: %d",
@@ -199,20 +199,20 @@ bool Katana::isSomethingInGripper() const {
     bool force = currentSensorReadings.at("katana_r_inside_near_force_sensor")
             > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_r_inside_far_force_sensor")
-            > ParamReader::getParamReader().gripperThresholdDistance
+                    > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_l_inside_near_force_sensor")
-            > ParamReader::getParamReader().gripperThresholdDistance
+                    > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_l_inside_far_force_sensor")
-            > ParamReader::getParamReader().gripperThresholdDistance;
+                    > ParamReader::getParamReader().gripperThresholdDistance;
 
-    //	bool distance = currentSensorReadings.at("katana_r_inside_near_distance_sensor")
-    //			< GRIPPER_THRESHOLD_DISTANCE
-    //			|| currentSensorReadings.at("katana_r_inside_far_distance_sensor")
-    //					< GRIPPER_THRESHOLD_DISTANCE
-    //			|| currentSensorReadings.at("katana_l_inside_near_distance_sensor")
-    //					< GRIPPER_THRESHOLD_DISTANCE
-    //			|| currentSensorReadings.at("katana_l_inside_far_distance_sensor")
-    //					< GRIPPER_THRESHOLD_DISTANCE;
+//	bool distance = currentSensorReadings.at("katana_r_inside_near_distance_sensor")
+//			< GRIPPER_THRESHOLD_DISTANCE
+//			|| currentSensorReadings.at("katana_r_inside_far_distance_sensor")
+//					< GRIPPER_THRESHOLD_DISTANCE
+//			|| currentSensorReadings.at("katana_l_inside_near_distance_sensor")
+//					< GRIPPER_THRESHOLD_DISTANCE
+//			|| currentSensorReadings.at("katana_l_inside_far_distance_sensor")
+//					< GRIPPER_THRESHOLD_DISTANCE;
 
     bool gripperClosed = fabs(
             fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed[0])
@@ -235,6 +235,13 @@ GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
         const string &startPose) {
 
     ROS_INFO("### Invoked graspObject(ObjectShape) ###");
+
+    if (obj.widthMeter > 0.1) {
+        obj.widthMeter = 0.1;
+    }
+    if (obj.depthMeter > 0.1) {
+        obj.depthMeter = 0.1;
+    }
 
     ROS_INFO("Trying to pick object at %.3f, %.3f, %.3f (frame: %s).",
             obj.center.xMeter, obj.center.yMeter, obj.center.zMeter,
@@ -436,6 +443,20 @@ std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
 
 }
 
+std::vector<moveit_msgs::Grasp> Katana::generate_grasps_angle_trans(
+        ObjectShape shape) {
+    tfTransformer.transform(shape, shape,
+            ParamReader::getParamReader().frameArm);
+    return graspGenerator->generate_grasps(shape);
+}
+
+std::vector<moveit_msgs::Grasp> Katana::generate_grasps_angle_trans(
+        moveit_msgs::CollisionObject shape) {
+    tfTransformer.transform(shape, shape,
+            ParamReader::getParamReader().frameArm);
+    return graspGenerator->generate_grasps(shape);
+}
+
 void Katana::sensorCallback(const sensor_msgs::JointStatePtr& sensorReadings) {
     boost::mutex::scoped_lock lock(sensorMutex);
     for (int i = 0; i < sensorReadings->name.size(); i++) {
@@ -485,4 +506,3 @@ trajectory_msgs::JointTrajectory Katana::generate_open_eef_msg() {
 
     return msg;
 }
-

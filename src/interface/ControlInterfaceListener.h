@@ -59,7 +59,7 @@ public:
 
 	void requestMotorsOn(){}
 	void requestMotorsOff(){}
-        
+
 	EefPose requestEefPose() const{return EefPose();}
 	bool requestMoveTo(const EefPose &pose, bool linear, bool orientation){return false;}
 	bool requestMoveTo(const std::string &poseName){return false;}

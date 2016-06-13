@@ -188,8 +188,6 @@ public:
         listener->requestCloseGripper(false);
         return boost::shared_ptr<void>();
     }
-    
-    
 
     boost::shared_ptr<void> closeGripperByForce() {
         ROS_DEBUG_STREAM("Invoked closeGripperByForce");
@@ -497,15 +495,6 @@ void RsbInterface::removeListener() {
 	boost::shared_ptr<rsb::converter::ProtocolBufferConverter<Type> >( \
 		new rsb::converter::ProtocolBufferConverter<Type>())
 
-
-
-//class VoidVoidCallback: public LocalServer::Callback<void, void> {
-//    void call(const std::string& /*methodName*/) {
-//        std::cout << "void-void method called" << std::endl;
-//    }
-//};
-
-
 void RsbInterface::init() {
 
     ROS_DEBUG_STREAM("registering methods");
@@ -525,11 +514,6 @@ void RsbInterface::init() {
     Factory& factory = getFactory();
     d->server = factory.createLocalServer(serverScope);
 
-    
-    //d->server->registerMethod("closeGripper", LocalServer::CallbackPtr(new VoidVoidCallback()));
-    
-    d->server->registerMethod("closeGripper",
-            CREATE_CALLBACK_0(void, closeGripper));
     d->server->registerMethod("listAngles",
             CREATE_CALLBACK_0(JointAngles, listAngles));
     d->server->registerMethod("moveJoints",
@@ -561,6 +545,8 @@ void RsbInterface::init() {
             CREATE_CALLBACK_0(void, openGripper));
     d->server->registerMethod("openGripperWhenTouching",
             CREATE_CALLBACK_0(void, openGripperWhenTouching));
+    d->server->registerMethod("closeGripper",
+            CREATE_CALLBACK_0(void, closeGripper));
     d->server->registerMethod("closeGripperByForce",
             CREATE_CALLBACK_0(void, closeGripperByForce));
     d->server->registerMethod("motorsOff", CREATE_CALLBACK_0(void, motorsOff));
@@ -587,9 +573,9 @@ void RsbInterface::init() {
     //d->server->registerMethod("graspObjectOrientation", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("placeObjectAt",
             CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, placeObject));
-    //d->server->registerMethod("placeObjectInRegion",
-    //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
-    //                placeObjectInRegion));
+    d->server->registerMethod("placeObjectInRegion",
+            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
+                    placeObjectInRegion));
     d->server->registerMethod("placeObjectOnSurface",
             CREATE_CALLBACK_1(string, Dictionary, placeObjectOnSurface));
     //d->server->registerMethod("placeObjectAtExact", CREATE_CALLBACK(string, string, echo));

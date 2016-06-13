@@ -53,7 +53,6 @@ int main(int argc, char **argv) {
 	if (vm.count("help")) {
 		cout << desc << endl;
 	}
-
 	ros::init(argc, argv, "tobi_picknplace_server");
 
     ros::console::Level level = ros::console::levels::Info;
