@@ -296,13 +296,13 @@ void RosTools::detach_collision_object() {
     
     //TODO detach all objects
     
-    /**moveit_msgs::AttachedCollisionObject attached_object;
+    moveit_msgs::AttachedCollisionObject attached_object;
     attached_object.object.id = OBJECT_NAME;
     attached_object.object.operation = attached_object.object.REMOVE;
     object_att_publisher.publish(attached_object);
     ros::spinOnce();
     
-    remove_collision_object(OBJECT_NAME);**/
+    remove_collision_object(OBJECT_NAME);
     
     boost::mutex::scoped_lock lock(sceneMutex);
     vector<moveit_msgs::AttachedCollisionObject>::iterator colObjIt;
