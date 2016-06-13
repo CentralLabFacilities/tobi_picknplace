@@ -338,13 +338,13 @@ void RosTools::attach_collision_object() {
 
     geometry_msgs::Pose pose;
     if (params.robot == "tobi") {
-        attached_object.link_name = "katana_gripper_tool_agni_frame";
+        attached_object.link_name = "katana_gripper_tool_frame";
 
         pose.orientation.w = 1.0;
         pose.orientation.x = 0.0;
         pose.orientation.y = 0.0;
         pose.orientation.z = 0.0;
-        pose.position.x = -0.05;
+        pose.position.x = 0.05;
         pose.position.y = 0;
         pose.position.z = 0;
     } else if (params.robot == "meka") {
