@@ -535,7 +535,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
 
     if (!success) {
-        ROS_ERROR_STREAM("No Plane with Name: " << surface);
+        ROS_ERROR_STREAM("No CollisionObject for Placing with Name: " << surface);
         return pls;
     }
     colSurface.primitive_poses[0].position.x;

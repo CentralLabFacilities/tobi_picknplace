@@ -107,13 +107,11 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
     std::vector<moveit_msgs::CollisionObject> curObjects;
     for (string object : knownCollisionObjects) {
-        if (object.find("surface") != std::string::npos) {
             moveit_msgs::CollisionObject surfaceObject;
             if (getCollisionObjectByName(object, surfaceObject)) {
                 ROS_DEBUG_STREAM("Save: " << object);
                 curObjects.push_back(surfaceObject);
-            }
-        }
+            } 
     }
     curObjects.push_back(target_object);
     planningInterface.addCollisionObjects(curObjects);
