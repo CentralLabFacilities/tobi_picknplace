@@ -314,33 +314,3 @@ trajectory_msgs::JointTrajectory H2R5::generate_open_eef_msg() {
 
     return msg;
 }
-
-void H2R5::fillGrasp(moveit_msgs::Grasp& grasp) {
-
-    ParamReader& params = ParamReader::getParamReader();
-
-    grasp.pre_grasp_approach.direction.vector.z = 1.0;
-    grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
-    grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
-    grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
-    grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
-
-    // direction: lift up
-    grasp.post_grasp_retreat.direction.vector.z = 1.0;
-    grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
-    grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; //base_link!
-    grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
-    grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
-
-    // open on approach and close when reached
-    if (grasp.pre_grasp_posture.points.size()==0)
-    {
-        grasp.pre_grasp_posture = generate_open_eef_msg();
-    }
-    if (grasp.grasp_posture.points.size()==0)
-    {
-        grasp.grasp_posture = generate_close_eef_msg();
-    }
-
-}
-

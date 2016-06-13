@@ -35,8 +35,6 @@ Model::Model() {
     for (const string &i : ParamReader::getParamReader().touchLinks)
         touchlinks.push_back(i);
 
-    frame = ParamReader::getParamReader().frameGripper;
-
     groupArm = new moveit::planning_interface::MoveGroup(
             ParamReader::getParamReader().groupArm);
     groupArm->setPlanningTime(ParamReader::getParamReader().planningTime);
@@ -438,9 +436,146 @@ void Model::attachDefaultObject() {
     shape.center.frame = params.frameGripper;
     rosTools.publish_collision_object(rosTools.getDefaultObjectName(), shape, 0.5);
 
-    groupEe->attachObject(rosTools.getDefaultObjectName(), frame, touchlinks);
+    groupEe->attachObject(rosTools.getDefaultObjectName(), params.frameGripper, touchlinks);
 
     ros::spinOnce();
     ros::WallDuration sleep_time(1);
     sleep_time.sleep();
 }
+
+void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
+
+    ParamReader& params = ParamReader::getParamReader();
+    if (params.robot == "tobi") {
+        grasp.pre_grasp_approach.direction.vector.x = 1.0;
+        grasp.pre_grasp_approach.direction.vector.y = 0.0;
+        grasp.pre_grasp_approach.direction.vector.z = 0.0;
+    } else if (params.robot == "meka") {
+        grasp.pre_grasp_approach.direction.vector.x = 0.0;
+        grasp.pre_grasp_approach.direction.vector.y = 0.0;
+        grasp.pre_grasp_approach.direction.vector.z = 1.0;
+    } else {
+        ROS_ERROR("No known robot name, robot name should be tobi or meka");
+    }
+
+
+    grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
+    grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
+    grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
+    grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
+
+    // direction: lift up
+    grasp.post_grasp_retreat.direction.vector.z = 1.0;
+    grasp.post_grasp_retreat.direction.vector.x = -1.0;
+    grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
+    grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; //base_link!
+    grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
+    grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
+
+    // open on approach and close when reached
+    if (grasp.pre_grasp_posture.points.size() == 0) {
+        grasp.pre_grasp_posture = generate_open_eef_msg();
+    }
+    if (grasp.grasp_posture.points.size() == 0) {
+        grasp.grasp_posture = generate_close_eef_msg();
+    }
+
+}
+
+void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
+
+    ParamReader& params = ParamReader::getParamReader();
+
+    // place down in base_link
+    pl.pre_place_approach.direction.vector.z = -1.0;
+    pl.pre_place_approach.direction.header.stamp = ros::Time::now();
+    pl.pre_place_approach.direction.header.frame_id = params.frameArm;
+    pl.pre_place_approach.min_distance = params.approachMinDistance;
+    pl.pre_place_approach.desired_distance = params.approachDesiredDistance;
+
+    // retreat in negative hand direction
+
+    if (params.robot == "tobi") {
+        pl.post_place_retreat.direction.vector.x = -1.0;
+        pl.post_place_retreat.direction.vector.y = 0.0;
+        pl.post_place_retreat.direction.vector.z = 0.0;
+    } else if (params.robot == "meka") {
+        pl.post_place_retreat.direction.vector.x = 0.0;
+        pl.post_place_retreat.direction.vector.y = 0.0;
+        pl.post_place_retreat.direction.vector.z = -1.0;
+    } else {
+        ROS_ERROR("No known robot name, robot name should be tobi or meka");
+    }
+    pl.post_place_retreat.direction.header.stamp = ros::Time::now();
+    pl.post_place_retreat.direction.header.frame_id = params.frameGripper;
+    pl.post_place_retreat.min_distance = params.liftUpMinDistance;
+    pl.post_place_retreat.desired_distance = params.liftUpDesiredDistance;
+
+    pl.post_place_posture = generate_open_eef_msg();
+}
+
+std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
+        const string &surface) {
+
+    geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
+    /**  tf::Quaternion orientation = tf::Quaternion();
+      if (orientation.w() == 0.0f && orientation.x() == 0.0f
+              && orientation.y() == 0.0f && orientation.z() == 0.0f) {
+          ROS_INFO_STREAM("Use default orientation");
+          orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
+      }
+      if (lastHeightAboveTable == 0.0) {
+          lastHeightAboveTable = -0.15;
+          ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
+      }**/
+
+    std::vector<moveit_msgs::PlaceLocation> pls;
+
+    moveit_msgs::CollisionObject colSurface;
+    bool success = rosTools.getCollisionObjectByName(surface, colSurface);
+
+    if (!success) {
+        ROS_ERROR_STREAM("No Plane with Name: " << surface);
+        return pls;
+    }
+    colSurface.primitive_poses[0].position.x;
+
+    float rounds = 5;
+    int place_rot = 8;
+    int rotation = 7;
+
+    float surfaceSizeX = colSurface.primitives[0].dimensions[0];
+    float surfaceSizeY = colSurface.primitives[0].dimensions[1];
+    float surfaceSizeZ = colSurface.primitives[0].dimensions[2];
+    float surfaceCenterX = colSurface.primitive_poses[0].position.x;
+    float surfaceCenterY = colSurface.primitive_poses[0].position.y;
+    float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
+
+    for (int x = 0; x < rounds; x++) {
+        for (int y = 0; y < place_rot; y++) {
+            moveit_msgs::PlaceLocation pl;
+            pl.place_pose.header.frame_id = colSurface.header.frame_id;
+            float param = y * 2 * M_PI / place_rot;
+            pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
+            pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
+            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable + surfaceSizeZ / 2;
+            Eigen::Quaternionf quat(orientMsg.w, orientMsg.x, orientMsg.y, orientMsg.z);
+
+            for (int r = 0; r < rotation; r++) {
+                float rot = 2 * M_PI * r / rotation;
+                Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
+                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix());
+                Eigen::Quaternionf quatresult(result);
+                quatresult.normalize();
+                pl.place_pose.pose.orientation.x = quatresult.x();
+                pl.place_pose.pose.orientation.y = quatresult.y();
+                pl.place_pose.pose.orientation.z = quatresult.z();
+                pl.place_pose.pose.orientation.w = quatresult.w();
+                fillPlace(pl);
+                pls.push_back(pl);
+            }
+        }
+    }
+    return pls;
+}
+

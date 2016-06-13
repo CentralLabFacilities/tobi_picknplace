@@ -23,7 +23,7 @@ public:
 	virtual ~GraspGenerator(){};
 
 	virtual std::vector<grasping_msgs::Object> find_objects(bool plan_grasps) = 0;
-	virtual void generateAllGrasps() {};
+
 	virtual std::vector<moveit_msgs::Grasp> generate_grasps(grasping_msgs::Object object) = 0;
 	virtual std::vector<moveit_msgs::Grasp> generate_grasps(std::string object_name) = 0;
 	virtual std::vector<moveit_msgs::Grasp> generate_grasps(moveit_msgs::CollisionObject object) = 0;

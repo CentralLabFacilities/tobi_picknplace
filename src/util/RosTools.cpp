@@ -61,24 +61,6 @@ MoveResult RosTools::moveResultFromMoveit(
     }
 }
 
-MoveResult RosTools::moveResultFromMoveit(
-		moveit::planning_interface::MoveItErrorCode errorCode) {
-	switch (errorCode.val) {
-	case moveit_msgs::MoveItErrorCodes::SUCCESS:
-		return SUCCESS;
-	case moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN:
-	case moveit_msgs::MoveItErrorCodes::PLANNING_FAILED:
-		return NOPLAN;
-	case moveit_msgs::MoveItErrorCodes::FAILURE:
-	case moveit_msgs::MoveItErrorCodes::CONTROL_FAILED:
-		return CRASH;
-	case moveit_msgs::MoveItErrorCodes::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE:
-		return ENV_CHANGE;
-	default:
-		ROS_WARN_STREAM("unknown error code: " << errorCode.val);
-		return OTHER;
-	}
-}
 GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
         moveit::planning_interface::MoveItErrorCode errorCode) {
     switch (errorCode.val) {
