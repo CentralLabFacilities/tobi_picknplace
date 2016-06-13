@@ -68,6 +68,9 @@ public:
             const std::string &startPose = "");
     virtual GraspReturnType placeObject(const std::string &surface,
             bool simulate, const std::string &startPose = "");
+    
+    virtual trajectory_msgs::JointTrajectory generate_close_eef_msg();
+    virtual trajectory_msgs::JointTrajectory generate_open_eef_msg();
 
 private:
 
