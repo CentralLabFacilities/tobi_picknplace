@@ -150,7 +150,7 @@ void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> gra
     visualization_msgs::MarkerArray markers;
     int i = 0;
 
-    for (std::vector<moveit_msgs::Grasp>::iterator it = grasps.begin(); it != grasps.end(); ++it) {
+    for (std::vector<moveit_msgs::Grasp>::iterator it = grasps.begin(); it != grasps.end(); it++) {
         visualization_msgs::Marker marker;
         marker.header.stamp = ros::Time::now();
         marker.header.frame_id = it->grasp_pose.header.frame_id;
@@ -233,7 +233,7 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
     int i = 0;
 
     ROS_DEBUG_STREAM("Display place locations.");
-    for (std::vector<moveit_msgs::PlaceLocation>::iterator it = loc.begin(); it != loc.end(); ++it) {
+    for (std::vector<moveit_msgs::PlaceLocation>::iterator it = loc.begin(); it != loc.end(); it++) {
 
         visualization_msgs::Marker marker;
         marker.header.stamp = ros::Time::now();
@@ -306,7 +306,7 @@ void RosTools::detach_collision_object() {
     vector<moveit_msgs::AttachedCollisionObject>::iterator colObjIt;
     moveit_msgs::AttachedCollisionObject test;
     for (colObjIt = currentPlanningScene.robot_state.attached_collision_objects.begin();
-            colObjIt != currentPlanningScene.robot_state.attached_collision_objects.end(); ++colObjIt) {
+            colObjIt != currentPlanningScene.robot_state.attached_collision_objects.end(); colObjIt++) {
         ROS_DEBUG_STREAM("AttachedObject: " << colObjIt->object.id);
         moveit_msgs::AttachedCollisionObject attached_object;
         attached_object.object.id = colObjIt->object.id;
@@ -392,7 +392,7 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
     boost::mutex::scoped_lock lock(sceneMutex);
     vector<moveit_msgs::CollisionObject>::iterator colObjIt;
     for (colObjIt = currentPlanningScene.world.collision_objects.begin();
-            colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
+            colObjIt != currentPlanningScene.world.collision_objects.end(); colObjIt++) {
         ROS_DEBUG_STREAM("CollisionObject: " << colObjIt->id << "TargetObject: " << id);
         if (colObjIt->id == id) {
             ROS_DEBUG_STREAM("Found CollisionObject with id" << colObjIt->id);
@@ -456,7 +456,7 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
     ROS_DEBUG_STREAM("Collision objects with size: " << currentPlanningScene.world.collision_objects.size());
 
     for (colObjIt = currentPlanningScene.world.collision_objects.begin();
-            colObjIt != currentPlanningScene.world.collision_objects.end(); ++colObjIt) {
+            colObjIt != currentPlanningScene.world.collision_objects.end(); colObjIt++) {
         ROS_DEBUG_STREAM("colObjIt ID: " << colObjIt->id << " with name: " << name);
         if (colObjIt->id == name) {
             msg = convertMoveItToGrasping(*colObjIt);
