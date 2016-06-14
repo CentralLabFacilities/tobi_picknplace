@@ -566,6 +566,17 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
         surfaceSizeY = 0.1;
         surfaceSizeZ = 0.01;
     }
+    
+    //dirty Hack, for not place on the edge of the object
+    surfaceSizeX -= 0.03;
+    surfaceSizeY -= 0.03;
+ 
+    if(surfaceSizeX < 0)
+        surfaceSizeX = 0;
+    if(surfaceSizeY < 0)
+        surfaceSizeY = 0;
+    
+    ROS_DEBUG_STREAM("Placesize X: " << surfaceSizeX << "PlaceSize Y: " << surfaceSizeY);
 
     float surfaceCenterX = colSurface.primitive_poses[0].position.x;
     float surfaceCenterY = colSurface.primitive_poses[0].position.y;
