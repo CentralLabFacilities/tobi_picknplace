@@ -544,7 +544,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 
     float rounds = 5;
     int place_rot = 8;
-    int rotation = 7;
+    int rotation = 20;
 
     float surfaceSizeX = 0;
     float surfaceSizeY = 0;
