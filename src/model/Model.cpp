@@ -375,6 +375,7 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 }
 
 //TODO: params
+
 moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
         const vector<moveit_msgs::PlaceLocation>& locations, bool simulate) {
     moveit_msgs::PlaceGoal goal;
@@ -396,6 +397,7 @@ moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
 }
 
 //TODO: params
+
 moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
         const string &supportSurface, const vector<moveit_msgs::Grasp> &grasps, bool simulate) {
 
@@ -404,7 +406,7 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
     goal.target_name = obj;
     goal.support_surface_name = supportSurface;
 
-    for(const string &i : touchlinks)
+    for (const string &i : touchlinks)
         goal.attached_object_touch_links.push_back(i);
     goal.group_name = groupArm->getName();
     goal.end_effector = ParamReader::getParamReader().endEffector;
@@ -420,6 +422,7 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
 }
 
 //TODO: params
+
 void Model::attachDefaultObject() {
     ParamReader& params = ParamReader::getParamReader();
 
@@ -523,11 +526,11 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
               && orientation.y() == 0.0f && orientation.z() == 0.0f) {
           ROS_INFO_STREAM("Use default orientation");
           orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
-      }
-      if (lastHeightAboveTable == 0.0) {
-          lastHeightAboveTable = -0.15;
-          ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
       }**/
+    if (lastHeightAboveTable == 0.0) {
+        lastHeightAboveTable = -0.15;
+        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
+    }
 
     std::vector<moveit_msgs::PlaceLocation> pls;
 
@@ -538,15 +541,32 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
         ROS_ERROR_STREAM("No CollisionObject for Placing with Name: " << surface);
         return pls;
     }
-    colSurface.primitive_poses[0].position.x;
 
     float rounds = 5;
     int place_rot = 8;
     int rotation = 7;
 
-    float surfaceSizeX = colSurface.primitives[0].dimensions[0];
-    float surfaceSizeY = colSurface.primitives[0].dimensions[1];
-    float surfaceSizeZ = colSurface.primitives[0].dimensions[2];
+    float surfaceSizeX = 0;
+    float surfaceSizeY = 0;
+    float surfaceSizeZ = 0;
+
+    if (colSurface.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
+        ROS_INFO_STREAM("Place on a Cylinder");
+        surfaceSizeX = colSurface.primitives[0].dimensions[1]*2; //radius * 2
+        surfaceSizeY = colSurface.primitives[0].dimensions[1]*2; //radius * 2
+        surfaceSizeZ = colSurface.primitives[0].dimensions[0]; //height
+    } else if (colSurface.primitives[0].type == shape_msgs::SolidPrimitive::BOX) {
+        ROS_INFO_STREAM("Place on a Box");
+        surfaceSizeX = colSurface.primitives[0].dimensions[0]; //x
+        surfaceSizeY = colSurface.primitives[0].dimensions[1]; //y
+        surfaceSizeZ = colSurface.primitives[0].dimensions[2]; //z
+    } else {
+        ROS_INFO_STREAM("Place on default Parameter, no Sphere or Box, x,y,z 0.1 0.1 0.01");
+        surfaceSizeX = 0.1;
+        surfaceSizeY = 0.1;
+        surfaceSizeZ = 0.01;
+    }
+
     float surfaceCenterX = colSurface.primitive_poses[0].position.x;
     float surfaceCenterY = colSurface.primitive_poses[0].position.y;
     float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
