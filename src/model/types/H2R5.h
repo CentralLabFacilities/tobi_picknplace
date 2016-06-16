@@ -51,6 +51,6 @@ private:
             EefPose obj);
     std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
             ObjectShape shape);
-    std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
-            const std::string &surface);
+    //std::vector<moveit_msgs::PlaceLocation> generate_place_locations(
+    //        const std::string &surface);
 };
