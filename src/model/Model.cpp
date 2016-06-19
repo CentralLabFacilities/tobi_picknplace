@@ -194,11 +194,11 @@ EefPose Model::getEefPose() const {
     EefPose pose;
     geometry_msgs::PoseStamped ps = groupArm->getCurrentPose();
 
-    ROS_INFO_STREAM("getEefPose() 1: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
+    ROS_DEBUG_STREAM("getEefPose() 1: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
 
     tfTransformer.transform(ps, ps, ParamReader::getParamReader().frameArm);
 
-    ROS_INFO_STREAM("getEefPose() 2: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
+    ROS_DEBUG_STREAM("getEefPose() 2: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
 
     pose.translation.xMeter = ps.pose.position.x;
     pose.translation.yMeter = ps.pose.position.y;
@@ -220,7 +220,9 @@ int Model::findObjects() {
 }
 
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, bool simulate, const string &startPose) {
+    ROS_DEBUG_STREAM("Model, graspObject " << obj);
 
+    EefPose startpose = getEefPose();
     //ROS_DEBUG("Trying to pick object %s on %s (height: %.3f).", obj, surface, tableHeightArmCoords);
 
     GraspReturnType grt;
@@ -266,11 +268,18 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
         } else {
             ROS_WARN_STREAM("  Grasped no object: nothing in gripper!");
+            //rosTools.detach_collision_object();
+            //rosTools.remove_collision_object(obj);
+            ros::spinOnce();
+            ROS_INFO_STREAM("moving to start pose");
+            moveTo(startpose, false, false);
             grt.result = GraspReturnType::FAIL;
         }
     } else if (pickActionClient->getState() == SimpleClientGoalState::ABORTED) {
         ROS_WARN_STREAM("  Pick Action ABORTED (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
         rosTools.clear_octomap();
+        ROS_INFO_STREAM("moving to start pose");
+        moveTo(startpose, false, false);
         if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::PLANNING_FAILED) {
             grt.result = GraspReturnType::FAIL;
         }
@@ -294,10 +303,11 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
 
 
     if (grt.result != GraspReturnType::SUCCESS) {
-        rosTools.remove_collision_object(obj);
         rosTools.detach_collision_object();
+        //rosTools.remove_collision_object(obj);
     }
 
+    ROS_INFO("GRASP RETURNED");
     return grt;
 }
 

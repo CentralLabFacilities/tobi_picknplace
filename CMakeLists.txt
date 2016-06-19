@@ -29,6 +29,7 @@ set(CTKN_PKGS
     grasp_viewer
     moveit_msgs
     visualization_msgs
+    grasping_msgs
 )
 
 set(CTKN_CMPNTS

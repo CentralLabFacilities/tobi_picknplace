@@ -37,6 +37,7 @@ RosTools::RosTools() {
     grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
 
     scene_subscriber = nh.subscribe("planning_scene", 1, &RosTools::sceneCallback, this);
+    scene_publisher =  nh.advertise<moveit_msgs::PlanningScene>("planning_scene",10);
 }
 
 RosTools::~RosTools() {
@@ -256,6 +257,18 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
 
 void RosTools::remove_collision_object(const string obj) {
 
+    boost::mutex::scoped_lock lock(sceneMutex);
+    ROS_INFO_STREAM("remove collision object " << obj );
+    for( auto c : currentPlanningScene.world.collision_objects) {
+        if(c.id == obj) {
+            ROS_DEBUG_STREAM("object: " << c.id );
+            c.operation = c.REMOVE;
+            object_publisher.publish(c);
+            return;
+        }
+    }
+
+    ROS_WARN_STREAM("object not in current scene, fallback");
     if (obj == "") {
         moveit_msgs::CollisionObject target_object;
         target_object.id = obj;
@@ -284,42 +297,64 @@ void RosTools::remove_collision_object(const string obj) {
         planningInterface.removeCollisionObjects(removedObj);
         ros::spinOnce();
         planningInterface.addCollisionObjects(saveObj);
-        ros::spinOnce();
+        //ros::spinOnce();
     }
 }
 
 void RosTools::detach_collision_object() {
 
-    ROS_INFO_STREAM("Detach_collision_object");
-    
-    //TODO detach all objects
-    
-    moveit_msgs::AttachedCollisionObject attached_object;
-    attached_object.object.id = OBJECT_NAME;
-    attached_object.object.operation = attached_object.object.REMOVE;
-    object_att_publisher.publish(attached_object);
-    ros::spinOnce();
-    
-    remove_collision_object(OBJECT_NAME);
-    
+    ROS_INFO_STREAM("detach_collision_objects");
+
     boost::mutex::scoped_lock lock(sceneMutex);
-    vector<moveit_msgs::AttachedCollisionObject>::iterator colObjIt;
-    moveit_msgs::AttachedCollisionObject test;
-    for (colObjIt = currentPlanningScene.robot_state.attached_collision_objects.begin();
-            colObjIt != currentPlanningScene.robot_state.attached_collision_objects.end(); colObjIt++) {
-        ROS_DEBUG_STREAM("AttachedObject: " << colObjIt->object.id);
-        moveit_msgs::AttachedCollisionObject attached_object;
-        attached_object.object.id = colObjIt->object.id;
-        attached_object.object.operation = attached_object.object.REMOVE;
-        object_att_publisher.publish(attached_object);
+    for( auto a : currentPlanningScene.robot_state.attached_collision_objects) {
+        ROS_DEBUG_STREAM("removing attachedObject: " << a.object.id);
+        a.object.operation = a.object.REMOVE;
+        //remove_collision_object(a.object.id);
+        object_att_publisher.publish(a);
         ros::spinOnce();
-        remove_collision_object(attached_object.object.id);
+        return;
     }
+
+    //attaching does not send new planning scene so we just use our planning scene and send all as attached
+    auto scene(currentPlanningScene);
+    auto co = currentPlanningScene.world.collision_objects;
+    scene.robot_state.attached_collision_objects.clear();
+    scene.world.collision_objects.clear();
+    scene.is_diff = true;
+    for ( auto c : co) {
+        moveit_msgs::AttachedCollisionObject attached;
+        attached.object = c;
+        attached.object.operation = attached.object.REMOVE;
+        currentPlanningScene.robot_state.attached_collision_objects.push_back(attached);
+    }
+
+    scene_publisher.publish(scene);
+    ros::spinOnce();
+
+    //attaching does not send new planning scene so we just use our planning scene and send as non diff
+    //TODO try this if above does not work
+    //currentPlanningScene.is_diff = false;
+    //scene_publisher.publish(currentPlanningScene);
+    //ros::spinOnce();
+    
+    //std::vector<std::string> list;
+    //std::vector<moveit_msgs::CollisionObject> clist;
+    //for(auto a : currentPlanningScene.world.collision_objects) {
+    //    list.push_back(a.id);
+    //    clist.push_back(a);
+    //    a.operation = a.REMOVE;
+    //    object_att_publisher.publish(a);
+    //
+    //}
+    //planningInterface.removeCollisionObjects(list);
+    //ros::spinOnce();
+    //planningInterface.addCollisionObjects(clist);
+
+
 }
 void RosTools::attach_collision_object() {
 
     ParamReader& params = ParamReader::getParamReader();
-
 
     moveit_msgs::AttachedCollisionObject attached_object;
     attached_object.object.id = OBJECT_NAME;
@@ -383,9 +418,10 @@ void RosTools::clear_octomap(double sleep_seconds) {
 }
 
 void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
+    ROS_DEBUG_STREAM("sceneCallback");
     boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_DEBUG_STREAM("sceneCallback: " << currentScene.world.collision_objects.size());
     currentPlanningScene = currentScene;
+    ROS_DEBUG_STREAM("sceneCallback done: (attached:)" << currentScene.robot_state.attached_collision_objects.size()  );
 }
 
 bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj) {

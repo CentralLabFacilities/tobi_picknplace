@@ -36,6 +36,7 @@ private:
     ros::ServiceClient grasp_viz_client;
 
     ros::Subscriber scene_subscriber;
+	ros::Publisher scene_publisher;
 
     mutable boost::mutex sceneMutex;
     moveit_msgs::PlanningScene currentPlanningScene;
