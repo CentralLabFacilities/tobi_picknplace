@@ -38,6 +38,8 @@ private:
     ros::Subscriber scene_subscriber;
 	ros::Publisher scene_publisher;
 
+	std::vector<moveit_msgs::CollisionObject> manipulationObjects;
+
     mutable boost::mutex sceneMutex;
     moveit_msgs::PlanningScene currentPlanningScene;
     moveit::planning_interface::PlanningSceneInterface planningInterface; 

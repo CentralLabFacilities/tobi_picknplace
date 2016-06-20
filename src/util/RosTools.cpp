@@ -7,7 +7,6 @@
 
 #include "RosTools.h"
 #include "ParamReader.h"
-#include <../../opt/ros/indigo/include/grasping_msgs/Object.h>
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
 #include <grasp_viewer/DisplayGrasps.h>
@@ -84,6 +83,8 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 
     ROS_DEBUG_STREAM("Publish object with name " << msg.name);
+
+
     ParamReader& params = ParamReader::getParamReader();
 
     moveit_msgs::CollisionObject target_object;
@@ -112,15 +113,22 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
             if (getCollisionObjectByName(object, surfaceObject)) {
                 ROS_DEBUG_STREAM("Save: " << object);
                 curObjects.push_back(surfaceObject);
-            } 
+            }
     }
     curObjects.push_back(target_object);
     planningInterface.addCollisionObjects(curObjects);
+
+    //Todo switch all to this?
+    manipulationObjects.push_back(target_object);
+    //moveit_msgs::PlanningScene planning;
+    //planning.world.collision_objects.push_back(target_object);
+
 
     ros::spinOnce();
 }
 
 void RosTools::clear_collision_objects(bool with_surface) {
+
     std::vector<std::string> objectids;
     std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
     std::vector<moveit_msgs::CollisionObject> surfaceObjects;
@@ -145,6 +153,9 @@ void RosTools::clear_collision_objects(bool with_surface) {
     ros::spinOnce();
     planningInterface.addCollisionObjects(surfaceObjects);
     ros::spinOnce();
+
+    //todo
+    manipulationObjects.clear();
 }
 
 void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color) {
@@ -257,6 +268,11 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
 
 void RosTools::remove_collision_object(const string obj) {
 
+    for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
+        if (it->id == obj) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+        else ++it;
+    }
+
     boost::mutex::scoped_lock lock(sceneMutex);
     ROS_INFO_STREAM("remove collision object " << obj );
     for( auto c : currentPlanningScene.world.collision_objects) {
@@ -336,7 +352,7 @@ void RosTools::detach_collision_object() {
     //currentPlanningScene.is_diff = false;
     //scene_publisher.publish(currentPlanningScene);
     //ros::spinOnce();
-    
+
     //std::vector<std::string> list;
     //std::vector<moveit_msgs::CollisionObject> clist;
     //for(auto a : currentPlanningScene.world.collision_objects) {
@@ -436,6 +452,15 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
             return true;
         }
     }
+
+    //todo only local representation
+    for(auto o : manipulationObjects) {
+        if(o.id == id) {
+            obj = o;
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -501,6 +526,14 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
         }
     }
     return false;
+
+    //todo only local representation
+    for(auto o : manipulationObjects) {
+        if(o.id == name) {
+            msg = convertMoveItToGrasping(o);
+            return true;
+        }
+    }
 }
 
 
