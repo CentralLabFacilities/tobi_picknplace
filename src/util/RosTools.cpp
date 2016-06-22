@@ -35,7 +35,7 @@ RosTools::RosTools() {
     // TODO test if service was found
     grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
 
-    scene_subscriber = nh.subscribe("planning_scene", 1, &RosTools::sceneCallback, this);
+    scene_subscriber = nh.subscribe("planning_scene", 10, &RosTools::sceneCallback, this);
     scene_publisher =  nh.advertise<moveit_msgs::PlanningScene>("planning_scene",10);
 }
 
@@ -290,7 +290,7 @@ void RosTools::detach_collision_object() {
     moveit_msgs::PlanningScene update;
     update.is_diff = true;
 
-    ROS_DEBUG_STREAM("detaching all known objects" << manipulationObjects.size());
+    ROS_DEBUG_STREAM("detaching all known objects: " << manipulationObjects.size());
     for(auto o : manipulationObjects) {
         moveit_msgs::CollisionObject object;
         object.operation = object.REMOVE;
@@ -382,7 +382,6 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
     boost::mutex::scoped_lock lock(sceneMutex);
     currentPlanningScene = currentScene;
 
-    //todo scene add/removes to currentObjects
     if(currentScene.is_diff) {
         for(auto o : currentScene.world.collision_objects) {
             if(o.operation == o.ADD) {
@@ -407,9 +406,8 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
 bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj) {
 
     boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_DEBUG_STREAM("invoked: getCollisionObjectByName");
+    ROS_DEBUG_STREAM("invoked: getCollisionObjectByName, have " << manipulationObjects.size() << " objects");
 
-    ROS_DEBUG_STREAM("local rep has:" << manipulationObjects.size());
     for(auto o : manipulationObjects) {
         if(o.id == id) {
             obj = o;
@@ -418,6 +416,11 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
         }
     }
 
+
+    ROS_DEBUG_STREAM("Did not find CollisionObject with id:" << id << " all objects:");
+    for(auto o : manipulationObjects) {
+        ROS_DEBUG_STREAM("id" << o.id);
+    }
     return false;
 }
 
@@ -448,7 +451,7 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
     tfTransformer.transform(obj, collisionObjectArmCoords,
             "base_link");
     ROS_DEBUG("Calculate tableHeight base_link");
-    ROS_DEBUG_STREAM(obj);
+    //ROS_DEBUG_STREAM(obj);
     double tableHeightArmCoords =
             collisionObjectArmCoords.primitive_poses[0].position.z
             - collisionObjectArmCoords.primitives[0].dimensions[2]

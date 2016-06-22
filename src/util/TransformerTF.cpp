@@ -149,7 +149,7 @@ bool TransformerTF::transform(const CollisionObject &obj, CollisionObject &objOu
         string from = myObj.header.frame_id;
         boost::algorithm::replace_all(from, "/", "");
         myObj.header.frame_id = from;
-        ROS_INFO_STREAM("transform " << from << " to " << to);
+        //ROS_INFO_STREAM("transform " << from << " to " << to);
         if(from != ""){
             tfBuffer.transform(myObj, objOut, to);
         }
@@ -167,7 +167,7 @@ bool TransformerTF::transform(const geometry_msgs::PoseStamped &pose,geometry_ms
 		string from = myPose.header.frame_id;
 		boost::algorithm::replace_all(from, "/", "");
 		myPose.header.frame_id = from;
-		ROS_INFO_STREAM("transform " << from << " to " << to);
+		//ROS_INFO_STREAM("transform " << from << " to " << to);
 		tfBuffer.transform(myPose, poseOut, to);
 		return true;
 	} catch (tf2::TransformException &ex) {
@@ -183,7 +183,7 @@ bool TransformerTF::transform(const geometry_msgs::Vector3Stamped &vec, geometry
 		string from = myVec.header.frame_id;
 		boost::algorithm::replace_all(from, "/", "");
 		myVec.header.frame_id = from;
-		ROS_DEBUG_STREAM("transform " << from << " to " << to);
+		//ROS_DEBUG_STREAM("transform " << from << " to " << to);
 		tfBuffer.transform(myVec, vecOut, to);
 		return true;
 	} catch (tf2::TransformException &ex) {
