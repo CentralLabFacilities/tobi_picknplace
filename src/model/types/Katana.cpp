@@ -347,7 +347,20 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     rosTools.publish_grasps_as_markerarray(grasps);
     
     //closeEef(false);
-    return Model::graspObject(obj, surface, grasps, simulate, startPose);
+    auto ret = Model::graspObject(obj, surface, grasps, simulate, startPose);
+    if (ret.result == GraspReturnType::ROBOT_CRASHED) {
+        ROS_WARN_STREAM("  try to RECOVER !!");
+        if (isSomethingInGripper()) {
+            if (moveTo("carry_side",true)) {
+                ret.result = GraspReturnType::COLLISION_HANDLED;
+            }
+        } else {
+            if (moveTo("fold_up",true)) {
+                ret.result = GraspReturnType::SUCCESS;
+            }
+        }
+    }
+    return ret;
 }
 
 GraspReturnType Katana::placeObject(EefPose obj, bool simulate,
