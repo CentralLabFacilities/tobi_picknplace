@@ -270,6 +270,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         grt.result = GraspReturnType::FAIL;
         return grt;
     }
+    ROS_DEBUG_STREAM("grasping Object:\n" << collisionObject );
 
     vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(
             collisionObject);

@@ -222,7 +222,7 @@ int Model::findObjects() {
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, bool simulate, const string &startPose) {
     ROS_DEBUG_STREAM("Model, graspObject " << obj);
 
-    EefPose startpose = getEefPose();
+    EefPose eefStart = getEefPose();
     //ROS_DEBUG("Trying to pick object %s on %s (height: %.3f).", obj, surface, tableHeightArmCoords);
 
     GraspReturnType grt;
@@ -272,14 +272,14 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             //rosTools.remove_collision_object(obj);
             ros::spinOnce();
             ROS_INFO_STREAM("moving to start pose");
-            moveTo(startpose, false, false);
+            moveTo(eefStart, false, false);
             grt.result = GraspReturnType::FAIL;
         }
     } else if (pickActionClient->getState() == SimpleClientGoalState::ABORTED) {
         ROS_WARN_STREAM("  Pick Action ABORTED (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
         rosTools.clear_octomap();
         ROS_INFO_STREAM("moving to start pose");
-        moveTo(startpose, false, false);
+        moveTo(eefStart, false, false);
         if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::PLANNING_FAILED) {
             grt.result = GraspReturnType::FAIL;
         }

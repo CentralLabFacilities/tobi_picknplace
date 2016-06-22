@@ -112,6 +112,8 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     update.world.collision_objects.push_back(target_object);
     scene_publisher.publish(update);
     ros::spinOnce();
+    object_publisher.publish(target_object);
+    ros::spinOnce();
 
     manipulationObjects.push_back(target_object);
     ROS_DEBUG_STREAM("have " << manipulationObjects.size() );
@@ -347,8 +349,15 @@ void RosTools::attach_collision_object() {
 
     attached_object.object.primitive_poses.push_back(pose);
 
-    object_att_publisher.publish(attached_object);
     manipulationObjects.push_back(attached_object.object);
+
+    moveit_msgs::PlanningScene update;
+    update.is_diff = true;
+    update.robot_state.attached_collision_objects.push_back(attached_object);
+    scene_publisher.publish(update);
+    ros::spinOnce();
+
+    object_att_publisher.publish(attached_object);
     ros::spinOnce();
 
 }
@@ -377,9 +386,16 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
     if(currentScene.is_diff) {
         for(auto o : currentScene.world.collision_objects) {
             if(o.operation == o.ADD) {
+                for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
+                    if (it->id == o.id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+                    else ++it;
+                }
                 manipulationObjects.push_back(o);
             } else if (o.operation == o.REMOVE) {
-                manipulationObjects.push_back(o);
+                for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
+                    if (it->id == o.id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+                    else ++it;
+                }
             }
         }
 
@@ -432,6 +448,7 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
     tfTransformer.transform(obj, collisionObjectArmCoords,
             "base_link");
     ROS_DEBUG("Calculate tableHeight base_link");
+    ROS_DEBUG_STREAM(obj);
     double tableHeightArmCoords =
             collisionObjectArmCoords.primitive_poses[0].position.z
             - collisionObjectArmCoords.primitives[0].dimensions[2]
