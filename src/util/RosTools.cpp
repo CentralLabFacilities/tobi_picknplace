@@ -82,6 +82,7 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 
+    boost::mutex::scoped_lock lock(sceneMutex);
     ROS_DEBUG_STREAM("Publish object with name " << msg.name);
 
 
@@ -106,56 +107,41 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     target_object.meshes = msg.meshes;
     target_object.operation = target_object.ADD;
 
-    std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
-    std::vector<moveit_msgs::CollisionObject> curObjects;
-    for (string object : knownCollisionObjects) {
-            moveit_msgs::CollisionObject surfaceObject;
-            if (getCollisionObjectByName(object, surfaceObject)) {
-                ROS_DEBUG_STREAM("Save: " << object);
-                curObjects.push_back(surfaceObject);
-            }
-    }
-    curObjects.push_back(target_object);
-    planningInterface.addCollisionObjects(curObjects);
-
-    //Todo switch all to this?
-    manipulationObjects.push_back(target_object);
-    //moveit_msgs::PlanningScene planning;
-    //planning.world.collision_objects.push_back(target_object);
-
-
+    moveit_msgs::PlanningScene update;
+    update.is_diff = true;
+    update.world.collision_objects.push_back(target_object);
+    scene_publisher.publish(update);
     ros::spinOnce();
+
+    manipulationObjects.push_back(target_object);
+    ROS_DEBUG_STREAM("have " << manipulationObjects.size() );
+
 }
 
 void RosTools::clear_collision_objects(bool with_surface) {
 
-    std::vector<std::string> objectids;
-    std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
-    std::vector<moveit_msgs::CollisionObject> surfaceObjects;
-    ROS_DEBUG_STREAM("Invoked clear_collision_objects. Have " << knownCollisionObjects.size() << " objects");
+    boost::mutex::scoped_lock lock(sceneMutex);
+    ROS_DEBUG_STREAM("clearing collision objects " << ((with_surface) ? "with surfaces" : "without surfaces") );
+    moveit_msgs::PlanningScene update;
 
-    for (string object : knownCollisionObjects) {
-        if (object.find("surface") != std::string::npos && !with_surface) {
-            moveit_msgs::CollisionObject surfaceObject;
-            if (getCollisionObjectByName(object, surfaceObject)) {
-                ROS_DEBUG_STREAM("Save: " << object);
-                surfaceObjects.push_back(surfaceObject);
-            }
-            ROS_DEBUG_STREAM("Didnt't clear surface");
-        } else {
+    if(with_surface) {
+        update.is_diff = false;
+    } else {
+        update.is_diff = true;
+        for(auto o : manipulationObjects) {
+            moveit_msgs::CollisionObject object;
+            object.operation = object.REMOVE;
+            object.id = o.id;
 
-            objectids.push_back(object);
-            ROS_DEBUG_STREAM("removing object " << object << " from planning scene");
+            update.world.collision_objects.push_back(object);
         }
-    }
-    ROS_DEBUG_STREAM("Invoked clear_collision_objects. Remove " << objectids.size() << " objects");
-    planningInterface.removeCollisionObjects(objectids);
-    ros::spinOnce();
-    planningInterface.addCollisionObjects(surfaceObjects);
-    ros::spinOnce();
 
-    //todo
+    }
+
+    scene_publisher.publish(update);
+    ros::spinOnce();
     manipulationObjects.clear();
+
 }
 
 void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color) {
@@ -266,106 +252,54 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
     grasps_marker.publish(markers);
 }
 
-void RosTools::remove_collision_object(const string obj) {
+void RosTools::remove_collision_object(const string id) {
+
+    boost::mutex::scoped_lock lock(sceneMutex);
+    ROS_INFO_STREAM("remove collision object " << id );
 
     for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
-        if (it->id == obj) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+        if (it->id == id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
         else ++it;
     }
 
-    boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_INFO_STREAM("remove collision object " << obj );
-    for( auto c : currentPlanningScene.world.collision_objects) {
-        if(c.id == obj) {
-            ROS_DEBUG_STREAM("object: " << c.id );
-            c.operation = c.REMOVE;
-            object_publisher.publish(c);
-            return;
-        }
-    }
+    moveit_msgs::PlanningScene update;
+    update.is_diff = true;
 
-    ROS_WARN_STREAM("object not in current scene, fallback");
-    if (obj == "") {
-        moveit_msgs::CollisionObject target_object;
-        target_object.id = obj;
-        target_object.header.frame_id = ParamReader::getParamReader().frameArm;
-        target_object.operation = target_object.REMOVE;
-        object_publisher.publish(target_object);
-    } else {
-        std::vector<std::string> removedObj;
-        std::vector<std::string> knownCollisionObjects = planningInterface.getKnownObjectNames();
-        std::vector<moveit_msgs::CollisionObject> saveObj;
-        ROS_DEBUG_STREAM("Invoked remove_collision_object. Have " << knownCollisionObjects.size() << " objects");
+    moveit_msgs::CollisionObject object;
+    object.operation = object.REMOVE;
+    object.id = id;
+    update.world.collision_objects.push_back(object);
+    scene_publisher.publish(update);
+    ros::spinOnce();
 
-        for (string object : knownCollisionObjects) {
-            if (object != obj) {
-                moveit_msgs::CollisionObject Objects;
-                if (getCollisionObjectByName(object, Objects)) {
-                    ROS_DEBUG_STREAM("Save: " << object);
-                    saveObj.push_back(Objects);
-                }
-            } else {
-                removedObj.push_back(object);
-                ROS_DEBUG_STREAM("removing object " << object << " from planning scene");
-            }
-        }
-        ROS_DEBUG_STREAM("Invoked remove_collision_object. Remove " << removedObj.size() << " objects");
-        planningInterface.removeCollisionObjects(removedObj);
-        ros::spinOnce();
-        planningInterface.addCollisionObjects(saveObj);
-        //ros::spinOnce();
-    }
+    update.world.collision_objects.clear();
+    moveit_msgs::AttachedCollisionObject att;
+    att.object = object;
+    scene_publisher.publish(update);
+    ros::spinOnce();
+
 }
 
 void RosTools::detach_collision_object() {
 
-    ROS_INFO_STREAM("detach_collision_objects");
-
     boost::mutex::scoped_lock lock(sceneMutex);
-    for( auto a : currentPlanningScene.robot_state.attached_collision_objects) {
-        ROS_DEBUG_STREAM("removing attachedObject: " << a.object.id);
-        a.object.operation = a.object.REMOVE;
-        //remove_collision_object(a.object.id);
-        object_att_publisher.publish(a);
-        ros::spinOnce();
-        return;
-    }
+    ROS_DEBUG_STREAM("invoke: detach_collision_objects");
 
-    //attaching does not send new planning scene so we just use our planning scene and send all as attached
-    auto scene(currentPlanningScene);
-    auto co = currentPlanningScene.world.collision_objects;
-    scene.robot_state.attached_collision_objects.clear();
-    scene.world.collision_objects.clear();
-    scene.is_diff = true;
-    for ( auto c : co) {
-        moveit_msgs::AttachedCollisionObject attached;
-        attached.object = c;
-        attached.object.operation = attached.object.REMOVE;
-        currentPlanningScene.robot_state.attached_collision_objects.push_back(attached);
-    }
+    moveit_msgs::PlanningScene update;
+    update.is_diff = true;
 
-    scene_publisher.publish(scene);
+    ROS_DEBUG_STREAM("detaching all known objects" << manipulationObjects.size());
+    for(auto o : manipulationObjects) {
+        moveit_msgs::CollisionObject object;
+        object.operation = object.REMOVE;
+        object.id = o.id;
+
+        moveit_msgs::AttachedCollisionObject att;
+        att.object = object;
+        update.robot_state.attached_collision_objects.push_back(att);
+    }
+    scene_publisher.publish(update);
     ros::spinOnce();
-
-    //attaching does not send new planning scene so we just use our planning scene and send as non diff
-    //TODO try this if above does not work
-    //currentPlanningScene.is_diff = false;
-    //scene_publisher.publish(currentPlanningScene);
-    //ros::spinOnce();
-
-    //std::vector<std::string> list;
-    //std::vector<moveit_msgs::CollisionObject> clist;
-    //for(auto a : currentPlanningScene.world.collision_objects) {
-    //    list.push_back(a.id);
-    //    clist.push_back(a);
-    //    a.operation = a.REMOVE;
-    //    object_att_publisher.publish(a);
-    //
-    //}
-    //planningInterface.removeCollisionObjects(list);
-    //ros::spinOnce();
-    //planningInterface.addCollisionObjects(clist);
-
 
 }
 void RosTools::attach_collision_object() {
@@ -414,6 +348,7 @@ void RosTools::attach_collision_object() {
     attached_object.object.primitive_poses.push_back(pose);
 
     object_att_publisher.publish(attached_object);
+    manipulationObjects.push_back(attached_object.object);
     ros::spinOnce();
 
 }
@@ -434,29 +369,35 @@ void RosTools::clear_octomap(double sleep_seconds) {
 }
 
 void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
-    ROS_DEBUG_STREAM("sceneCallback");
+    //ROS_DEBUG_STREAM("sceneCallback");
     boost::mutex::scoped_lock lock(sceneMutex);
     currentPlanningScene = currentScene;
-    ROS_DEBUG_STREAM("sceneCallback done: (attached:)" << currentScene.robot_state.attached_collision_objects.size()  );
+
+    //todo scene add/removes to currentObjects
+    if(currentScene.is_diff) {
+        for(auto o : currentScene.world.collision_objects) {
+            if(o.operation == o.ADD) {
+                manipulationObjects.push_back(o);
+            } else if (o.operation == o.REMOVE) {
+                manipulationObjects.push_back(o);
+            }
+        }
+
+    }
+
+    //ROS_DEBUG_STREAM("sceneCallback done: (attached:)" << currentScene.robot_state.attached_collision_objects.size()  );
 }
 
 bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj) {
-    boost::mutex::scoped_lock lock(sceneMutex);
-    vector<moveit_msgs::CollisionObject>::iterator colObjIt;
-    for (colObjIt = currentPlanningScene.world.collision_objects.begin();
-            colObjIt != currentPlanningScene.world.collision_objects.end(); colObjIt++) {
-        ROS_DEBUG_STREAM("CollisionObject: " << colObjIt->id << "TargetObject: " << id);
-        if (colObjIt->id == id) {
-            ROS_DEBUG_STREAM("Found CollisionObject with id" << colObjIt->id);
-            obj = *colObjIt;
-            return true;
-        }
-    }
 
-    //todo only local representation
+    boost::mutex::scoped_lock lock(sceneMutex);
+    ROS_DEBUG_STREAM("invoked: getCollisionObjectByName");
+
+    ROS_DEBUG_STREAM("local rep has:" << manipulationObjects.size());
     for(auto o : manipulationObjects) {
         if(o.id == id) {
             obj = o;
+            ROS_DEBUG_STREAM("Found CollisionObject with id" << o.id);
             return true;
         }
     }
@@ -511,29 +452,15 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
 
 bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::Object &msg) {
     boost::mutex::scoped_lock lock(sceneMutex);
-    grasping_msgs::Object msg_tmp;
-    vector<moveit_msgs::CollisionObject>::iterator colObjIt;
 
-    ROS_DEBUG_STREAM("Collision objects with size: " << currentPlanningScene.world.collision_objects.size());
-
-    for (colObjIt = currentPlanningScene.world.collision_objects.begin();
-            colObjIt != currentPlanningScene.world.collision_objects.end(); colObjIt++) {
-        ROS_DEBUG_STREAM("colObjIt ID: " << colObjIt->id << " with name: " << name);
-        if (colObjIt->id == name) {
-            msg = convertMoveItToGrasping(*colObjIt);
-
-            return true;
-        }
-    }
-    return false;
-
-    //todo only local representation
     for(auto o : manipulationObjects) {
         if(o.id == name) {
             msg = convertMoveItToGrasping(o);
             return true;
         }
     }
+
+    return false;
 }
 
 
