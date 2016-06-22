@@ -73,6 +73,7 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     }
 
     grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
+    ROS_INFO_STREAM("fitted " << results->objects.size() << " objects" );
     
     rosTools.clear_collision_objects(false);
     rosTools.clear_grasps();

@@ -260,10 +260,17 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             lastGraspPose = resultGrasp.grasp_pose;
 
             moveit_msgs::CollisionObject colSurface;
-
-            rosTools.getCollisionObjectByName(surface, colSurface);
-            lastHeightAboveTable = colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z;
-            graspedObjectID = obj;
+            if(rosTools.getCollisionObjectByName(surface, colSurface)) {
+                lastHeightAboveTable = colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z;
+                graspedObjectID = obj;
+            } else {
+                graspedObjectID = obj;
+                moveit_msgs::CollisionObject o;
+                if(rosTools.getCollisionObjectByName(obj, o)) {
+                    //todo
+                    lastHeightAboveTable = o.primitive_poses[0].position.z;
+                }
+            }
             grt.result = GraspReturnType::SUCCESS;
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
         } else {
