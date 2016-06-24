@@ -308,46 +308,46 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
                 << " TF: " << collisionObject.header.frame_id);
 
         moveit_msgs::Grasp &i = old_grasps[0];
-        //for (moveit_msgs::Grasp &i : old_grasps) {
-        float graspX = i.grasp_pose.pose.position.x;
-        float graspY = i.grasp_pose.pose.position.y;
-        float graspZ = i.grasp_pose.pose.position.z;
-        ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << graspX << " y: " << graspY
-                << " z: " << graspZ << " Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y
-                << " z: " << i.grasp_pose.pose.position.z << " w: " << i.grasp_pose.pose.orientation.w);
-        moveit_msgs::Grasp new_grasp;
-        Eigen::Vector3f local(cylinderX - graspX, cylinderY - graspY, cylinderZ - graspZ);
-        geometry_msgs::Point localcoordinate;
-        localcoordinate.x = cylinderX - graspX;
-        localcoordinate.y = cylinderY - graspY;
-        localcoordinate.z = cylinderZ - graspZ;
-        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitZ()));
-        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
+        for (moveit_msgs::Grasp &i : old_grasps) {
+            float graspX = i.grasp_pose.pose.position.x;
+            float graspY = i.grasp_pose.pose.position.y;
+            float graspZ = i.grasp_pose.pose.position.z;
+            ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << graspX << " y: " << graspY
+                    << " z: " << graspZ << " Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y
+                    << " z: " << i.grasp_pose.pose.position.z << " w: " << i.grasp_pose.pose.orientation.w);
+            moveit_msgs::Grasp new_grasp;
+            Eigen::Vector3f local(cylinderX - graspX, cylinderY - graspY, cylinderZ - graspZ);
+            geometry_msgs::Point localcoordinate;
+            localcoordinate.x = cylinderX - graspX;
+            localcoordinate.y = cylinderY - graspY;
+            localcoordinate.z = cylinderZ - graspZ;
+            Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+            Eigen::Quaternionf rotation(Eigen::AngleAxisf(-0.5 * M_PI, Eigen::Vector3f::UnitZ()));
+            Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
 
-        ROS_WARN_STREAM(" Diff Object-Grasp: X: " << localcoordinate.x
-                << " Y: " << localcoordinate.y
-                << " Z: " << localcoordinate.z);
+            ROS_WARN_STREAM(" Diff Object-Grasp: X: " << localcoordinate.x
+                    << " Y: " << localcoordinate.y
+                    << " Z: " << localcoordinate.z);
 
-        Eigen::Vector3f translation = rotation.toRotationMatrix() * local;
+            Eigen::Vector3f translation = rotation.toRotationMatrix() * local;
 
-        ROS_WARN_STREAM(" Diff Object-Grasp-Rot: X: " << translation(0)
-                << " Y: " << translation(1)
-                << " Z: " << translation(2));
-        
-        Eigen::Quaternionf quatresult(result);
-        new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
-        new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
-        new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
-        new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
-        new_grasp.grasp_pose.pose.position.x = graspX - localcoordinate.x + translation(0);
-        new_grasp.grasp_pose.pose.position.y = graspY - localcoordinate.y + translation(1);
-        new_grasp.grasp_pose.pose.position.z = graspZ - localcoordinate.z + translation(2);
+            ROS_WARN_STREAM(" Diff Object-Grasp-Rot: X: " << translation(0)
+                    << " Y: " << translation(1)
+                    << " Z: " << translation(2));
 
-        new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+            Eigen::Quaternionf quatresult(result);
+            new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
+            new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
+            new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
+            new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
+            new_grasp.grasp_pose.pose.position.x = graspX - localcoordinate.x + translation(0);
+            new_grasp.grasp_pose.pose.position.y = graspY - localcoordinate.y + translation(1);
+            new_grasp.grasp_pose.pose.position.z = graspZ - localcoordinate.z + translation(2);
 
-        grasps.push_back(new_grasp);
-        //}
+            new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+
+            grasps.push_back(new_grasp);
+        }
     }
     //create more grasps by varying the angle by 0.2rad around X.
     /**old_grasps = grasps;
