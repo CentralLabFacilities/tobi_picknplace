@@ -322,7 +322,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         localcoordinate.y = cylinderY - graspY;
         localcoordinate.z = cylinderZ - graspZ;
         Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitX()));
+        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitZ()));
         Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
 
         ROS_WARN_STREAM(" Diff Object-Grasp: X: " << localcoordinate.x
@@ -350,7 +350,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         //}
     }
     //create more grasps by varying the angle by 0.2rad around X.
-    old_grasps = grasps;
+    /**old_grasps = grasps;
     for (moveit_msgs::Grasp &i : old_grasps) {
         ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << i.grasp_pose.pose.position.x << " y: " << i.grasp_pose.pose.position.y
                 << " z: " << i.grasp_pose.pose.position.z << " Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y
@@ -396,7 +396,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
         grasps.push_back(new_grasp);
     }
-
+     * **/
     for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
 
