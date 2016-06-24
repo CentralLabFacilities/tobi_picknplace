@@ -340,9 +340,9 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
             new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
             new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
             new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
-            new_grasp.grasp_pose.pose.position.x = graspX - localcoordinate.x + translation(0);
-            new_grasp.grasp_pose.pose.position.y = graspY - localcoordinate.y + translation(1);
-            new_grasp.grasp_pose.pose.position.z = graspZ - localcoordinate.z + translation(2);
+            new_grasp.grasp_pose.pose.position.x = graspX + localcoordinate.x - translation(0);
+            new_grasp.grasp_pose.pose.position.y = graspY + localcoordinate.y - translation(1);
+            new_grasp.grasp_pose.pose.position.z = graspZ + localcoordinate.z - translation(2);
 
             new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
 
