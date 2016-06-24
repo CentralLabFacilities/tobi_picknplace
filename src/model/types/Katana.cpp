@@ -17,6 +17,7 @@
 #include <moveit/common_planning_interface_objects/common_objects.h>
 #include <eigen3/Eigen/src/Geometry/Quaternion.h>
 #include <math.h>
+#include <eigen3/Eigen/src/Core/Matrix.h>
 
 using namespace std;
 using namespace moveit;
@@ -83,7 +84,7 @@ void Katana::closeEef(bool withSensors) {
     ROS_INFO("### Invoked closeGripper ###");
     moveToGripper(ParamReader::getParamReader().eefPosClosed.at(0),
             withSensors);
-    if(isSomethingInGripper())
+    if (isSomethingInGripper())
         rosTools.attach_collision_object();
 }
 
@@ -179,14 +180,14 @@ bool Katana::isSomethingInGripper() const {
         ROS_ERROR("Cannot read current sensor values");
         return false;
     }
-//	ROS_DEBUG("sensor right distance inside near: %d",
-//			currentSensorReadings.at("katana_r_inside_near_distance_sensor"));
-//	ROS_DEBUG("sensor right distance inside far: %d",
-//			currentSensorReadings.at("katana_r_inside_far_distance_sensor"));
-//	ROS_DEBUG("sensor left distance inside near: %d",
-//			currentSensorReadings.at("katana_l_inside_near_distance_sensor"));
-//	ROS_DEBUG("sensor left distance inside far: height%d",
-//			currentSensorReadings.at("katana_l_inside_far_distance_sensor"));
+    //	ROS_DEBUG("sensor right distance inside near: %d",
+    //			currentSensorReadings.at("katana_r_inside_near_distance_sensor"));
+    //	ROS_DEBUG("sensor right distance inside far: %d",
+    //			currentSensorReadings.at("katana_r_inside_far_distance_sensor"));
+    //	ROS_DEBUG("sensor left distance inside near: %d",
+    //			currentSensorReadings.at("katana_l_inside_near_distance_sensor"));
+    //	ROS_DEBUG("sensor left distance inside far: height%d",
+    //			currentSensorReadings.at("katana_l_inside_far_distance_sensor"));
     ROS_DEBUG("sensor right force inside near: %d",
             currentSensorReadings.at("katana_r_inside_near_force_sensor"));
     ROS_DEBUG("sensor right force inside far: %d",
@@ -199,20 +200,20 @@ bool Katana::isSomethingInGripper() const {
     bool force = currentSensorReadings.at("katana_r_inside_near_force_sensor")
             > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_r_inside_far_force_sensor")
-                    > ParamReader::getParamReader().gripperThresholdDistance
+            > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_l_inside_near_force_sensor")
-                    > ParamReader::getParamReader().gripperThresholdDistance
+            > ParamReader::getParamReader().gripperThresholdDistance
             || currentSensorReadings.at("katana_l_inside_far_force_sensor")
-                    > ParamReader::getParamReader().gripperThresholdDistance;
+            > ParamReader::getParamReader().gripperThresholdDistance;
 
-//	bool distance = currentSensorReadings.at("katana_r_inside_near_distance_sensor")
-//			< GRIPPER_THRESHOLD_DISTANCE
-//			|| currentSensorReadings.at("katana_r_inside_far_distance_sensor")
-//					< GRIPPER_THRESHOLD_DISTANCE
-//			|| currentSensorReadings.at("katana_l_inside_near_distance_sensor")
-//					< GRIPPER_THRESHOLD_DISTANCE
-//			|| currentSensorReadings.at("katana_l_inside_far_distance_sensor")
-//					< GRIPPER_THRESHOLD_DISTANCE;
+    //	bool distance = currentSensorReadings.at("katana_r_inside_near_distance_sensor")
+    //			< GRIPPER_THRESHOLD_DISTANCE
+    //			|| currentSensorReadings.at("katana_r_inside_far_distance_sensor")
+    //					< GRIPPER_THRESHOLD_DISTANCE
+    //			|| currentSensorReadings.at("katana_l_inside_near_distance_sensor")
+    //					< GRIPPER_THRESHOLD_DISTANCE
+    //			|| currentSensorReadings.at("katana_l_inside_far_distance_sensor")
+    //					< GRIPPER_THRESHOLD_DISTANCE;
 
     bool gripperClosed = fabs(
             fingerJointAngles[0] - ParamReader::getParamReader().eefPosClosed[0])
@@ -230,6 +231,7 @@ map<string, short> Katana::getGripperSensors() const {
     boost::mutex::scoped_lock lock(sensorMutex);
     return currentSensorReadings;
 }
+
 /**
 GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
         const string &startPose) {
@@ -270,7 +272,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         grt.result = GraspReturnType::FAIL;
         return grt;
     }
-    ROS_DEBUG_STREAM("grasping Object:\n" << collisionObject );
+    ROS_DEBUG_STREAM("grasping Object:\n" << collisionObject);
 
     vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(
             collisionObject);
@@ -292,12 +294,66 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         i.grasp_pose.pose.orientation.z = quatresult.z();
 
     }
-
-    //create more grasps by varying the angle by 0.2rad around X.
     vector<moveit_msgs::Grasp> old_grasps = grasps;
+    shape_msgs::SolidPrimitive primitive;
+    if (collisionObject.primitives[0].type == primitive.CYLINDER) {
+        ROS_WARN_STREAM("Generate Grasps for Cylinder");
+
+        float cylinderX = collisionObject.primitive_poses[0].position.x;
+        float cylinderY = collisionObject.primitive_poses[0].position.y;
+        float cylinderZ = collisionObject.primitive_poses[0].position.z;
+        ROS_WARN_STREAM(" Collision Object: X: " << cylinderX
+                << " Y: " << cylinderY
+                << " Z: " << cylinderZ
+                << " TF: " << collisionObject.header.frame_id);
+
+        moveit_msgs::Grasp &i = old_grasps[0];
+        //for (moveit_msgs::Grasp &i : old_grasps) {
+        float graspX = i.grasp_pose.pose.position.x;
+        float graspY = i.grasp_pose.pose.position.y;
+        float graspZ = i.grasp_pose.pose.position.z;
+        ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << graspX << " y: " << graspY
+                << " z: " << graspZ << " Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y
+                << " z: " << i.grasp_pose.pose.position.z << " w: " << i.grasp_pose.pose.orientation.w);
+        moveit_msgs::Grasp new_grasp;
+        Eigen::Vector3f local(cylinderX - graspX, cylinderY - graspY, cylinderZ - graspZ);
+        geometry_msgs::Point localcoordinate;
+        localcoordinate.x = cylinderX - graspX;
+        localcoordinate.y = cylinderY - graspY;
+        localcoordinate.z = cylinderZ - graspZ;
+        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitX()));
+        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
+
+        ROS_WARN_STREAM(" Diff Object-Grasp: X: " << localcoordinate.x
+                << " Y: " << localcoordinate.y
+                << " Z: " << localcoordinate.z);
+
+        Eigen::Vector3f translation = rotation.toRotationMatrix() * local;
+
+        ROS_WARN_STREAM(" Diff Object-Grasp-Rot: X: " << translation(0)
+                << " Y: " << translation(1)
+                << " Z: " << translation(2));
+        
+        Eigen::Quaternionf quatresult(result);
+        new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
+        new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
+        new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
+        new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
+        new_grasp.grasp_pose.pose.position.x = graspX - localcoordinate.x + translation(0);
+        new_grasp.grasp_pose.pose.position.y = graspY - localcoordinate.y + translation(1);
+        new_grasp.grasp_pose.pose.position.z = graspZ - localcoordinate.z + translation(2);
+
+        new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+
+        grasps.push_back(new_grasp);
+        //}
+    }
+    //create more grasps by varying the angle by 0.2rad around X.
+    old_grasps = grasps;
     for (moveit_msgs::Grasp &i : old_grasps) {
-        ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << i.grasp_pose.pose.position.x << " y: " << i.grasp_pose.pose.position.y 
-                << " z: " << i.grasp_pose.pose.position.z << " Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y 
+        ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << i.grasp_pose.pose.position.x << " y: " << i.grasp_pose.pose.position.y
+                << " z: " << i.grasp_pose.pose.position.z << " Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y
                 << " z: " << i.grasp_pose.pose.position.z << " w: " << i.grasp_pose.pose.orientation.w);
         moveit_msgs::Grasp new_grasp;
         Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
@@ -345,17 +401,17 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         fillGrasp(i);
 
     rosTools.publish_grasps_as_markerarray(grasps);
-    
+
     //closeEef(false);
     auto ret = Model::graspObject(obj, surface, grasps, simulate, startPose);
     if (ret.result == GraspReturnType::ROBOT_CRASHED) {
         ROS_WARN_STREAM("  try to RECOVER !!");
         if (isSomethingInGripper()) {
-            if (moveTo("carry_side",true)) {
+            if (moveTo("carry_side", true)) {
                 ret.result = GraspReturnType::COLLISION_HANDLED;
             }
         } else {
-            if (moveTo("fold_up",true)) {
+            if (moveTo("fold_up", true)) {
                 ret.result = GraspReturnType::SUCCESS;
             }
         }
