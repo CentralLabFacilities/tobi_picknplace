@@ -322,7 +322,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
             localcoordinate.y = cylinderY - graspY;
             localcoordinate.z = cylinderZ - graspZ;
             Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-            Eigen::Quaternionf rotation(Eigen::AngleAxisf(-0.5 * M_PI, Eigen::Vector3f::UnitZ()));
+            Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitZ()));
             Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
 
             ROS_WARN_STREAM(" Diff Object-Grasp: X: " << localcoordinate.x
