@@ -240,7 +240,20 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
         return grt;
     }
 
-    moveit_msgs::PickupGoal goal = buildPickupGoal(obj, surface, grasps, simulate);
+    moveit_msgs::CollisionObject o;
+    moveit_msgs::PickupGoal goal;
+    if(rosTools.getCollisionObjectByName(surface, o)) {
+        goal = buildPickupGoal(obj, surface, grasps, simulate);
+    } else {
+        //todo defautl surface hack
+        ROS_WARN_STREAM("(surface) for grasping with Name: " << surface << " try default: " << DEFAULT_SURFACE);
+        if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE, o)) {
+            goal = buildPickupGoal(obj, surface, grasps, simulate);
+        } else {
+            ROS_ERROR_STREAM("(surface) for grasping with Name: " << DEFAULT_SURFACE << " not found");
+        }
+    }
+
     pickActionClient->sendGoal(goal);
     if (!pickActionClient->waitForResult()) {
         ROS_INFO_STREAM("Pickup action returned early");
@@ -267,7 +280,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
                 lastHeightAboveTable = colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z;
             } else {
                 //todo defautl surface hack
-                ROS_WARN_STREAM("No CollisionObject (surface) for Placing with Name: " << surface << " try default: " << DEFAULT_SURFACE);
+                ROS_WARN_STREAM("(surface) for grasping with Name: " << surface << " try default: " << DEFAULT_SURFACE);
                 if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE, colSurface)) {
                     lastHeightAboveTable = colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z;
                 }
@@ -336,9 +349,24 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 
     rosTools.clear_octomap();
 
-    moveit_msgs::PlaceGoal goal = buildPlaceGoal(surface, locations, simulate);
+    moveit_msgs::CollisionObject o;
+    moveit_msgs::PlaceGoal goal;
+    if(rosTools.getCollisionObjectByName(surface,o)) {
+        goal = buildPlaceGoal(surface, locations, simulate);
+    } else {
+        //todo/hack could be left empty but we assume defaul hack
+        ROS_WARN_STREAM("collisionObject: " << surface << " not in planning scene, assuming default");
+        //goal.support_surface_name = "";
+        if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE,o)) {
+            goal = buildPlaceGoal(DEFAULT_SURFACE, locations, simulate);
+        } else {
+            goal = buildPlaceGoal("", locations, simulate);
+        }
+    };
+
 
     for (int i = 0; i < 3; i++) {
+        ROS_DEBUG_STREAM("SENDING PLACE GOAL " << goal);
         placeActionClient->sendGoal(goal);
         SimpleClientGoalState resultState = placeActionClient->getState();
 
@@ -401,20 +429,7 @@ moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
     goal.allowed_touch_objects.push_back(graspedObjectID);
     goal.group_name = groupArm->getName();
     goal.allowed_planning_time = groupArm->getPlanningTime();
-    moveit_msgs::CollisionObject o;
-    if(rosTools.getCollisionObjectByName(surface,o)) {
-        goal.support_surface_name = surface;
-    } else {
-        //todo/hack could be left empty but we assume defaul hack
-        ROS_WARN_STREAM("collisionObject: " << surface << " not in planning scene, assuming default");
-        //goal.support_surface_name = "";
-        if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE,o)) {
-            goal.support_surface_name = DEFAULT_SURFACE;
-        } else {
-            goal.support_surface_name = "";
-        }
-    };
-
+    goal.support_surface_name = surface;
     goal.planner_id = ParamReader::getParamReader().plannerId;
     goal.place_eef = true;
     goal.place_locations = locations;
@@ -570,7 +585,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 
     if (!success) {
         ROS_WARN_STREAM("No CollisionObject for Placing with Name: " << surface << " try default: " << DEFAULT_SURFACE);
-        bool success = rosTools.getCollisionObjectByName(DEFAULT_SURFACE, colSurface);
+        success = rosTools.getCollisionObjectByName(DEFAULT_SURFACE, colSurface);
         if (!success) {
             ROS_ERROR_STREAM("No CollisionObject for Placing with Name: " << DEFAULT_SURFACE);
             return pls;
