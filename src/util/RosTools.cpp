@@ -131,6 +131,7 @@ void RosTools::clear_collision_objects(bool with_surface) {
     } else {
         update.is_diff = true;
         for(auto o : manipulationObjects) {
+            if (o.id.find("surface") != std::string::npos) continue;
             moveit_msgs::CollisionObject object;
             object.operation = object.REMOVE;
             object.id = o.id;
@@ -384,20 +385,23 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
 
     if(currentScene.is_diff) {
         for(auto o : currentScene.world.collision_objects) {
-            if(o.operation == o.ADD) {
-                for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
-                    if (it->id == o.id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
-                    else ++it;
-                }
+            for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
+                if (it->id == o.id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+                else ++it;
+            }
+
+            if(o.operation == o.ADD || o.operation == o.MOVE) {
                 manipulationObjects.push_back(o);
             } else if (o.operation == o.REMOVE) {
-                for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
-                    if (it->id == o.id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
-                    else ++it;
-                }
             }
+            
         }
 
+    } else {
+        manipulationObjects.clear();
+        for(auto o : currentScene.world.collision_objects) {
+            manipulationObjects.push_back(o);
+        }
     }
 
     //ROS_DEBUG_STREAM("sceneCallback done: (attached:)" << currentScene.robot_state.attached_collision_objects.size()  );
