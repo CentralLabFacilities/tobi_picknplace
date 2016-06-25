@@ -445,7 +445,7 @@ GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
 GraspReturnType Katana::placeObject(const string &surface, bool simulate,
         const string &startPose) {
 
-    ROS_INFO("### Invoked placeObject Surface (str) ###");
+    ROS_INFO_STREAM("### Invoked placeObject Surface (str) ### :" << surface);
 
     vector<moveit_msgs::PlaceLocation> locations = Model::generate_place_locations(surface);
     rosTools.publish_place_locations_as_markerarray(locations);

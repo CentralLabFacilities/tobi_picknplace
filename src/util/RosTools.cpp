@@ -394,7 +394,7 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
                 manipulationObjects.push_back(o);
             } else if (o.operation == o.REMOVE) {
             }
-            
+
         }
 
     } else {
@@ -487,6 +487,28 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
     return false;
 }
 
+bool RosTools::getCollisionObjectByHeigth(const double &h, moveit_msgs::CollisionObject &obj, const std::string& nameFilter) {
+    boost::mutex::scoped_lock lock(sceneMutex);
+
+    double best = DBL_MAX;
+    double cur;
+    for(auto& o : manipulationObjects) {
+        if( !(nameFilter.empty()) && (o.id.find("surface") != std::string::npos)) continue;
+
+        //todo hack, should search best primitive? getPrimitiveBzHeigthByHeigth?
+        double oh = o.primitive_poses[0].position.z;
+        if ((cur = std::abs(oh - h)) < best) {
+            best = cur;
+            obj = o;
+        }
+    }
+
+    if (best < DBL_MAX) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 /////ALT
 
