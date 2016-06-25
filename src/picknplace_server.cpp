@@ -55,13 +55,13 @@ int main(int argc, char **argv) {
 	}
 	ros::init(argc, argv, "tobi_picknplace_server");
 
-    ros::console::Level level = ros::console::levels::Info;
-    if (vm.count("debug")) {
-        level = ros::console::levels::Debug;
-    }
-    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, level) ) {
-        ros::console::notifyLoggerLevelsChanged();
-    }
+//    ros::console::Level level = ros::console::levels::Info;
+//    if (vm.count("debug")) {
+//        level = ros::console::levels::Debug;
+//    }
+//    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, level) ) {
+//        ros::console::notifyLoggerLevelsChanged();
+//    }
 
     if (!vm.count("model")) {
         cerr << "No model specified. Use --model <MODELNAME>. Exiting.." << endl;
