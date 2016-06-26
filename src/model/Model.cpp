@@ -240,6 +240,10 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
         return grt;
     }
 
+    if(!rosTools.getCollisionObjectByName(obj,lastGraspTried)) {
+        lastGraspTried.id = "";
+    }
+
     moveit_msgs::CollisionObject o;
     moveit_msgs::PickupGoal goal;
     if(rosTools.getCollisionObjectByName(surface, o)) {
@@ -277,12 +281,12 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             moveit_msgs::CollisionObject colSurface;
             graspedObjectID = obj;
             if(rosTools.getCollisionObjectByName(surface, colSurface)) {
-                lastHeightAboveTable = colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z;
+                lastHeightAboveTable = abs(colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z);
             } else {
                 //todo defautl surface hack
                 ROS_WARN_STREAM("(surface) for grasping with Name: " << surface << " try default: " << DEFAULT_SURFACE);
                 if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE, colSurface)) {
-                    lastHeightAboveTable = colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z;
+                    lastHeightAboveTable = abs(colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z);
                 }
             }
             grt.result = GraspReturnType::SUCCESS;
@@ -320,11 +324,13 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
 
     if (grt.result == GraspReturnType::NO_RESULT) {
         grt.result = rosTools.graspResultFromMoveit(pickActionClient->getResult()->error_code);
+        moveTo(eefStart, false, false);
     }
 
 
     if (grt.result != GraspReturnType::SUCCESS) {
         rosTools.detach_collision_object();
+        moveTo(eefStart, false, false);
         //rosTools.remove_collision_object(obj);
     }
 
@@ -335,6 +341,8 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
 GraspReturnType Model::placeObject(const std::string &surface, std::vector<moveit_msgs::PlaceLocation> locations, bool simulate, const std::string &startPose) {
 
     GraspReturnType grt;
+
+    EefPose eefStart = getEefPose();
 
     if (!pickActionClient) {
         ROS_ERROR_STREAM("Pick action client not found");
@@ -418,8 +426,8 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 
     if (!isSomethingInGripper()) {
         rosTools.detach_collision_object();
+        moveTo(eefStart, false, false);
     }
-
 
     return grt;
 }
@@ -477,25 +485,38 @@ void Model::attachDefaultObject() {
     ParamReader& params = ParamReader::getParamReader();
     moveit_msgs::AttachedCollisionObject attached_object;
 
-    shape_msgs::SolidPrimitive primitive;
-    primitive.type = primitive.BOX;
-    primitive.dimensions.resize(3);
-    primitive.dimensions[0] = 0.07;
-    primitive.dimensions[1] = 0.07;
-    primitive.dimensions[2] = 0.07;
-    attached_object.object.primitives.push_back(primitive);
 
-    geometry_msgs::Pose pose;
-    pose.orientation.w = 1.0;
-    pose.orientation.x = 0.0;
-    pose.orientation.y = 0.0;
-    pose.orientation.z = 0.0;
-    pose.position.x = 0.05;
-    pose.position.y = 0;
-    pose.position.z = 0;
-    attached_object.object.primitive_poses.push_back(pose);
+    if(lastGraspTried.id != "") {
+        ROS_INFO_STREAM("attach default using last tried object");
+        attached_object.object = lastGraspTried;
 
-    attached_object.object.id = rosTools.getDefaultObjectName();
+        lastHeightAboveTable = lastGraspTried.primitive_poses[0].position.z + 0.01;
+        graspedObjectID = lastGraspTried.id;
+    } else {
+        shape_msgs::SolidPrimitive primitive;
+        primitive.type = primitive.BOX;
+        primitive.dimensions.resize(3);
+        primitive.dimensions[0] = 0.07;
+        primitive.dimensions[1] = 0.07;
+        primitive.dimensions[2] = 0.07;
+        attached_object.object.primitives.push_back(primitive);
+
+        geometry_msgs::Pose pose;
+        pose.orientation.w = 1.0;
+        pose.orientation.x = 0.0;
+        pose.orientation.y = 0.0;
+        pose.orientation.z = 0.0;
+        pose.position.x = 0.05;
+        pose.position.y = 0;
+        pose.position.z = 0;
+        attached_object.object.primitive_poses.push_back(pose);
+
+        attached_object.object.id = rosTools.getDefaultObjectName();
+        lastHeightAboveTable = 0.10;
+        graspedObjectID = rosTools.getDefaultObjectName();
+    }
+
+
     attached_object.object.operation = attached_object.object.ADD;
     attached_object.object.header.frame_id = ParamReader::getParamReader().frameGripper;
 
@@ -505,7 +526,6 @@ void Model::attachDefaultObject() {
     //groupEe->attachObject(rosTools.getDefaultObjectName(), params.frameGripper, touchlinks);
 
     rosTools.attach_collision_object(attached_object);
-    graspedObjectID = rosTools.getDefaultObjectName();
 
     ros::WallDuration sleep_time(1);
     sleep_time.sleep();
@@ -593,7 +613,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
           orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
       }**/
     if (lastHeightAboveTable == 0.0) {
-        lastHeightAboveTable = -0.15;
+        lastHeightAboveTable = 0.15;
         ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
     }
 
@@ -658,7 +678,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             float param = y * 2 * M_PI / place_rot;
             pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
             pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
-            pl.place_pose.pose.position.z = surfaceCenterZ - lastHeightAboveTable + surfaceSizeZ / 2;
+            pl.place_pose.pose.position.z = surfaceCenterZ + lastHeightAboveTable + surfaceSizeZ / 2;
             Eigen::Quaternionf quat(orientMsg.w, orientMsg.x, orientMsg.y, orientMsg.z);
 
             for (int r = 0; r < rotation; r++) {

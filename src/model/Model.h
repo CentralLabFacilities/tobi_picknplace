@@ -108,6 +108,7 @@ protected:
 
     double lastHeightAboveTable;
     std::string graspedObjectID;
+    moveit_msgs::CollisionObject lastGraspTried;
     geometry_msgs::PoseStamped lastGraspPose;
 
     void attachDefaultObject();
