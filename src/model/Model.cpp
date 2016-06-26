@@ -351,22 +351,26 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 
     moveit_msgs::CollisionObject o;
     moveit_msgs::PlaceGoal goal;
-    if(rosTools.getCollisionObjectByName(surface,o)) {
-        goal = buildPlaceGoal(surface, locations, simulate);
-    } else {
-        //todo/hack could be left empty but we assume defaul hack
-        ROS_WARN_STREAM("collisionObject: " << surface << " not in planning scene, assuming default");
-        //goal.support_surface_name = "";
-        if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE,o)) {
-            goal = buildPlaceGoal(DEFAULT_SURFACE, locations, simulate);
-        } else {
-            goal = buildPlaceGoal("", locations, simulate);
-        }
-    };
-
 
     for (int i = 0; i < 3; i++) {
-        ROS_DEBUG_STREAM("SENDING PLACE GOAL " << goal);
+
+        if(rosTools.getCollisionObjectByName(surface,o)) {
+            goal = buildPlaceGoal(surface, locations, simulate);
+        } else {
+            //todo/hack could be left empty but we assume defaul hack
+            ROS_WARN_STREAM("collisionObject: " << surface << " not in planning scene, assuming default:" << DEFAULT_SURFACE);
+            //goal.support_surface_name = "";
+            if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE,o)) {
+                goal = buildPlaceGoal(DEFAULT_SURFACE, locations, simulate);
+            } else {
+                goal = buildPlaceGoal("", locations, simulate);
+            }
+        };
+
+        moveit_msgs::PlaceGoal goalShort(goal);
+        goalShort.place_locations.clear();
+        ROS_DEBUG_STREAM("SENDING PLACE GOAL " << goalShort);
+
         placeActionClient->sendGoal(goal);
         SimpleClientGoalState resultState = placeActionClient->getState();
 
@@ -471,23 +475,38 @@ moveit_msgs::PickupGoal Model::buildPickupGoal(const string &obj,
 
 void Model::attachDefaultObject() {
     ParamReader& params = ParamReader::getParamReader();
+    moveit_msgs::AttachedCollisionObject attached_object;
 
-    ROS_INFO("Publishing default object!");
-    //moveit_msgs::CollisionObject attachDefaultObj;
+    shape_msgs::SolidPrimitive primitive;
+    primitive.type = primitive.BOX;
+    primitive.dimensions.resize(3);
+    primitive.dimensions[0] = 0.07;
+    primitive.dimensions[1] = 0.07;
+    primitive.dimensions[2] = 0.07;
+    attached_object.object.primitives.push_back(primitive);
 
-    //attachDefaultObj.header.frame_id = params.frameGripper;
-    //attachDefaultObj.id = rosTools.getDefaultObjectName();
+    geometry_msgs::Pose pose;
+    pose.orientation.w = 1.0;
+    pose.orientation.x = 0.0;
+    pose.orientation.y = 0.0;
+    pose.orientation.z = 0.0;
+    pose.position.x = 0.05;
+    pose.position.y = 0;
+    pose.position.z = 0;
+    attached_object.object.primitive_poses.push_back(pose);
 
-    ObjectShape shape;
-    shape.heightMeter = 0.05;
-    shape.widthMeter = 0.05;
-    shape.depthMeter = 0.05;
-    shape.center.frame = params.frameGripper;
-    rosTools.publish_collision_object(rosTools.getDefaultObjectName(), shape, 0.5);
+    attached_object.object.id = rosTools.getDefaultObjectName();
+    attached_object.object.operation = attached_object.object.ADD;
+    attached_object.object.header.frame_id = ParamReader::getParamReader().frameGripper;
 
-    groupEe->attachObject(rosTools.getDefaultObjectName(), params.frameGripper, touchlinks);
+    attached_object.link_name = params.frameGripper;
+    attached_object.touch_links = touchlinks;
 
-    ros::spinOnce();
+    //groupEe->attachObject(rosTools.getDefaultObjectName(), params.frameGripper, touchlinks);
+
+    rosTools.attach_collision_object(attached_object);
+    graspedObjectID = rosTools.getDefaultObjectName();
+
     ros::WallDuration sleep_time(1);
     sleep_time.sleep();
 }
@@ -616,16 +635,16 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
         surfaceSizeY = 0.1;
         surfaceSizeZ = 0.01;
     }
-    
+
     //dirty Hack, for not place on the edge of the object
     surfaceSizeX -= 0.03;
     surfaceSizeY -= 0.03;
- 
+
     if(surfaceSizeX < 0)
         surfaceSizeX = 0;
     if(surfaceSizeY < 0)
         surfaceSizeY = 0;
-    
+
     ROS_DEBUG_STREAM("Placesize X: " << surfaceSizeX << "PlaceSize Y: " << surfaceSizeY);
 
     float surfaceCenterX = colSurface.primitive_poses[0].position.x;

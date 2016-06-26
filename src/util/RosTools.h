@@ -43,7 +43,10 @@ private:
 
     mutable boost::mutex sceneMutex;
     moveit_msgs::PlanningScene currentPlanningScene;
-    moveit::planning_interface::PlanningSceneInterface planningInterface; 
+    moveit::planning_interface::PlanningSceneInterface planningInterface;
+
+
+	void removeFromManipulationObjects(const std::string& id);
 
 public:
 	RosTools();
@@ -58,7 +61,7 @@ public:
 	void publish_collision_object(const std::string &id, ObjectShape shape, double sleep_seconds);
 	void remove_collision_object(const std::string id);
 	void detach_collision_object();
-	void attach_collision_object();
+	void attach_collision_object(moveit_msgs::AttachedCollisionObject& attached_object);
 	bool has_attached_object();
 	void publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color = "blue");
 	void clear_grasps_markerarray();

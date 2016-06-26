@@ -85,7 +85,7 @@ void Katana::closeEef(bool withSensors) {
     moveToGripper(ParamReader::getParamReader().eefPosClosed.at(0),
             withSensors);
     if (isSomethingInGripper())
-        rosTools.attach_collision_object();
+        Model::attachDefaultObject();
 }
 
 void Katana::moveToGripper(double target, bool withSensors) {

@@ -109,12 +109,12 @@ protected:
     double lastHeightAboveTable;
     std::string graspedObjectID;
     geometry_msgs::PoseStamped lastGraspPose;
-    
 
+    void attachDefaultObject();
 
 private:
 
-    void attachDefaultObject();
+
 
     moveit_msgs::PlaceGoal buildPlaceGoal(const std::string &surface,
             const std::vector<moveit_msgs::PlaceLocation>& locations,

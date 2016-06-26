@@ -305,51 +305,9 @@ void RosTools::detach_collision_object() {
     ros::spinOnce();
 
 }
-void RosTools::attach_collision_object() {
+void RosTools::attach_collision_object(moveit_msgs::AttachedCollisionObject& attached_object) {
 
-    ParamReader& params = ParamReader::getParamReader();
-
-    moveit_msgs::AttachedCollisionObject attached_object;
-    attached_object.object.id = OBJECT_NAME;
-    attached_object.object.operation = attached_object.object.ADD;
-    attached_object.object.header.frame_id = ParamReader::getParamReader().frameGripper;
-    shape_msgs::SolidPrimitive primitive;
-    primitive.type = primitive.BOX;
-    primitive.dimensions.resize(3);
-    primitive.dimensions[0] = 0.07;
-    primitive.dimensions[1] = 0.07;
-    primitive.dimensions[2] = 0.07;
-
-    attached_object.object.primitives.push_back(primitive);
-
-    geometry_msgs::Pose pose;
-    if (params.robot == "tobi") {
-        attached_object.link_name = "katana_gripper_tool_frame";
-
-        pose.orientation.w = 1.0;
-        pose.orientation.x = 0.0;
-        pose.orientation.y = 0.0;
-        pose.orientation.z = 0.0;
-        pose.position.x = 0.05;
-        pose.position.y = 0;
-        pose.position.z = 0;
-    } else if (params.robot == "meka") {
-        //TODO
-        attached_object.link_name = "";
-
-        pose.orientation.w = 1.0;
-        pose.orientation.x = 0.0;
-        pose.orientation.y = 0.0;
-        pose.orientation.z = 0.0;
-        pose.position.x = 0;
-        pose.position.y = 0;
-        pose.position.z = 0;
-    } else {
-        ROS_ERROR("No known robot name, robot name should be tobi or meka");
-    }
-
-    attached_object.object.primitive_poses.push_back(pose);
-
+    removeFromManipulationObjects(attached_object.object.id);
     manipulationObjects.push_back(attached_object.object);
 
     moveit_msgs::PlanningScene update;
@@ -358,7 +316,7 @@ void RosTools::attach_collision_object() {
     scene_publisher.publish(update);
     ros::spinOnce();
 
-    object_att_publisher.publish(attached_object);
+    //object_att_publisher.publish(attached_object);
     ros::spinOnce();
 
 }
@@ -507,6 +465,13 @@ bool RosTools::getCollisionObjectByHeigth(const double &h, moveit_msgs::Collisio
         return true;
     } else {
         return false;
+    }
+}
+
+void RosTools::removeFromManipulationObjects(const std::string& id) {
+    for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
+        if (it->id == id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+        else ++it;
     }
 }
 
