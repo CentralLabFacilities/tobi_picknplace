@@ -52,7 +52,7 @@ public:
 	std::string requestNearestPose() const;
 	ArmPoses requestPoses() const;
 
-	std::string requestGetSurfaceByHeigth(const float);
+	std::string requestGetSurfaceByHeight(const float);
 
 private:
 	Model::Ptr model;

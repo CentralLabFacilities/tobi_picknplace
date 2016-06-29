@@ -361,9 +361,9 @@ public:
         return convert(grt);
     }
 
-    boost::shared_ptr<string> getSurfaceByHeigth(boost::shared_ptr<float> input) {
-        ROS_DEBUG_STREAM("getSurfaceByHeigth: " << *input);
-        return boost::make_shared<std::string>(listener->requestGetSurfaceByHeigth(*input));
+    boost::shared_ptr<string> getSurfaceByHeight(boost::shared_ptr<float> input) {
+        ROS_DEBUG_STREAM("getSurfaceByHeight: " << *input);
+        return boost::make_shared<std::string>(listener->requestGetSurfaceByHeight(*input));
     }
 
     boost::shared_ptr<Dictionary> isObjectPlaceable(
@@ -589,6 +589,7 @@ void RsbInterface::init() {
     d->server->registerMethod("isPlaceable",
             CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary,
                     isObjectPlaceable));
+    d->server->registerMethod("getSurfaceByHeight", CREATE_CALLBACK_1(float, std::string, getSurfaceByHeight));
     //d->server->registerMethod("wipingMovement", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("joggingMovement", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("findLeverAndMoveDown", CREATE_CALLBACK(string, string, echo));

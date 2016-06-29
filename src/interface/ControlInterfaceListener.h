@@ -47,7 +47,7 @@ public:
 	virtual std::string requestNearestPose() const = 0;
     virtual ArmPoses requestPoses() const = 0;
 
-	virtual std::string requestGetSurfaceByHeigth(const float) = 0;
+	virtual std::string requestGetSurfaceByHeight(const float h) = 0;
 };
 
 class EmptyControlInterfaceListener: public ControlInterfaceListener {
@@ -81,7 +81,7 @@ public:
 	std::string requestNearestPose() const{return std::string();}
 	ArmPoses requestPoses() const{return ArmPoses();};
 
-	std::string requestGetSurfaceByHeigth(const float){return "";};
+	std::string requestGetSurfaceByHeight(const float){return "";};
 
 
 };

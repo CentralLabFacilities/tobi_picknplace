@@ -46,18 +46,18 @@ void callServerMethod(int argc, char* argv[]) {
                 ("help", "shows help message")
 
                 ("getPosition", "returns the position of the arms endEffector")
-				
+
                 ("listAngles", "returns the current angles of the KatanArms joints")
 
                 ("setMovement", "Move the arm to a predefined Position")
                 ("setPose", "Move the arm to a predefined Pose")
-				("planToPose", "Move the arm to a predifined position (with planning)")
+                ("planToPose", "Move the arm to a predifined position (with planning)")
 
                 ("moveJoints", "moves the arm to the given joint angles\nargs: m0 m1 m2 m3 m4 eef")
                 ("gotoLinear", "moves the end effector to pose. Translation in m, quaternion in radiant\n"
-                "args: x y z [qw qx qy qz]")
+                        "args: x y z [qw qx qy qz]")
                 ("gotoNonLinear", "moves the end effector to pose. Translation in m, quaternion in radiant\n"
-                "args: x y z [qw qx qy qz]")
+                        "args: x y z [qw qx qy qz]")
 
                 ("motorsOff", "deactivates the motors. Attention the arm will fall down!")
                 ("motorsOn", "activates the motors.")
@@ -68,21 +68,24 @@ void callServerMethod(int argc, char* argv[]) {
                 ("closeGripperByForce", "may the force be with you!")
                 ("getGripperSensors", "prints the IR values of the grippers IR Sensors")
                 ("isSomethingInGripper", "returns true if something is in the gripper")
-                ("findNearestPose", "no arguments needed; seems to return string with nearest pose (description has to be revised)")
-				("listPoses", "list available poses")
+                ("findNearestPose",
+                 "no arguments needed; seems to return string with nearest pose (description has to be revised)")
+                ("listPoses", "list available poses")
 
                 //("isObjectGraspable", "returns if the object is graspable")
                 //("graspObject", "tries to grasp the Object specified through a BoundingBox\nargs:w h d x y z")
-                ("graspObjectOrientation", "tries to grasp the Object specified through a BoundingBox. Trys to grasp from the top\nargs:w h d x y z")
+                ("graspObjectOrientation",
+                 "tries to grasp the Object specified through a BoundingBox. Trys to grasp from the top\nargs:w h d x y z")
                 ("placeObjectAt", "places the object at the position given\n"
-                "args: x y z phi theta psi")
+                        "args: x y z phi theta psi")
                 ("placeObjectAtExact", "places the object at the position given\n"
-                "args: x y z phi theta psi")
+                        "args: x y z phi theta psi")
                 ("placeObjectOnSurface", "places the object on a given surface\n"
-                "args: Surface Name (str)")
-		("graspObjectName", "grasp the Object by Name\n"
-		"args: nothing, object or object;surface" )
-		("findObjects", "returns graspable Object");
+                        "args: Surface Name (str)")
+                ("graspObjectName", "grasp the Object by Name\n"
+                        "args: nothing, object or object;surface")
+                ("findObjects", "returns graspable Object")
+                ("getSurfaceByHeight", "returns name of surface");
 
         //store(parse_command_line(argc, argv, desc), vm);
 
@@ -310,15 +313,26 @@ void callServerMethod(int argc, char* argv[]) {
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
     } **/
-    else if (vm.count("graspObjectName")){
+    else if (vm.count("graspObjectName")) {
         if (argc >= 4) {
-            std::cout << "Too many/few arguments entered nothing, object or object;surface is expected! use --help for more information " << argc << std::endl;
+            std::cout <<
+            "Too many/few arguments entered nothing, object or object;surface is expected! use --help for more information " <<
+            argc << std::endl;
         } else {
-	    boost::shared_ptr< std::string > request(new std::string(argv[2]));
+            boost::shared_ptr<std::string> request(new std::string(argv[2]));
             boost::shared_ptr<rst::generic::Dictionary> result;
             result = remoteServer->call<rst::generic::Dictionary>("graspObjectName", request);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
+    } else if (vm.count("getSurfaceByHeight")){
+            if (argc >= 4) {
+                std::cout << "Too many/few arguments entered nothing, float is expected! use --help for more information " << argc << std::endl;
+            } else {
+                boost::shared_ptr<float> request(new float(stof(argv[2])));
+                boost::shared_ptr<std::string> result;
+                result = remoteServer->call<std::string>("getSurfaceByHeight", request);
+                std::cout << "GraspReturnType: \n" << *result << std::endl;
+            }
     } else if (vm.count("findObjects")) {
         boost::shared_ptr< void > request;
         boost::shared_ptr< bool > result = remoteServer->call< bool >("findObjects", request);

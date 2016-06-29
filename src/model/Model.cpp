@@ -701,11 +701,11 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     return pls;
 }
 
-std::string Model::getSurfaceByHeigth(const float h) {
+std::string Model::getSurfaceByHeight(const float h) {
     moveit_msgs::CollisionObject o;
     //todo ugh
     std::regex e ("surface[0-9]");
-    if(rosTools.getCollisionObjectByHeigth(h,o,e)) {
+    if(rosTools.getCollisionObjectByHeight(h, o, e)) {
         return o.id;
     } else {
         return "";

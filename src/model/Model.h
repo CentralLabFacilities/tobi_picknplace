@@ -88,7 +88,7 @@ public:
     virtual trajectory_msgs::JointTrajectory generate_close_eef_msg() = 0;
     virtual trajectory_msgs::JointTrajectory generate_open_eef_msg() = 0;
 
-    std::string getSurfaceByHeigth(const float h);
+    std::string getSurfaceByHeight(const float h);
 
 protected:
 

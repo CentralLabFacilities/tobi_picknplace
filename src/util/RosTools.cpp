@@ -82,68 +82,74 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
 
 void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 
-    boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_DEBUG_STREAM("Publish object with name " << msg.name);
+    {
+        boost::mutex::scoped_lock lock(sceneMutex);
+        ROS_DEBUG_STREAM("Publish object with name " << msg.name);
 
 
-    ParamReader& params = ParamReader::getParamReader();
+        ParamReader &params = ParamReader::getParamReader();
 
-    moveit_msgs::CollisionObject target_object;
+        moveit_msgs::CollisionObject target_object;
 
-    vector<geometry_msgs::Pose>::iterator poseIterator;
-    vector<shape_msgs::SolidPrimitive>::iterator primIterator;
+        vector<geometry_msgs::Pose>::iterator poseIterator;
+        vector<shape_msgs::SolidPrimitive>::iterator primIterator;
 
-    for (primIterator = msg.primitives.begin(); primIterator != msg.primitives.end(); primIterator++) {
-        target_object.primitives.push_back(*primIterator);
+        for (primIterator = msg.primitives.begin(); primIterator != msg.primitives.end(); primIterator++) {
+            target_object.primitives.push_back(*primIterator);
+        }
+
+        for (poseIterator = msg.primitive_poses.begin(); poseIterator != msg.primitive_poses.end(); poseIterator++) {
+            target_object.primitive_poses.push_back(*poseIterator);
+        }
+
+        target_object.header.frame_id = msg.header.frame_id;
+        target_object.id = msg.name;
+        target_object.mesh_poses = msg.mesh_poses;
+        target_object.meshes = msg.meshes;
+        target_object.operation = target_object.ADD;
+
+        moveit_msgs::PlanningScene update;
+        update.is_diff = true;
+        update.world.collision_objects.push_back(target_object);
+        manipulationObjects.push_back(target_object);
+        scene_publisher.publish(update);
     }
-
-    for (poseIterator = msg.primitive_poses.begin(); poseIterator != msg.primitive_poses.end(); poseIterator++) {
-        target_object.primitive_poses.push_back(*poseIterator);
-    }
-
-    target_object.header.frame_id = msg.header.frame_id;
-    target_object.id = msg.name;
-    target_object.mesh_poses = msg.mesh_poses;
-    target_object.meshes = msg.meshes;
-    target_object.operation = target_object.ADD;
-
-    moveit_msgs::PlanningScene update;
-    update.is_diff = true;
-    update.world.collision_objects.push_back(target_object);
-    scene_publisher.publish(update);
     ros::spinOnce();
-    object_publisher.publish(target_object);
-    ros::spinOnce();
+    //object_publisher.publish(target_object);
+    //ros::spinOnce();
 
-    manipulationObjects.push_back(target_object);
+    //manipulationObjects.push_back(target_object);
     ROS_DEBUG_STREAM("have " << manipulationObjects.size() );
 
 }
 
 void RosTools::clear_collision_objects(bool with_surface) {
 
-    boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_DEBUG_STREAM("clearing collision objects " << ((with_surface) ? "with surfaces" : "without surfaces") );
-    moveit_msgs::PlanningScene update;
+    {
+        boost::mutex::scoped_lock lock(sceneMutex);
+        ROS_DEBUG_STREAM("clearing collision objects " << ((with_surface) ? "with surfaces" : "without surfaces"));
+        moveit_msgs::PlanningScene update;
 
-    if(with_surface) {
-        update.is_diff = false;
-    } else {
-        update.is_diff = true;
-        for(auto o : manipulationObjects) {
-            if (o.id.find("surface") != std::string::npos) continue;
-            moveit_msgs::CollisionObject object;
-            object.operation = object.REMOVE;
-            object.id = o.id;
+        if (with_surface) {
+            update.is_diff = false;
+        } else {
+            update.is_diff = true;
+            for (auto o : manipulationObjects) {
+                if (o.id.find("surface") != std::string::npos) continue;
+                moveit_msgs::CollisionObject object;
+                object.operation = object.REMOVE;
+                object.id = o.id;
 
-            update.world.collision_objects.push_back(object);
+                update.world.collision_objects.push_back(object);
+            }
+
         }
 
+        manipulationObjects.clear();
+        scene_publisher.publish(update);
     }
-
-    scene_publisher.publish(update);
     ros::spinOnce();
-    manipulationObjects.clear();
+
 
 }
 
@@ -257,22 +263,27 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
 
 void RosTools::remove_collision_object(const string id) {
 
-    boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_INFO_STREAM("remove collision object " << id );
-
-    for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
-        if (it->id == id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
-        else ++it;
-    }
-
-    moveit_msgs::PlanningScene update;
-    update.is_diff = true;
-
     moveit_msgs::CollisionObject object;
-    object.operation = object.REMOVE;
-    object.id = id;
-    update.world.collision_objects.push_back(object);
-    scene_publisher.publish(update);
+    moveit_msgs::PlanningScene update;
+
+    {
+        boost::mutex::scoped_lock lock(sceneMutex);
+        ROS_INFO_STREAM("remove collision object " << id);
+
+        for (auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
+            if (it->id == id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+            else ++it;
+        }
+
+
+        update.is_diff = true;
+
+
+        object.operation = object.REMOVE;
+        object.id = id;
+        update.world.collision_objects.push_back(object);
+        scene_publisher.publish(update);
+    }
     ros::spinOnce();
 
     update.world.collision_objects.clear();
@@ -285,23 +296,25 @@ void RosTools::remove_collision_object(const string id) {
 
 void RosTools::detach_collision_object() {
 
-    boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_DEBUG_STREAM("invoke: detach_collision_objects");
+    {
+        boost::mutex::scoped_lock lock(sceneMutex);
+        ROS_DEBUG_STREAM("invoke: detach_collision_objects");
 
-    moveit_msgs::PlanningScene update;
-    update.is_diff = true;
+        moveit_msgs::PlanningScene update;
+        update.is_diff = true;
 
-    ROS_DEBUG_STREAM("detaching all known objects: " << manipulationObjects.size());
-    for(auto o : manipulationObjects) {
-        moveit_msgs::CollisionObject object;
-        object.operation = object.REMOVE;
-        object.id = o.id;
+        ROS_DEBUG_STREAM("detaching all known objects: " << manipulationObjects.size());
+        for (auto o : manipulationObjects) {
+            moveit_msgs::CollisionObject object;
+            object.operation = object.REMOVE;
+            object.id = o.id;
 
-        moveit_msgs::AttachedCollisionObject att;
-        att.object = object;
-        update.robot_state.attached_collision_objects.push_back(att);
+            moveit_msgs::AttachedCollisionObject att;
+            att.object = object;
+            update.robot_state.attached_collision_objects.push_back(att);
+        }
+        scene_publisher.publish(update);
     }
-    scene_publisher.publish(update);
     ros::spinOnce();
 
 }
@@ -445,7 +458,7 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
     return false;
 }
 
-bool RosTools::getCollisionObjectByHeigth(const double &h, moveit_msgs::CollisionObject &obj, const std::regex e) {
+bool RosTools::getCollisionObjectByHeight(const double &h, moveit_msgs::CollisionObject &obj, const std::regex e) {
     boost::mutex::scoped_lock lock(sceneMutex);
 
     double best = DBL_MAX;

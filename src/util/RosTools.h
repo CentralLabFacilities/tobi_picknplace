@@ -75,7 +75,8 @@ public:
 	std::string getDefaultObjectName() const;
 
 	bool getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj);
-	bool getCollisionObjectByHeigth(const double &h, moveit_msgs::CollisionObject &obj, const std::regex e = std::regex(".*"));
+	bool getCollisionObjectByHeight(const double &h, moveit_msgs::CollisionObject &obj,
+									const std::regex e = std::regex(".*"));
 	bool getGraspingObjectByName(const std::string &name, grasping_msgs::Object &msg);
 	grasping_msgs::Object convertMoveItToGrasping(moveit_msgs::CollisionObject obj);
 
