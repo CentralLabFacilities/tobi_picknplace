@@ -18,6 +18,7 @@
 #include <grasping_msgs/Object.h> 
 #include <shape_msgs/Plane.h>
 #include <geometry_msgs/Pose.h>
+#include <regex>
 
 class RosTools {
 private:
@@ -74,7 +75,7 @@ public:
 	std::string getDefaultObjectName() const;
 
 	bool getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj);
-	bool getCollisionObjectByHeigth(const double &h, moveit_msgs::CollisionObject &obj, const std::string& nameFilter = "");
+	bool getCollisionObjectByHeigth(const double &h, moveit_msgs::CollisionObject &obj, const std::regex e = std::regex(".*"));
 	bool getGraspingObjectByName(const std::string &name, grasping_msgs::Object &msg);
 	grasping_msgs::Object convertMoveItToGrasping(moveit_msgs::CollisionObject obj);
 

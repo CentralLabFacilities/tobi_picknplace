@@ -445,15 +445,18 @@ bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::O
     return false;
 }
 
-bool RosTools::getCollisionObjectByHeigth(const double &h, moveit_msgs::CollisionObject &obj, const std::string& nameFilter) {
+bool RosTools::getCollisionObjectByHeigth(const double &h, moveit_msgs::CollisionObject &obj, const std::regex e) {
     boost::mutex::scoped_lock lock(sceneMutex);
 
     double best = DBL_MAX;
     double cur;
     for(auto& o : manipulationObjects) {
-        if( !(nameFilter.empty()) && (o.id.find("surface") != std::string::npos)) continue;
 
-        //todo hack, should search best primitive? getPrimitiveBzHeigthByHeigth?
+        std::smatch m;
+        bool hasMatch = std::regex_search(o.id, m, e);
+        if( !hasMatch) continue;
+
+        //todo hack, should search best primitive? getCollisionPrimitiveByHeigth?
         double oh = o.primitive_poses[0].position.z;
         if ((cur = std::abs(oh - h)) < best) {
             best = cur;

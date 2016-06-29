@@ -6,6 +6,8 @@
  */
 
 #include "Model.h"
+
+#include <regex>
 #include <ros/ros.h>
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <actionlib/client/simple_action_client.h>
@@ -697,5 +699,17 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
         }
     }
     return pls;
+}
+
+std::string Model::getSurfaceByHeigth(const float h) {
+    moveit_msgs::CollisionObject o;
+    //todo ugh
+    std::regex e ("surface[0-9]");
+    if(rosTools.getCollisionObjectByHeigth(h,o,e)) {
+        return o.id;
+    } else {
+        return "";
+    }
+
 }
 

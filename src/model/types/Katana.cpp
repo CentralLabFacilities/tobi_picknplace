@@ -267,8 +267,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 
     GraspReturnType grt;
     if (!success) {
-        ROS_WARN_STREAM(
-                "No object with id \"" << obj << "\" found in planning scene");
+        ROS_WARN_STREAM("No object with id \"" << obj << "\" found in planning scene");
         grt.result = GraspReturnType::FAIL;
         return grt;
     }

@@ -55,6 +55,10 @@ int Controller::requestFindObjects() const {
     return model->findObjects();
 }
 
+std::string Controller::requestGetSurfaceByHeigth(const float h) {
+	return model->getSurfaceByHeigth(h);
+}
+
 /**GraspReturnType Controller::requestGraspObject(ObjectShape obj, bool simulate) {
 	return strategy->graspObject(obj, simulate);
 }**/

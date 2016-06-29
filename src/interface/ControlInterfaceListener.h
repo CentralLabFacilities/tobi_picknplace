@@ -46,6 +46,8 @@ public:
 	virtual GraspReturnType requestPlaceObject(const std::string &surface, bool simulate) = 0;
 	virtual std::string requestNearestPose() const = 0;
     virtual ArmPoses requestPoses() const = 0;
+
+	virtual std::string requestGetSurfaceByHeigth(const float) = 0;
 };
 
 class EmptyControlInterfaceListener: public ControlInterfaceListener {
@@ -78,6 +80,10 @@ public:
 	GraspReturnType requestPlaceObject(const std::string &surface, bool simulate){return GraspReturnType();}
 	std::string requestNearestPose() const{return std::string();}
 	ArmPoses requestPoses() const{return ArmPoses();};
+
+	std::string requestGetSurfaceByHeigth(const float){return "";};
+
+
 };
 
 

@@ -118,6 +118,8 @@ public:
         return boost::shared_ptr<void>();
     }
 
+
+
     boost::shared_ptr<bool> goTo(boost::shared_ptr<rst::geometry::Pose> input,
             bool linear, bool orientation) {
         boost::shared_ptr<bool> sucess(new bool(true));
@@ -357,6 +359,11 @@ public:
         ROS_DEBUG_STREAM("Invoked placeObject");
         GraspReturnType grt = listener->requestPlaceObject(*input, false);
         return convert(grt);
+    }
+
+    boost::shared_ptr<string> getSurfaceByHeigth(boost::shared_ptr<float> input) {
+        ROS_DEBUG_STREAM("getSurfaceByHeigth: " << *input);
+        return boost::make_shared<std::string>(listener->requestGetSurfaceByHeigth(*input));
     }
 
     boost::shared_ptr<Dictionary> isObjectPlaceable(
