@@ -97,6 +97,10 @@ void Controller::requestCloseGripper(bool withSensors) {
 	model->closeEef(withSensors);
 }
 
+void Controller::requestsetFilterType(string type) {
+        model->setFilterType(type);
+}
+
 void Controller::requestMotorsOn() {
 	model->motorsOn();
 }

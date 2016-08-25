@@ -35,6 +35,7 @@ Model::Model() {
 
     lastHeightAboveTable = 0.0;
     graspedObjectID = "";
+    filterTypes = "all"; // all, top, side
 
     for (const string &i : ParamReader::getParamReader().touchLinks)
         touchlinks.push_back(i);
@@ -114,6 +115,10 @@ void Model::setJointAngle(const string &joint, double angle) {
     groupArm->setStartStateToCurrentState();
     groupArm->setJointValueTarget(joint, angle);
     groupArm->move();
+}
+
+void Model::setFilterType(std::string type){
+    filterTypes = type;
 }
 
 void Model::setJointAngles(const map<string, double> &angles) {
@@ -223,6 +228,28 @@ int Model::findObjects() {
     return grasps.size();
 }
 
+vector<moveit_msgs::Grasp> Model::filtergrasps(const vector<moveit_msgs::Grasp> &grasps) {
+
+    vector<moveit_msgs::Grasp> filteredgrasps;
+
+    for (moveit_msgs::Grasp i : grasps) {
+        ROS_DEBUG_STREAM("Grasp.id" << i.id);
+        if (filterTypes == "side") {
+            ROS_DEBUG_STREAM("Side: " << i.id);
+            filteredgrasps.push_back(i);
+        }
+        if (filterTypes == "top") {
+            ROS_DEBUG_STREAM("Top: " << i.id);
+            filteredgrasps.push_back(i);
+        }
+        if (filterTypes == "all") {
+            ROS_DEBUG_STREAM("All: " << i.id);
+            filteredgrasps.push_back(i);
+        }
+    }
+    return filteredgrasps;
+}
+
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, bool simulate, const string &startPose) {
     ROS_DEBUG_STREAM("Model, graspObject " << obj);
 
@@ -231,6 +258,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
 
     GraspReturnType grt;
 
+    vector<moveit_msgs::Grasp> filteredgrasps = filtergrasps(grasps);
     if (!pickActionClient) {
         ROS_ERROR_STREAM("Pick action client not found");
         grt.result = GraspReturnType::FAIL;
@@ -242,19 +270,19 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
         return grt;
     }
 
-    if(!rosTools.getCollisionObjectByName(obj,lastGraspTried)) {
+    if (!rosTools.getCollisionObjectByName(obj, lastGraspTried)) {
         lastGraspTried.id = "";
     }
 
     moveit_msgs::CollisionObject o;
     moveit_msgs::PickupGoal goal;
-    if(rosTools.getCollisionObjectByName(surface, o)) {
-        goal = buildPickupGoal(obj, surface, grasps, simulate);
+    if (rosTools.getCollisionObjectByName(surface, o)) {
+        goal = buildPickupGoal(obj, surface, filteredgrasps, simulate);
     } else {
         //todo defautl surface hack
         ROS_WARN_STREAM("(surface) for grasping with Name: " << surface << " try default: " << DEFAULT_SURFACE);
-        if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE, o)) {
-            goal = buildPickupGoal(obj, surface, grasps, simulate);
+        if (rosTools.getCollisionObjectByName(DEFAULT_SURFACE, o)) {
+            goal = buildPickupGoal(obj, surface, filteredgrasps, simulate);
         } else {
             ROS_ERROR_STREAM("(surface) for grasping with Name: " << DEFAULT_SURFACE << " not found");
         }
@@ -282,12 +310,12 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
 
             moveit_msgs::CollisionObject colSurface;
             graspedObjectID = obj;
-            if(rosTools.getCollisionObjectByName(surface, colSurface)) {
+            if (rosTools.getCollisionObjectByName(surface, colSurface)) {
                 lastHeightAboveTable = abs(colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z);
             } else {
                 //todo defautl surface hack
                 ROS_WARN_STREAM("(surface) for grasping with Name: " << surface << " try default: " << DEFAULT_SURFACE);
-                if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE, colSurface)) {
+                if (rosTools.getCollisionObjectByName(DEFAULT_SURFACE, colSurface)) {
                     lastHeightAboveTable = abs(colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z);
                 }
             }
@@ -364,13 +392,13 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 
     for (int i = 0; i < 3; i++) {
 
-        if(rosTools.getCollisionObjectByName(surface,o)) {
+        if (rosTools.getCollisionObjectByName(surface, o)) {
             goal = buildPlaceGoal(surface, locations, simulate);
         } else {
             //todo/hack could be left empty but we assume defaul hack
             ROS_WARN_STREAM("collisionObject: " << surface << " not in planning scene, assuming default:" << DEFAULT_SURFACE);
             //goal.support_surface_name = "";
-            if(rosTools.getCollisionObjectByName(DEFAULT_SURFACE,o)) {
+            if (rosTools.getCollisionObjectByName(DEFAULT_SURFACE, o)) {
                 goal = buildPlaceGoal(DEFAULT_SURFACE, locations, simulate);
             } else {
                 goal = buildPlaceGoal("", locations, simulate);
@@ -488,7 +516,7 @@ void Model::attachDefaultObject() {
     moveit_msgs::AttachedCollisionObject attached_object;
 
 
-    if(lastGraspTried.id != "") {
+    if (lastGraspTried.id != "") {
         ROS_INFO_STREAM("attach default using last tried object");
         attached_object.object = lastGraspTried;
 
@@ -662,9 +690,9 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     surfaceSizeX -= 0.03;
     surfaceSizeY -= 0.03;
 
-    if(surfaceSizeX < 0)
+    if (surfaceSizeX < 0)
         surfaceSizeX = 0;
-    if(surfaceSizeY < 0)
+    if (surfaceSizeY < 0)
         surfaceSizeY = 0;
 
     ROS_DEBUG_STREAM("Placesize X: " << surfaceSizeX << "PlaceSize Y: " << surfaceSizeY);
@@ -704,8 +732,8 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 std::string Model::getSurfaceByHeight(const float h) {
     moveit_msgs::CollisionObject o;
     //todo ugh
-    std::regex e ("surface[0-9]");
-    if(rosTools.getCollisionObjectByHeight(h, o, e)) {
+    std::regex e("surface[0-9]");
+    if (rosTools.getCollisionObjectByHeight(h, o, e)) {
         return o.id;
     } else {
         return "";

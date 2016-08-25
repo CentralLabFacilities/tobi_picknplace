@@ -37,6 +37,8 @@ public:
     virtual void setJointAngle(const std::string &joint, double angle);
     virtual void setJointAngles(const std::map<std::string, double> &angle);
     virtual void setJointAngles(const std::vector<double> &angles);
+    
+    virtual void setFilterType(std::string type);
 
     virtual void openEef(bool withSensors) = 0;
     virtual void closeEef(bool withSensors) = 0;
@@ -109,6 +111,7 @@ protected:
     TransformerTF tfTransformer;
 
     double lastHeightAboveTable;
+    std::string filterTypes;
     std::string graspedObjectID;
     moveit_msgs::CollisionObject lastGraspTried;
     geometry_msgs::PoseStamped lastGraspPose;
@@ -125,6 +128,7 @@ private:
     moveit_msgs::PickupGoal buildPickupGoal(const std::string &obj,
             const std::string &surface,
             const std::vector<moveit_msgs::Grasp> &grasps, bool simulate);
+    std::vector<moveit_msgs::Grasp> filtergrasps(const std::vector<moveit_msgs::Grasp> &grasps);
 
 };
 

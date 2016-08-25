@@ -25,6 +25,8 @@ public:
 
 	virtual void requestOpenGripper(bool withSensors) = 0;
 	virtual void requestCloseGripper(bool withSensors) = 0;
+        
+        virtual void requestsetFilterType(std::string type) = 0;
 
 	virtual void requestMotorsOn() = 0;
 	virtual void requestMotorsOff() = 0;
@@ -58,6 +60,8 @@ public:
 
 	void requestOpenGripper(bool withSensors){}
 	void requestCloseGripper(bool withSensors){}
+        
+        void requestsetFilterType(std::string type){}
 
 	void requestMotorsOn(){}
 	void requestMotorsOff(){}

@@ -85,7 +85,8 @@ void callServerMethod(int argc, char* argv[]) {
                 ("graspObjectName", "grasp the Object by Name\n"
                         "args: nothing, object or object;surface")
                 ("findObjects", "returns graspable Object")
-                ("getSurfaceByHeight", "returns name of surface");
+                ("getSurfaceByHeight", "returns name of surface")
+                ("setFilterType", "set the filter type for the grasps, possible options all, side or top");
 
         //store(parse_command_line(argc, argv, desc), vm);
 
@@ -432,6 +433,10 @@ void callServerMethod(int argc, char* argv[]) {
             result = remoteServer->call<rst::generic::Dictionary>("placeObjectOnSurface", request);
             std::cout << "GraspReturnType: \n" << result->DebugString() << std::endl;
         }
+    } else if(vm.count("setFilterType")){
+        boost::shared_ptr<string> type(new std::string(argv[2]));
+        boost::shared_ptr< void > result = remoteServer->call< void >("setFilterType", type);
+        
     } else if (vm.count("testGrasping")) {
         boost::shared_ptr<rst::geometry::Shape3DFloat> obstacles(Shape3DFloat::default_instance().New());
         rst::geometry::BoundingBox3DFloat* box1 = obstacles->add_box();

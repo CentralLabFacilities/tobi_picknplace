@@ -42,23 +42,24 @@ using namespace rst::generic;
  * Remark: Remove this as soon as RSB 0.12 is in use. It comes with an own implementation!!!
  */
 template<class RequestType, class ReplyType>
-class FunctionCallback: public LocalServer::CallbackBase {
+class FunctionCallback : public LocalServer::CallbackBase {
 public:
     /**
      * Type of functions that can be accepted.
      */
     typedef boost::function<
-            typename boost::shared_ptr<ReplyType>(
-                    typename boost::shared_ptr<RequestType>)> FunctionType;
+    typename boost::shared_ptr<ReplyType>(
+            typename boost::shared_ptr<RequestType>) > FunctionType;
 
     explicit FunctionCallback(FunctionType function,
             const std::string& requestType = rsc::runtime::typeName(
-                    typeid(RequestType)), const std::string& replyType =
-                    rsc::runtime::typeName(typeid(ReplyType))) :
-            CallbackBase(requestType, replyType), function(function) {
+            typeid (RequestType)), const std::string& replyType =
+            rsc::runtime::typeName(typeid (ReplyType))) :
+    CallbackBase(requestType, replyType), function(function) {
     }
 
 private:
+
     EventPtr intlCall(const std::string& /*methodName*/, EventPtr request) {
         boost::shared_ptr<RequestType> argument = boost::static_pointer_cast<
                 RequestType>(request->getData());
@@ -76,12 +77,15 @@ private:
  */
 class RsbInterface::Private {
 public:
+
     Private() :
-            listener(new EmptyControlInterfaceListener()) {
+    listener(new EmptyControlInterfaceListener()) {
     }
+
     Private(ControlInterfaceListener* listener) :
-            listener(listener) {
+    listener(listener) {
     }
+
     virtual ~Private() {
     }
 
@@ -117,8 +121,6 @@ public:
         }
         return boost::shared_ptr<void>();
     }
-
-
 
     boost::shared_ptr<bool> goTo(boost::shared_ptr<rst::geometry::Pose> input,
             bool linear, bool orientation) {
@@ -202,6 +204,13 @@ public:
         listener->requestMotorsOn();
         return boost::shared_ptr<void>();
     }
+
+    boost::shared_ptr<void> setFilterType(boost::shared_ptr<string> type) {
+        ROS_DEBUG_STREAM("Invoked setFilterType");
+        listener->requestsetFilterType(*type);
+        return boost::shared_ptr<void>();
+    }
+
     boost::shared_ptr<void> motorsOff() {
         ROS_DEBUG_STREAM("Invoked motorsOff");
         listener->requestMotorsOff();
@@ -222,7 +231,7 @@ public:
         map<string, short> sensorValues = listener->requestGripperSensors();
         return convert(sensorValues);
     }
-    
+
     void requestFindObjects() {
         //TODO
     }
@@ -271,7 +280,7 @@ public:
         *success = listener->requestMoveTo(*input);
         return success;
     }
-	
+
     boost::shared_ptr<bool> planToPose(boost::shared_ptr<string> input) {
         boost::shared_ptr<bool> success(new bool(false));
         ROS_DEBUG_STREAM("Invoked planToPose");
@@ -280,17 +289,16 @@ public:
     }
 
     boost::shared_ptr<bool> findObjects() {
-       ROS_DEBUG_STREAM("Invoked findObjects");
-       boost::shared_ptr<bool> fail(new bool(false));
-       boost::shared_ptr<bool> success(new bool(true));
-       int x = listener->requestFindObjects();
-       ROS_DEBUG_STREAM("Objects: " + x);
-       if(x == 0)
-       {
-           return fail;
-       } else {
-           return success;
-       }
+        ROS_DEBUG_STREAM("Invoked findObjects");
+        boost::shared_ptr<bool> fail(new bool(false));
+        boost::shared_ptr<bool> success(new bool(true));
+        int x = listener->requestFindObjects();
+        ROS_DEBUG_STREAM("Objects: " + x);
+        if (x == 0) {
+            return fail;
+        } else {
+            return success;
+        }
     }
 
     /**boost::shared_ptr<Dictionary> isObjectGraspable(
@@ -431,6 +439,7 @@ public:
         }
         return output;
     }
+
     EefPose convert(boost::shared_ptr<rst::geometry::Pose> input) {
         EefPose pose;
         pose.translation.xMeter = input->translation().x();
@@ -477,7 +486,7 @@ public:
 };
 
 RsbInterface::RsbInterface(const string &serverScope) :
-        serverScope(serverScope), d(new Private()) {
+serverScope(serverScope), d(new Private()) {
     init();
 }
 
@@ -493,14 +502,14 @@ void RsbInterface::removeListener() {
 }
 
 #define CREATE_CALLBACK_0(ReplyType, Function) \
-	LocalServer::CallbackPtr(new FunctionCallback<void, ReplyType>(boost::bind(&Private::Function, d.get())))
+        LocalServer::CallbackPtr(new FunctionCallback<void, ReplyType>(boost::bind(&Private::Function, d.get())))
 
 #define CREATE_CALLBACK_1(RequestType, ReplyType, Function) \
-	LocalServer::CallbackPtr(new FunctionCallback<RequestType, ReplyType>(boost::bind(&Private::Function, d.get(), _1)))
+        LocalServer::CallbackPtr(new FunctionCallback<RequestType, ReplyType>(boost::bind(&Private::Function, d.get(), _1)))
 
 #define CREATE_PB_CONVERTER(Type) \
-	boost::shared_ptr<rsb::converter::ProtocolBufferConverter<Type> >( \
-		new rsb::converter::ProtocolBufferConverter<Type>())
+        boost::shared_ptr<rsb::converter::ProtocolBufferConverter<Type> >( \
+                new rsb::converter::ProtocolBufferConverter<Type>())
 
 void RsbInterface::init() {
 
@@ -517,7 +526,7 @@ void RsbInterface::init() {
             CREATE_PB_CONVERTER(BoundingBox3DFloat));
 
     rsc::misc::initSignalWaiter();
-    
+
     Factory& factory = getFactory();
     d->server = factory.createLocalServer(serverScope);
 
@@ -558,6 +567,7 @@ void RsbInterface::init() {
             CREATE_CALLBACK_0(void, closeGripperByForce));
     d->server->registerMethod("motorsOff", CREATE_CALLBACK_0(void, motorsOff));
     d->server->registerMethod("motorsOn", CREATE_CALLBACK_0(void, motorsOn));
+    d->server->registerMethod("setFilterType", CREATE_CALLBACK_1(string, void, setFilterType));
     //d->server->registerMethod("freeze", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("unblock", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("getGripperSensors",
@@ -582,13 +592,13 @@ void RsbInterface::init() {
             CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, placeObject));
     d->server->registerMethod("placeObjectInRegion",
             CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
-                    placeObjectInRegion));
+            placeObjectInRegion));
     d->server->registerMethod("placeObjectOnSurface",
             CREATE_CALLBACK_1(string, Dictionary, placeObjectOnSurface));
     //d->server->registerMethod("placeObjectAtExact", CREATE_CALLBACK(string, string, echo));
     d->server->registerMethod("isPlaceable",
             CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary,
-                    isObjectPlaceable));
+            isObjectPlaceable));
     d->server->registerMethod("getSurfaceByHeight", CREATE_CALLBACK_1(float, std::string, getSurfaceByHeight));
     //d->server->registerMethod("wipingMovement", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("joggingMovement", CREATE_CALLBACK(string, string, echo));

@@ -23,6 +23,8 @@ public:
 
 	void addControlInterface(const ControlInterface::Ptr &interface);
 	void removeControlInterface(const ControlInterface::Ptr &interface);
+        
+        void requestsetFilterType(std::string type);
 
 	void requestMoveJointAngles(const std::vector<double> &angle);
 	int requestNumJoints() const;
