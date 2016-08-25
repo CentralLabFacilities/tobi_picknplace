@@ -118,6 +118,7 @@ void Model::setJointAngle(const string &joint, double angle) {
 }
 
 void Model::setFilterType(std::string type){
+    ROS_INFO_STREAM("Set FilterType to " << type);
     filterTypes = type;
 }
 
@@ -231,7 +232,7 @@ int Model::findObjects() {
 vector<moveit_msgs::Grasp> Model::filtergrasps(const vector<moveit_msgs::Grasp> &grasps) {
 
     vector<moveit_msgs::Grasp> filteredgrasps;
-
+    ROS_INFO_STREAM("The Filter Type is:" << filterTypes);
     for (moveit_msgs::Grasp i : grasps) {
         ROS_DEBUG_STREAM("Grasp.id" << i.id);
         if (filterTypes == "side") {
