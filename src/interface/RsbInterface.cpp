@@ -42,27 +42,23 @@ using namespace rst::generic;
  * Remark: Remove this as soon as RSB 0.12 is in use. It comes with an own implementation!!!
  */
 template<class RequestType, class ReplyType>
-class FunctionCallback : public LocalServer::CallbackBase {
+class FunctionCallback: public LocalServer::CallbackBase {
 public:
     /**
      * Type of functions that can be accepted.
      */
-    typedef boost::function<
-    typename boost::shared_ptr<ReplyType>(
-            typename boost::shared_ptr<RequestType>) > FunctionType;
+    typedef boost::function<typename boost::shared_ptr<ReplyType>(typename boost::shared_ptr<RequestType>)> FunctionType;
 
     explicit FunctionCallback(FunctionType function,
-            const std::string& requestType = rsc::runtime::typeName(
-            typeid (RequestType)), const std::string& replyType =
-            rsc::runtime::typeName(typeid (ReplyType))) :
-    CallbackBase(requestType, replyType), function(function) {
+            const std::string& requestType = rsc::runtime::typeName(typeid(RequestType)), const std::string& replyType =
+                    rsc::runtime::typeName(typeid(ReplyType))) :
+            CallbackBase(requestType, replyType), function(function) {
     }
 
 private:
 
     EventPtr intlCall(const std::string& /*methodName*/, EventPtr request) {
-        boost::shared_ptr<RequestType> argument = boost::static_pointer_cast<
-                RequestType>(request->getData());
+        boost::shared_ptr<RequestType> argument = boost::static_pointer_cast<RequestType>(request->getData());
         boost::shared_ptr<ReplyType> result = function(argument);
         EventPtr reply(new Event());
         reply->setType(getReplyType());
@@ -79,11 +75,11 @@ class RsbInterface::Private {
 public:
 
     Private() :
-    listener(new EmptyControlInterfaceListener()) {
+            listener(new EmptyControlInterfaceListener()) {
     }
 
     Private(ControlInterfaceListener* listener) :
-    listener(listener) {
+            listener(listener) {
     }
 
     virtual ~Private() {
@@ -93,15 +89,14 @@ public:
     ControlInterfaceListener* listener;
 
     boost::shared_ptr<JointAngles> listAngles() {
+
         ROS_DEBUG_STREAM("Invoked ListAngles");
         map<string, double> joints = listener->requestJointAngles();
 
         boost::shared_ptr<JointAngles> angles(new JointAngles());
-        for (map<string, double>::iterator i = joints.begin();
-                i != joints.end(); ++i) {
+        for (map<string, double>::iterator i = joints.begin(); i != joints.end(); ++i) {
             angles->add_angles(i->second);
-            ROS_DEBUG_STREAM(
-                    "joint " << i->first << " with value " << i->second);
+            ROS_DEBUG_STREAM("joint " << i->first << " with value " << i->second);
         }
         return angles;
     }
@@ -122,13 +117,11 @@ public:
         return boost::shared_ptr<void>();
     }
 
-    boost::shared_ptr<bool> goTo(boost::shared_ptr<rst::geometry::Pose> input,
-            bool linear, bool orientation) {
+    boost::shared_ptr<bool> goTo(boost::shared_ptr<rst::geometry::Pose> input, bool linear, bool orientation) {
         boost::shared_ptr<bool> sucess(new bool(true));
         ROS_DEBUG_STREAM("Invoked gotToLinear");
         try {
-            *sucess = listener->requestMoveTo(convert(input), linear,
-                    orientation);
+            *sucess = listener->requestMoveTo(convert(input), linear, orientation);
         } catch (std::exception& e) {
             *sucess = false;
             ROS_ERROR_STREAM(e.what());
@@ -137,26 +130,22 @@ public:
         return sucess;
     }
 
-    boost::shared_ptr<bool> goToLinear(
-            boost::shared_ptr<rst::geometry::Pose> input) {
+    boost::shared_ptr<bool> goToLinear(boost::shared_ptr<rst::geometry::Pose> input) {
         ROS_DEBUG_STREAM("Invoked gotToLinear");
         return goTo(input, true, false);
     }
 
-    boost::shared_ptr<bool> goToNonLinear(
-            boost::shared_ptr<rst::geometry::Pose> input) {
+    boost::shared_ptr<bool> goToNonLinear(boost::shared_ptr<rst::geometry::Pose> input) {
         ROS_DEBUG_STREAM("Invoked gotToNonLinear");
         return goTo(input, false, false);
     }
 
-    boost::shared_ptr<bool> goToLinearOrient(
-            boost::shared_ptr<rst::geometry::Pose> input) {
+    boost::shared_ptr<bool> goToLinearOrient(boost::shared_ptr<rst::geometry::Pose> input) {
         ROS_DEBUG_STREAM("Invoked gotToLinearOrient");
         return goTo(input, true, true);
     }
 
-    boost::shared_ptr<bool> goToNonLinearOrient(
-            boost::shared_ptr<rst::geometry::Pose> input) {
+    boost::shared_ptr<bool> goToNonLinearOrient(boost::shared_ptr<rst::geometry::Pose> input) {
         ROS_DEBUG_STREAM("Invoked gotToNonLinearOrient");
         return goTo(input, false, true);
     }
@@ -181,12 +170,6 @@ public:
         return boost::shared_ptr<void>();
     }
 
-    boost::shared_ptr<std::string> findNearestPose() {
-        ROS_DEBUG_STREAM("Invoked findNearestPose");
-        std::string ret = listener->requestNearestPose();
-        return boost::make_shared<std::string>(ret.c_str());
-    }
-
     boost::shared_ptr<void> closeGripper() {
         ROS_DEBUG_STREAM("Invoked closeGripper");
         listener->requestCloseGripper(false);
@@ -196,24 +179,6 @@ public:
     boost::shared_ptr<void> closeGripperByForce() {
         ROS_DEBUG_STREAM("Invoked closeGripperByForce");
         listener->requestCloseGripper(true);
-        return boost::shared_ptr<void>();
-    }
-
-    boost::shared_ptr<void> motorsOn() {
-        ROS_DEBUG_STREAM("Invoked motorsOn");
-        listener->requestMotorsOn();
-        return boost::shared_ptr<void>();
-    }
-
-    boost::shared_ptr<void> setFilterType(boost::shared_ptr<string> type) {
-        ROS_DEBUG_STREAM("Invoked setFilterType");
-        listener->requestsetFilterType(*type);
-        return boost::shared_ptr<void>();
-    }
-
-    boost::shared_ptr<void> motorsOff() {
-        ROS_DEBUG_STREAM("Invoked motorsOff");
-        listener->requestMotorsOff();
         return boost::shared_ptr<void>();
     }
 
@@ -232,8 +197,28 @@ public:
         return convert(sensorValues);
     }
 
-    void requestFindObjects() {
-        //TODO
+    boost::shared_ptr<void> motorsOn() {
+        ROS_DEBUG_STREAM("Invoked motorsOn");
+        listener->requestMotorsOn();
+        return boost::shared_ptr<void>();
+    }
+
+    boost::shared_ptr<void> motorsOff() {
+        ROS_DEBUG_STREAM("Invoked motorsOff");
+        listener->requestMotorsOff();
+        return boost::shared_ptr<void>();
+    }
+
+    boost::shared_ptr<void> setFilterType(boost::shared_ptr<string> type) {
+        ROS_DEBUG_STREAM("Invoked setFilterType");
+        listener->requestsetFilterType(*type);
+        return boost::shared_ptr<void>();
+    }
+
+    boost::shared_ptr<std::string> findNearestPose() {
+        ROS_DEBUG_STREAM("Invoked findNearestPose");
+        std::string ret = listener->requestNearestPose();
+        return boost::make_shared<std::string>(ret.c_str());
     }
 
     boost::shared_ptr<Dictionary> listPoses() {
@@ -246,8 +231,7 @@ public:
 
         ArmPoses poses = listener->requestPoses();
 
-        for (ArmPoses::iterator poseIt = poses.begin(); poseIt != poses.end();
-                ++poseIt) {
+        for (ArmPoses::iterator poseIt = poses.begin(); poseIt != poses.end(); ++poseIt) {
             string poseName = poseIt->first;
             ArmPose poseValues = poseIt->second;
 
@@ -263,8 +247,7 @@ public:
             newVal = key->mutable_value()->mutable_array()->Add();
             newVal->set_type(rst::generic::Value_Type_INT);
             newVal->set_int_(poseValues.size());
-            for (ArmPose::iterator f = poseValues.begin();
-                    f != poseValues.end(); ++f) {
+            for (ArmPose::iterator f = poseValues.begin(); f != poseValues.end(); ++f) {
                 newVal = key->mutable_value()->mutable_array()->Add();
                 newVal->set_type(rst::generic::Value_Type_DOUBLE);
                 newVal->set_double_(f->second);
@@ -302,39 +285,34 @@ public:
     }
 
     /**boost::shared_ptr<Dictionary> isObjectGraspable(
-            boost::shared_ptr<BoundingBox3DFloat> input) {
-        ObjectShape objectToGrasp;
-        ROS_DEBUG_STREAM("Invoked isObjectGraspable");
-        GraspReturnType grt = listener->requestGraspObject(convert(input),
-                true);
-        return convert(grt);
-    }**/
-    boost::shared_ptr<Dictionary> isObjectNameGraspable(
-            boost::shared_ptr<string> input) {
+     boost::shared_ptr<BoundingBox3DFloat> input) {
+     ObjectShape objectToGrasp;
+     ROS_DEBUG_STREAM("Invoked isObjectGraspable");
+     GraspReturnType grt = listener->requestGraspObject(convert(input),
+     true);
+     return convert(grt);
+     }**/
+    boost::shared_ptr<Dictionary> isObjectNameGraspable(boost::shared_ptr<string> input) {
         ROS_DEBUG_STREAM("Invoked isObjectGraspable");
         return graspObjectName(input, true);
     }
 
     /**boost::shared_ptr<Dictionary> graspObject(
-            boost::shared_ptr<BoundingBox3DFloat> input) {
-        ROS_DEBUG_STREAM("Invoked graspObject: " << input->DebugString());
-        GraspReturnType grt = listener->requestGraspObject(convert(input),
-                false);
-        return convert(grt);
-    }**/
+     boost::shared_ptr<BoundingBox3DFloat> input) {
+     ROS_DEBUG_STREAM("Invoked graspObject: " << input->DebugString());
+     GraspReturnType grt = listener->requestGraspObject(convert(input),
+     false);
+     return convert(grt);
+     }**/
 
-    boost::shared_ptr<Dictionary> graspObjectName(
-            boost::shared_ptr<string> input) {
+    boost::shared_ptr<Dictionary> graspObjectName(boost::shared_ptr<string> input) {
         ROS_DEBUG_STREAM("Invoked graspObjectName: " << *input);
         return graspObjectName(input, false);
     }
 
-    boost::shared_ptr<Dictionary> graspObjectName(
-            boost::shared_ptr<string> input, bool sim) {
+    boost::shared_ptr<Dictionary> graspObjectName(boost::shared_ptr<string> input, bool sim) {
         vector<string> items;
-        boost::algorithm::split(items, *input,
-                boost::algorithm::is_any_of(";,"),
-                boost::algorithm::token_compress_on);
+        boost::algorithm::split(items, *input, boost::algorithm::is_any_of(";,"), boost::algorithm::token_compress_on);
         GraspReturnType grt;
         if (items.size() == 0) {
             grt = listener->requestGraspObject("", "", sim);
@@ -346,24 +324,19 @@ public:
         return convert(grt);
     }
 
-    boost::shared_ptr<Dictionary> placeObject(
-            boost::shared_ptr<rst::geometry::Pose> input) {
+    boost::shared_ptr<Dictionary> placeObject(boost::shared_ptr<rst::geometry::Pose> input) {
         ROS_DEBUG_STREAM("Invoked placeObject");
-        GraspReturnType grt = listener->requestPlaceObject(convert(input),
-                false);
+        GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
         return convert(grt);
     }
 
-    boost::shared_ptr<Dictionary> placeObjectInRegion(
-            boost::shared_ptr<BoundingBox3DFloat> input) {
+    boost::shared_ptr<Dictionary> placeObjectInRegion(boost::shared_ptr<BoundingBox3DFloat> input) {
         ROS_DEBUG_STREAM("Invoked placeObject");
-        GraspReturnType grt = listener->requestPlaceObject(convert(input),
-                false);
+        GraspReturnType grt = listener->requestPlaceObject(convert(input), false);
         return convert(grt);
     }
 
-    boost::shared_ptr<Dictionary> placeObjectOnSurface(
-            boost::shared_ptr<string> input) {
+    boost::shared_ptr<Dictionary> placeObjectOnSurface(boost::shared_ptr<string> input) {
         ROS_DEBUG_STREAM("Invoked placeObject");
         GraspReturnType grt = listener->requestPlaceObject(*input, false);
         return convert(grt);
@@ -374,11 +347,9 @@ public:
         return boost::make_shared<std::string>(listener->requestGetSurfaceByHeight(*input));
     }
 
-    boost::shared_ptr<Dictionary> isObjectPlaceable(
-            boost::shared_ptr<rst::geometry::Pose> input) {
+    boost::shared_ptr<Dictionary> isObjectPlaceable(boost::shared_ptr<rst::geometry::Pose> input) {
         ROS_DEBUG_STREAM("Invoked isObjectPlaceable");
-        GraspReturnType grt = listener->requestPlaceObject(convert(input),
-                true);
+        GraspReturnType grt = listener->requestPlaceObject(convert(input), true);
         return convert(grt);
     }
 
@@ -388,8 +359,7 @@ public:
     }
 
     boost::shared_ptr<Dictionary> convert(const GraspReturnType &grt) {
-        boost::shared_ptr<rst::generic::Dictionary> output(
-                new rst::generic::Dictionary());
+        boost::shared_ptr<rst::generic::Dictionary> output(new rst::generic::Dictionary());
         rst::generic::KeyValuePair* key;
 
         key = output->mutable_entries()->Add();
@@ -415,8 +385,7 @@ public:
         key = output->mutable_entries()->Add();
         key->set_key("result");
         key->mutable_value()->set_type(rst::generic::Value_Type_STRING);
-        key->mutable_value()->set_string(
-                GraspReturnType::resultToString(grt.result));
+        key->mutable_value()->set_string(GraspReturnType::resultToString(grt.result));
         return output;
     }
 
@@ -457,8 +426,7 @@ public:
     }
 
     boost::shared_ptr<Pose> convert(const EefPose &input) {
-        boost::shared_ptr<rst::geometry::Pose> retPose(
-                new rst::geometry::Pose());
+        boost::shared_ptr<rst::geometry::Pose> retPose(new rst::geometry::Pose());
         retPose->mutable_translation()->set_x(input.translation.xMeter);
         retPose->mutable_translation()->set_y(input.translation.yMeter);
         retPose->mutable_translation()->set_z(input.translation.zMeter);
@@ -479,14 +447,13 @@ public:
         objectToGrasp.center.xMeter = input->transformation().translation().x();
         objectToGrasp.center.yMeter = input->transformation().translation().y();
         objectToGrasp.center.zMeter = input->transformation().translation().z();
-        objectToGrasp.center.frame =
-                input->transformation().translation().frame_id();
+        objectToGrasp.center.frame = input->transformation().translation().frame_id();
         return objectToGrasp;
     }
 };
 
 RsbInterface::RsbInterface(const string &serverScope) :
-serverScope(serverScope), d(new Private()) {
+        serverScope(serverScope), d(new Private()) {
     init();
 }
 
@@ -516,89 +483,59 @@ void RsbInterface::init() {
     ROS_DEBUG_STREAM("registering methods");
 
     // add converters
-    converterRepository<string>()->registerConverter(
-            CREATE_PB_CONVERTER(rst::geometry::Pose));
-    converterRepository<string>()->registerConverter(
-            CREATE_PB_CONVERTER(JointAngles));
-    converterRepository<string>()->registerConverter(
-            CREATE_PB_CONVERTER(Dictionary));
-    converterRepository<string>()->registerConverter(
-            CREATE_PB_CONVERTER(BoundingBox3DFloat));
+    converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(rst::geometry::Pose));
+    converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(JointAngles));
+    converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(Dictionary));
+    converterRepository<string>()->registerConverter(CREATE_PB_CONVERTER(BoundingBox3DFloat));
 
     rsc::misc::initSignalWaiter();
 
     Factory& factory = getFactory();
     d->server = factory.createLocalServer(serverScope);
 
-    d->server->registerMethod("listAngles",
-            CREATE_CALLBACK_0(JointAngles, listAngles));
-    d->server->registerMethod("moveJoints",
-            CREATE_CALLBACK_1(JointAngles, void, moveJoints));
+    d->server->registerMethod("listAngles", CREATE_CALLBACK_0(JointAngles, listAngles));
+    d->server->registerMethod("moveJoints", CREATE_CALLBACK_1(JointAngles, void, moveJoints));
     //d->server->registerMethod("goto", CREATE_CALLBACK(string, string, echo));
-    d->server->registerMethod("gotoLinear",
-            CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToLinear));
-    d->server->registerMethod("gotoNonLinear",
-            CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToNonLinear));
-    d->server->registerMethod("gotoLinearOrient",
-            CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToLinearOrient));
-    d->server->registerMethod("gotoNonLinearOrient",
-            CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToNonLinearOrient));
-    d->server->registerMethod("getPosition",
-            CREATE_CALLBACK_0(rst::geometry::Pose, getPosition));
-    d->server->registerMethod("findNearestPose",
-            CREATE_CALLBACK_0(string, findNearestPose));
+    d->server->registerMethod("gotoLinear", CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToLinear));
+    d->server->registerMethod("gotoNonLinear", CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToNonLinear));
+    d->server->registerMethod("gotoLinearOrient", CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToLinearOrient));
+    d->server->registerMethod("gotoNonLinearOrient", CREATE_CALLBACK_1(rst::geometry::Pose, bool, goToNonLinearOrient));
+    d->server->registerMethod("getPosition", CREATE_CALLBACK_0(rst::geometry::Pose, getPosition));
+    d->server->registerMethod("findNearestPose", CREATE_CALLBACK_0(string, findNearestPose));
     //d->server->registerMethod("listActions", CREATE_CALLBACK(string, string, echo));
-    d->server->registerMethod("listPoses",
-            CREATE_CALLBACK_0(Dictionary, listPoses));
-    d->server->registerMethod("setMovement",
-            CREATE_CALLBACK_1(string, bool, setPose));
-    d->server->registerMethod("planToPose",
-            CREATE_CALLBACK_1(string, bool, planToPose));
-    d->server->registerMethod("setPose",
-            CREATE_CALLBACK_1(string, bool, setPose));
+    d->server->registerMethod("listPoses", CREATE_CALLBACK_0(Dictionary, listPoses));
+    d->server->registerMethod("setMovement", CREATE_CALLBACK_1(string, bool, setPose));
+    d->server->registerMethod("planToPose", CREATE_CALLBACK_1(string, bool, planToPose));
+    d->server->registerMethod("setPose", CREATE_CALLBACK_1(string, bool, setPose));
     //d->server->registerMethod("setCarryMovement", CREATE_CALLBACK(string, string, echo));
-    d->server->registerMethod("openGripper",
-            CREATE_CALLBACK_0(void, openGripper));
-    d->server->registerMethod("openGripperWhenTouching",
-            CREATE_CALLBACK_0(void, openGripperWhenTouching));
-    d->server->registerMethod("closeGripper",
-            CREATE_CALLBACK_0(void, closeGripper));
-    d->server->registerMethod("closeGripperByForce",
-            CREATE_CALLBACK_0(void, closeGripperByForce));
+    d->server->registerMethod("openGripper", CREATE_CALLBACK_0(void, openGripper));
+    d->server->registerMethod("openGripperWhenTouching", CREATE_CALLBACK_0(void, openGripperWhenTouching));
+    d->server->registerMethod("closeGripper", CREATE_CALLBACK_0(void, closeGripper));
+    d->server->registerMethod("closeGripperByForce", CREATE_CALLBACK_0(void, closeGripperByForce));
     d->server->registerMethod("motorsOff", CREATE_CALLBACK_0(void, motorsOff));
     d->server->registerMethod("motorsOn", CREATE_CALLBACK_0(void, motorsOn));
     d->server->registerMethod("setFilterType", CREATE_CALLBACK_1(string, void, setFilterType));
     //d->server->registerMethod("freeze", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("unblock", CREATE_CALLBACK(string, string, echo));
-    d->server->registerMethod("getGripperSensors",
-            CREATE_CALLBACK_0(Dictionary, getGripperSensors));
-    d->server->registerMethod("isSomethingInGripper",
-            CREATE_CALLBACK_0(bool, isSomethingInGripper));
+    d->server->registerMethod("getGripperSensors", CREATE_CALLBACK_0(Dictionary, getGripperSensors));
+    d->server->registerMethod("isSomethingInGripper", CREATE_CALLBACK_0(bool, isSomethingInGripper));
     //d->server->registerMethod("calculateGraspablePose", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("setObstacles", CREATE_CALLBACK(string, string, echo));
-    d->server->registerMethod("findObjects",
-            CREATE_CALLBACK_0(bool, findObjects));
+    d->server->registerMethod("findObjects", CREATE_CALLBACK_0(bool, findObjects));
     //d->server->registerMethod("isObjectGraspable",
     //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
     //                isObjectGraspable));
-    d->server->registerMethod("isObjectNameGraspable",
-            CREATE_CALLBACK_1(string, Dictionary, isObjectNameGraspable));
+    d->server->registerMethod("isObjectNameGraspable", CREATE_CALLBACK_1(string, Dictionary, isObjectNameGraspable));
     //d->server->registerMethod("graspObject",
     //        CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, graspObject));
-    d->server->registerMethod("graspObjectName",
-            CREATE_CALLBACK_1(string, Dictionary, graspObjectName));
+    d->server->registerMethod("graspObjectName", CREATE_CALLBACK_1(string, Dictionary, graspObjectName));
     //d->server->registerMethod("graspObjectOrientation", CREATE_CALLBACK(string, string, echo));
-    d->server->registerMethod("placeObjectAt",
-            CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, placeObject));
+    d->server->registerMethod("placeObjectAt", CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, placeObject));
     d->server->registerMethod("placeObjectInRegion",
-            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary,
-            placeObjectInRegion));
-    d->server->registerMethod("placeObjectOnSurface",
-            CREATE_CALLBACK_1(string, Dictionary, placeObjectOnSurface));
+            CREATE_CALLBACK_1(BoundingBox3DFloat, Dictionary, placeObjectInRegion));
+    d->server->registerMethod("placeObjectOnSurface", CREATE_CALLBACK_1(string, Dictionary, placeObjectOnSurface));
     //d->server->registerMethod("placeObjectAtExact", CREATE_CALLBACK(string, string, echo));
-    d->server->registerMethod("isPlaceable",
-            CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary,
-            isObjectPlaceable));
+    d->server->registerMethod("isPlaceable", CREATE_CALLBACK_1(rst::geometry::Pose, Dictionary, isObjectPlaceable));
     d->server->registerMethod("getSurfaceByHeight", CREATE_CALLBACK_1(float, std::string, getSurfaceByHeight));
     //d->server->registerMethod("wipingMovement", CREATE_CALLBACK(string, string, echo));
     //d->server->registerMethod("joggingMovement", CREATE_CALLBACK(string, string, echo));

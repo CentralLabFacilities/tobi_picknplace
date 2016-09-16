@@ -24,6 +24,8 @@ using namespace moveit;
 using namespace actionlib;
 using namespace moveit::planning_interface;
 
+static const string NAME = "RosTools";
+
 #define DEFAULT_SURFACE "surface0"
 
 Model::Model() {
@@ -79,25 +81,25 @@ void Model::stop() const {
 }
 
 vector<string> Model::getJointNames() const {
-    ROS_DEBUG("Invoked getJointNames");
+    ROS_INFO_NAMED(NAME, "### Invoked getJointNames ###");
 
     return groupArm->getJoints();
 }
 
 int Model::getNumJoints() const {
-    ROS_DEBUG("Invoked getNumJoints");
+    ROS_INFO_NAMED(NAME, "### Invoked getNumJoints ###");
 
     return groupArm->getJoints().size();
 }
 
 vector<string> Model::getEefJointNames() const {
-    ROS_DEBUG("Invoked getJointNames");
+    ROS_INFO_NAMED(NAME, "### Invoked getJointNames ###");
 
     return groupEe->getActiveJoints();
 }
 
 map<string, double> Model::getJointAngles() const {
-    ROS_DEBUG("Invoked getJointAngles");
+    ROS_DEBUG_NAMED(NAME, "### Invoked getJointAngles ###");
 
     map<string, double> jointAngles;
     vector<string> jointNames = groupArm->getJoints();
@@ -109,7 +111,7 @@ map<string, double> Model::getJointAngles() const {
 }
 
 void Model::setJointAngle(const string &joint, double angle) {
-    ROS_INFO("### Invoked setJointAngle ###");
+    ROS_DEBUG_NAMED(NAME, "### Invoked setJointAngle ###");
 
     groupArm->clearPoseTargets();
     groupArm->setStartStateToCurrentState();
@@ -118,12 +120,12 @@ void Model::setJointAngle(const string &joint, double angle) {
 }
 
 void Model::setFilterType(std::string type) {
-    ROS_INFO_STREAM("Set FilterType to " << type);
+    ROS_INFO_STREAM_NAMED(NAME, "Set FilterType to " << type);
     filterTypes = type;
 }
 
 void Model::setJointAngles(const map<string, double> &angles) {
-    ROS_INFO("### Invoked setJointAngles ###");
+    ROS_INFO_NAMED(NAME, "### Invoked setJointAngles ###");
 
     groupArm->clearPoseTargets();
     groupArm->setStartStateToCurrentState();
@@ -134,7 +136,7 @@ void Model::setJointAngles(const map<string, double> &angles) {
 }
 
 void Model::setJointAngles(const vector<double> &angles) {
-    ROS_INFO("### Invoked setJointAngles ###");
+    ROS_INFO_NAMED(NAME, "### Invoked setJointAngles ###");
 
     vector<string> joints = groupArm->getJoints();
     if (angles.size() < 0 || angles.size() > joints.size()) {
@@ -151,7 +153,7 @@ void Model::setJointAngles(const vector<double> &angles) {
 }
 
 MoveResult Model::moveTo(const EefPose& pose, bool linear, bool orientation) {
-    ROS_INFO("### Invoked moveTo (pose) ###");
+    ROS_INFO_NAMED(NAME, "### Invoked moveTo (pose) ###");
 
     groupArm->clearPoseTargets();
     groupArm->setStartStateToCurrentState();
@@ -175,7 +177,7 @@ MoveResult Model::moveTo(const EefPose& pose, bool linear, bool orientation) {
 }
 
 ArmPoses Model::getRememberedPoses() const {
-    ROS_DEBUG("Invoked getRememberedPoses");
+    ROS_INFO_NAMED(NAME, "### Invoked getRememberedPoses ###");
     string planningGroup = groupArm->getName();
     const robot_model::JointModelGroup* jmg =
             groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(planningGroup);
@@ -187,7 +189,7 @@ ArmPoses Model::getRememberedPoses() const {
         jmg->getVariableDefaultPositions(name, angles);
         poses[name] = angles;
     }
-    ROS_DEBUG("poses %d, names %d", (int) poses.size(), (int) names.size());
+    ROS_DEBUG_NAMED(NAME, "poses %d, names %d", (int) poses.size(), (int) names.size());
     return poses;
 }
 
@@ -200,15 +202,15 @@ ArmPose Model::getRememberedPose(const std::string &name) const {
 }
 
 EefPose Model::getEefPose() const {
-    ROS_DEBUG("Invoked getEefPose");
+    ROS_INFO_NAMED(NAME, "### Invoked getEefPose ###");
     EefPose pose;
     geometry_msgs::PoseStamped ps = groupArm->getCurrentPose();
 
-    ROS_DEBUG_STREAM("getEefPose() 1: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
+    ROS_DEBUG_STREAM("getEefPose() before transformation: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
 
     tfTransformer.transform(ps, ps, ParamReader::getParamReader().frameArm);
 
-    ROS_DEBUG_STREAM("getEefPose() 2: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
+    ROS_DEBUG_STREAM("getEefPose() after transformation: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
 
     pose.translation.xMeter = ps.pose.position.x;
     pose.translation.yMeter = ps.pose.position.y;
@@ -222,7 +224,7 @@ EefPose Model::getEefPose() const {
 }
 
 int Model::findObjects() {
-    ROS_INFO("Invoked findObjects");
+    ROS_INFO_NAMED(NAME, "### Invoked findObjects ###");
 
     vector<grasping_msgs::Object> grasps;
     grasps = graspGenerator->find_objects(false);
@@ -230,9 +232,9 @@ int Model::findObjects() {
 }
 
 vector<moveit_msgs::Grasp> Model::filtergrasps(const vector<moveit_msgs::Grasp> &grasps) {
+    ROS_DEBUG_STREAM("Filter type is:" << filterTypes);
 
     vector<moveit_msgs::Grasp> filteredgrasps;
-    ROS_INFO_STREAM("The Filter Type is:" << filterTypes);
     for (moveit_msgs::Grasp i : grasps) {
         ROS_DEBUG_STREAM("Grasp.id: " << i.id);
         if (filterTypes == "side") {
@@ -256,11 +258,9 @@ vector<moveit_msgs::Grasp> Model::filtergrasps(const vector<moveit_msgs::Grasp> 
 }
 
 GraspReturnType Model::graspObject(const string &obj, const string &surface, const vector<moveit_msgs::Grasp> &grasps, bool simulate, const string &startPose) {
-    ROS_DEBUG_STREAM("Model, graspObject " << obj);
+    ROS_DEBUG_STREAM_NAMED(NAME, "Trying to pick object " << obj << " on " << surface);
 
     EefPose eefStart = getEefPose();
-    //ROS_DEBUG("Trying to pick object %s on %s (height: %.3f).", obj, surface, tableHeightArmCoords);
-
     GraspReturnType grt;
 
     vector<moveit_msgs::Grasp> filteredgrasps = filtergrasps(grasps);

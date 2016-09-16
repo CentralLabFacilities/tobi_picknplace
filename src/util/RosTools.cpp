@@ -14,11 +14,12 @@
 
 using namespace std;
 
+static const string NAME = "RosTools";
 const string OBJECT_NAME = "target_object";
 
 RosTools::RosTools() {
 
-    ROS_DEBUG("RosTools::RosTools() called");
+    ROS_DEBUG_NAMED(NAME, "called");
 
     object_publisher = nh.advertise<moveit_msgs::CollisionObject>("collision_object", 1);
     object_att_publisher = nh.advertise<moveit_msgs::AttachedCollisionObject>("attached_collision_object", 1);
@@ -30,7 +31,7 @@ RosTools::RosTools() {
     clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
 
     std::string service = "/display_grasp";
-    ROS_INFO("Wait for Service: %s", service.c_str());
+    ROS_INFO_NAMED(NAME, "Wait for Service: %s", service.c_str());
     ros::service::waitForService(service);
     // TODO test if service was found
     grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
@@ -56,7 +57,7 @@ MoveResult RosTools::moveResultFromMoveit(
         case moveit_msgs::MoveItErrorCodes::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE:
             return ENV_CHANGE;
         default:
-            ROS_WARN_STREAM("unknown error code: " << errorCode.val);
+            ROS_WARN_STREAM_NAMED(NAME, "unknown error code: " << errorCode.val);
             return OTHER;
     }
 }
@@ -75,7 +76,7 @@ GraspReturnType::GraspResult RosTools::graspResultFromMoveit(
         case moveit_msgs::MoveItErrorCodes::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE:
             return GraspReturnType::NO_RESULT;
         default:
-            ROS_WARN_STREAM("unknown error code: " << errorCode.val);
+            ROS_WARN_STREAM_NAMED(NAME, "unknown error code: " << errorCode.val);
             return GraspReturnType::FAIL;
     }
 }
@@ -84,7 +85,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
 
     {
         boost::mutex::scoped_lock lock(sceneMutex);
-        ROS_DEBUG_STREAM("Publish object with name " << msg.name);
+        ROS_DEBUG_STREAM_NAMED(NAME, "Publish object with name " << msg.name);
 
 
         ParamReader &params = ParamReader::getParamReader();
@@ -119,7 +120,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     //ros::spinOnce();
 
     //manipulationObjects.push_back(target_object);
-    ROS_DEBUG_STREAM("have " << manipulationObjects.size() );
+    ROS_DEBUG_STREAM_NAMED(NAME, "have " << manipulationObjects.size() );
 
 }
 
@@ -127,7 +128,7 @@ void RosTools::clear_collision_objects(bool with_surface) {
 
     {
         boost::mutex::scoped_lock lock(sceneMutex);
-        ROS_DEBUG_STREAM("clearing collision objects " << ((with_surface) ? "with surfaces" : "without surfaces"));
+        ROS_DEBUG_STREAM_NAMED(NAME, "clearing collision objects " << ((with_surface) ? "with surfaces" : "without surfaces"));
         moveit_msgs::PlanningScene update;
 
         if (with_surface) {
@@ -212,7 +213,7 @@ void RosTools::clear_grasps_markerarray() {
     marker.action = 3; // DELETEALL
     markers.markers.push_back(marker);
 
-    ROS_DEBUG_STREAM("Invoked clear_grasps_markerarray");
+    ROS_DEBUG_STREAM_NAMED(NAME, "Invoked clear_grasps_markerarray");
     grasps_marker_red.publish(markers);
     grasps_marker_green.publish(markers);
     grasps_marker_white.publish(markers);
@@ -229,7 +230,7 @@ void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps) {
 
 void RosTools::clear_grasps() {
 
-    ROS_DEBUG_STREAM("Invoked clear_grasps");
+    ROS_DEBUG_STREAM_NAMED(NAME, "Invoked clear_grasps");
     grasp_viewer::DisplayGraspsRequest disp_req; //note: also possible to use displaygrasps.request...
     grasp_viewer::DisplayGraspsResponse disp_res;
     grasp_viz_client.call(disp_req, disp_res);
@@ -239,7 +240,7 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
     visualization_msgs::MarkerArray markers;
     int i = 0;
 
-    ROS_DEBUG_STREAM("Display place locations.");
+    ROS_DEBUG_STREAM_NAMED(NAME, "Display place locations.");
     for (std::vector<moveit_msgs::PlaceLocation>::iterator it = loc.begin(); it != loc.end(); it++) {
 
         visualization_msgs::Marker marker;
@@ -268,7 +269,7 @@ void RosTools::remove_collision_object(const string id) {
 
     {
         boost::mutex::scoped_lock lock(sceneMutex);
-        ROS_INFO_STREAM("remove collision object " << id);
+        ROS_INFO_STREAM_NAMED(NAME, "remove collision object " << id);
 
         for (auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
             if (it->id == id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
@@ -298,12 +299,12 @@ void RosTools::detach_collision_object() {
 
     {
         boost::mutex::scoped_lock lock(sceneMutex);
-        ROS_DEBUG_STREAM("invoke: detach_collision_objects");
+        ROS_DEBUG_STREAM_NAMED(NAME, "invoke: detach_collision_objects");
 
         moveit_msgs::PlanningScene update;
         update.is_diff = true;
 
-        ROS_DEBUG_STREAM("detaching all known objects: " << manipulationObjects.size());
+        ROS_DEBUG_STREAM_NAMED(NAME, "detaching all known objects: " << manipulationObjects.size());
         for (auto o : manipulationObjects) {
             moveit_msgs::CollisionObject object;
             object.operation = object.REMOVE;
@@ -350,7 +351,7 @@ void RosTools::clear_octomap(double sleep_seconds) {
 }
 
 void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
-    //ROS_DEBUG_STREAM("sceneCallback");
+    //ROS_DEBUG_STREAM_NAMED(NAME, "sceneCallback");
     boost::mutex::scoped_lock lock(sceneMutex);
     currentPlanningScene = currentScene;
 
@@ -375,26 +376,26 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
         }
     }
 
-    //ROS_DEBUG_STREAM("sceneCallback done: (attached:)" << currentScene.robot_state.attached_collision_objects.size()  );
+    //ROS_DEBUG_STREAM_NAMED(NAME, "sceneCallback done: (attached:)" << currentScene.robot_state.attached_collision_objects.size()  );
 }
 
 bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj) {
 
     boost::mutex::scoped_lock lock(sceneMutex);
-    ROS_DEBUG_STREAM("invoked: getCollisionObjectByName, have " << manipulationObjects.size() << " objects");
+    ROS_DEBUG_STREAM_NAMED(NAME, "invoked: getCollisionObjectByName, have " << manipulationObjects.size() << " objects");
 
     for(auto o : manipulationObjects) {
         if(o.id == id) {
             obj = o;
-            ROS_DEBUG_STREAM("Found CollisionObject with id" << o.id);
+            ROS_DEBUG_STREAM_NAMED(NAME, "Found CollisionObject with id" << o.id);
             return true;
         }
     }
 
 
-    ROS_DEBUG_STREAM("Did not find CollisionObject with id:" << id << " all objects:");
+    ROS_DEBUG_STREAM_NAMED(NAME, "Did not find CollisionObject with id:" << id << " all objects:");
     for(auto o : manipulationObjects) {
-        ROS_DEBUG_STREAM("id" << o.id);
+        ROS_DEBUG_STREAM_NAMED(NAME, "id" << o.id);
     }
     return false;
 }
@@ -418,7 +419,7 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
         msg.primitive_poses.push_back(*poseIterator);
     }
 
-    //ROS_DEBUG_STREAM("CollisionObject planesize: " << obj.planes.size());
+    //ROS_DEBUG_STREAM_NAMED(NAME, "CollisionObject planesize: " << obj.planes.size());
 
     //fill hight manually:
     moveit_msgs::CollisionObject collisionObjectArmCoords;
@@ -426,12 +427,12 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
     tfTransformer.transform(obj, collisionObjectArmCoords,
             "base_link");
     ROS_DEBUG("Calculate tableHeight base_link");
-    //ROS_DEBUG_STREAM(obj);
+    //ROS_DEBUG_STREAM_NAMED(NAME, obj);
     double tableHeightArmCoords =
             collisionObjectArmCoords.primitive_poses[0].position.z
             - collisionObjectArmCoords.primitives[0].dimensions[2]
             / 2.0;
-    ROS_DEBUG_STREAM("tableHeight bl: " << tableHeightArmCoords);
+    ROS_DEBUG_STREAM_NAMED(NAME, "tableHeight bl: " << tableHeightArmCoords);
 
     plane.coef[2] = 1;
     plane.coef[3] = -tableHeightArmCoords;
