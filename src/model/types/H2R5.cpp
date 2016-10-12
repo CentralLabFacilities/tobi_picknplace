@@ -19,7 +19,7 @@
 
 #include "../../grasping/CentroidGrasping.h"
 #include "../../interface/AGNIInterface.h"
-#include <../../opt/ros/indigo/include/moveit_msgs/CollisionObject.h>
+#include <moveit_msgs/CollisionObject.h>
 #include <moveit_msgs/PlaceLocation.h>
 
 using namespace std;

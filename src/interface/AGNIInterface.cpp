@@ -11,7 +11,7 @@
 #include <grasp_viewer/DisplayGrasps.h>
 
 #include "../util/ParamReader.h"
-#include <../../opt/ros/indigo/include/grasping_msgs/Object.h>
+#include <grasping_msgs/Object.h>
 
 using namespace std;
 
