@@ -24,7 +24,7 @@ set(CTKN_PKGS
     tf2
     moveit_ros_planning_interface
     actionlib
-    shape_tools
+    geometric_shapes
     shape_msgs
     grasp_viewer
     moveit_msgs
