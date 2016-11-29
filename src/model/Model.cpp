@@ -323,7 +323,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             }
 
             ROS_INFO_STREAM("Test INFO");
-            ROS_WARN_STREAM("TEST WARN")
+            ROS_WARN_STREAM("TEST WARN");
             if (rosTools.getCollisionObjectByName(surface, colSurface)) {
                 ROS_WARN_STREAM("Got the colSurface: " << colSurface.id
                         << " with primitive_poses: " << colSurface.primitive_poses[0].position.z
