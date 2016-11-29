@@ -315,30 +315,30 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             moveit_msgs::CollisionObject colSurface;
             graspedObjectID = obj;
             moveit_msgs::CollisionObject graspedObject;
-            ROS_INFO_STREAM("Search: " << obj);
+            ROS_INFO("Search: " << obj);
             if (rosTools.getCollisionObjectByName(obj, graspedObject)) {
-                ROS_INFO_STREAM("Got the graspedObject: " << graspedObject.id
+                ROS_INFO("Got the graspedObject: " << graspedObject.id
                         << " with primitive_poses: " << graspedObject.primitive_poses[0].position.z
                         << " and type: " << graspedObject.type << " and primitives: " << graspedObject.primitives[0].dimensions[0]);
             }
 
             if (rosTools.getCollisionObjectByName(surface, colSurface)) {
-                ROS_INFO_STREAM("Got the colSurface: " << colSurface.id
+                ROS_INFO("Got the colSurface: " << colSurface.id
                         << " with primitive_poses: " << colSurface.primitive_poses[0].position.z
                         << " and type: " << colSurface.type << " and primitives: " << colSurface.primitives[0].dimensions[0]);
             }
 
-            ROS_INFO_STREAM("lastGraspPose: " << lastGraspPose.pose.position.z);
+            ROS_INFO("lastGraspPose: " << lastGraspPose.pose.position.z);
             float lowestObjectPosition = 0;// colSurface.primitive_poses[0].position.z;
             if (graspedObject.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
-                ROS_INFO_STREAM("Grasps CYLINDER, overwrite for masterthesis.");
+                ROS_INFO("Grasps CYLINDER, overwrite for masterthesis.");
                 lowestObjectPosition = graspedObject.primitive_poses[0].position.z - graspedObject.primitives[0].dimensions[0] / 2;
 
             }
 
             if (rosTools.getCollisionObjectByName(surface, colSurface)) {
                 lastHeightUnderGrasp = abs(resultGrasp.grasp_pose.pose.position.z - lowestObjectPosition);
-                ROS_INFO_STREAM("Distance under the Grasp (TODO untested): " << lastHeightUnderGrasp);
+                ROS_INFO("Distance under the Grasp (TODO untested): " << lastHeightUnderGrasp);
             } else {
                 //todo defautl surface hack
                 ROS_WARN_STREAM("(surface) for grasping with Name: " << surface << " try default: " << DEFAULT_SURFACE);
@@ -353,14 +353,14 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             //rosTools.detach_collision_object();
             //rosTools.remove_collision_object(obj);
             ros::spinOnce();
-            ROS_INFO_STREAM("moving to start pose");
+            ROS_INFO("moving to start pose");
             moveTo(eefStart, false, false);
             grt.result = GraspReturnType::FAIL;
         }
     } else if (pickActionClient->getState() == SimpleClientGoalState::ABORTED) {
         ROS_WARN_STREAM("  Pick Action ABORTED (" << pickActionClient->getResult()->error_code.val << "): " << pickActionClient->getState().getText());
         rosTools.clear_octomap();
-        ROS_INFO_STREAM("moving to start pose");
+        ROS_INFO("moving to start pose");
         moveTo(eefStart, false, false);
         if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::PLANNING_FAILED) {
             grt.result = GraspReturnType::FAIL;
