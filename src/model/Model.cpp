@@ -331,7 +331,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             }
 
             ROS_INFO_STREAM("lastGraspPose: " << lastGraspPose.pose.position.z);
-            float lowestObjectPosition = 0 // colSurface.primitive_poses[0].position.z;
+            float lowestObjectPosition = 0; // colSurface.primitive_poses[0].position.z;
             if (graspedObject.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
                 ROS_WARN_STREAM("Grasps CYLINDER, overwrite for masterthesis.");
                 lowestObjectPosition = graspedObject.primitive_poses[0].position.z - graspedObject.primitives[0].dimensions[0] / 2;
