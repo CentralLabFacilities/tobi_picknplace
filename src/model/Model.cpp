@@ -315,9 +315,21 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             moveit_msgs::CollisionObject colSurface;
             graspedObjectID = obj;
             moveit_msgs::CollisionObject graspedObject;
-            rosTools.getCollisionObjectByName(obj, graspedObject);
+            ROS_INFO_STREAM("Search: " << obj);
+            if (rosTools.getCollisionObjectByName(obj, graspedObject)) {
+                ROS_INFO_STREAM("Got the graspedObject: " << graspedObject.id
+                        << " with primitive_poses: " << graspedObject.primitive_poses[0].position.z
+                        << " and type: " << graspedObject.type << " and primitives: " << graspedObject.primitives[0].dimensions[0]);
+            }
 
-            float lowestObjectPosition = colSurface.primitive_poses[0].position.z;
+            if (rosTools.getCollisionObjectByName(surface, colSurface)) {
+                ROS_INFO_STREAM("Got the colSurface: " << colSurface.id
+                        << " with primitive_poses: " << colSurface.primitive_poses[0].position.z
+                        << " and type: " << colSurface.type << " and primitives: " << colSurface.primitives[0].dimensions[0]);
+            }
+
+            ROS_INFO_STREAM("lastGraspPose: " << lastGraspPose.pose.position.z);
+            float lowestObjectPosition = 0;// colSurface.primitive_poses[0].position.z;
             if (graspedObject.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
                 ROS_INFO_STREAM("Grasps CYLINDER, overwrite for masterthesis.");
                 lowestObjectPosition = graspedObject.primitive_poses[0].position.z - graspedObject.primitives[0].dimensions[0] / 2;
