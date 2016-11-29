@@ -319,14 +319,14 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
 
             float lowestObjectPosition = colSurface.primitive_poses[0].position.z;
             if (graspedObject.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
-                ROS_DEBUG_STREAM("Grasps CYLINDER, overwrite for masterthesis.");
+                ROS_INFO_STREAM("Grasps CYLINDER, overwrite for masterthesis.");
                 lowestObjectPosition = graspedObject.primitive_poses[0].position.z - graspedObject.primitives[0].dimensions[0] / 2;
 
             }
 
             if (rosTools.getCollisionObjectByName(surface, colSurface)) {
                 lastHeightUnderGrasp = abs(resultGrasp.grasp_pose.pose.position.z - lowestObjectPosition);
-                ROS_DEBUG_STREAM("Distance under the Grasp (TODO untested): " << lastHeightUnderGrasp);
+                ROS_INFO_STREAM("Distance under the Grasp (TODO untested): " << lastHeightUnderGrasp);
             } else {
                 //todo defautl surface hack
                 ROS_WARN_STREAM("(surface) for grasping with Name: " << surface << " try default: " << DEFAULT_SURFACE);
