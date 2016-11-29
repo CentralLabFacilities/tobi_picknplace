@@ -110,7 +110,7 @@ protected:
     GraspGenerator::Ptr graspGenerator;
     TransformerTF tfTransformer;
 
-    double lastHeightAboveTable;
+    double lastHeightUnderGrasp;
     std::string filterTypes;
     std::string graspedObjectID;
     moveit_msgs::CollisionObject lastGraspTried;
