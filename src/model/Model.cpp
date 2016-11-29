@@ -35,7 +35,7 @@ Model::Model() {
     if (ParamReader::getParamReader().graspGen == AGNI_GRASP_NAME)
         graspGenerator = AGNIInterface::Ptr(new AGNIInterface());
 
-    lastHeightUnderGrasp = 0.0;
+    objectHeightUnderGrasp = 0.0;
     graspedObjectID = "";
     filterTypes = "all"; // all, top, side
 
@@ -315,39 +315,21 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             moveit_msgs::CollisionObject colSurface;
             graspedObjectID = obj;
             moveit_msgs::CollisionObject graspedObject;
-            ROS_INFO("Search: %s", obj);
+
+            objectHeightUnderGrasp = 0.15; // default value
             if (rosTools.getCollisionObjectByName(obj, graspedObject)) {
-                ROS_WARN_STREAM("Got the graspedObject: " << graspedObject.id
+
+                ROS_INFO_STREAM("lastGraspPose: " << lastGraspPose.pose.position.z);
+                ROS_INFO_STREAM("Got the graspedObject: " << graspedObject.id
                         << " with primitive_poses: " << graspedObject.primitive_poses[0].position.z
-                        << " and type: " << graspedObject.type << " and primitives: " << graspedObject.primitives[0].dimensions[0]);
+                        << " and primitives: " << graspedObject.primitives[0].dimensions[0]);
+                objectHeightUnderGrasp = abs(lastGraspPose.pose.position.z -
+                        graspedObject.primitive_poses[0].position.z +
+                        graspedObject.primitives[0].dimensions[0] / 2);
+
+                ROS_INFO_STREAM("objectHeightUnderGrasp" << objectHeightUnderGrasp);
             }
 
-            ROS_INFO_STREAM("Test INFO");
-            ROS_WARN_STREAM("TEST WARN");
-            if (rosTools.getCollisionObjectByName(surface, colSurface)) {
-                ROS_WARN_STREAM("Got the colSurface: " << colSurface.id
-                        << " with primitive_poses: " << colSurface.primitive_poses[0].position.z
-                        << " and type: " << colSurface.type << " and primitives: " << colSurface.primitives[0].dimensions[0]);
-            }
-
-            ROS_INFO_STREAM("lastGraspPose: " << lastGraspPose.pose.position.z);
-            float lowestObjectPosition = 0; // colSurface.primitive_poses[0].position.z;
-            if (graspedObject.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
-                ROS_WARN_STREAM("Grasps CYLINDER, overwrite for masterthesis.");
-                lowestObjectPosition = graspedObject.primitive_poses[0].position.z - graspedObject.primitives[0].dimensions[0] / 2;
-
-            }
-
-            if (rosTools.getCollisionObjectByName(surface, colSurface)) {
-                lastHeightUnderGrasp = abs(resultGrasp.grasp_pose.pose.position.z - lowestObjectPosition);
-                ROS_WARN_STREAM("Distance under the Grasp (TODO untested): " << lastHeightUnderGrasp);
-            } else {
-                //todo defautl surface hack
-                ROS_WARN_STREAM("(surface) for grasping with Name: " << surface << " try default: " << DEFAULT_SURFACE);
-                if (rosTools.getCollisionObjectByName(DEFAULT_SURFACE, colSurface)) {
-                    lastHeightUnderGrasp = abs(colSurface.primitive_poses[0].position.z - resultGrasp.grasp_pose.pose.position.z);
-                }
-            }
             grt.result = GraspReturnType::SUCCESS;
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());
         } else {
@@ -488,6 +470,26 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
         moveTo(eefStart, false, false);
     }
 
+    if (grt.result == GraspReturnType::ROBOT_CRASHED) {
+        openEef(false);
+        ROS_WARN("Robot crashed, drive back to default position.");
+        if (robot == "h2r5") {
+            if (moveTo("left_arm_pre_grasp", true) == MoveResult::SUCCESS) {
+                grt.result = GraspReturnType::SUCCESS;
+            }
+        } else {
+            if (isSomethingInGripper()) {
+                if (moveTo("carry_side")) {
+                    grt.result = GraspReturnType::COLLISION_HANDLED;
+                }
+            } else {
+                if (moveTo("fold_up")) {
+                    grt.result = GraspReturnType::SUCCESS;
+                }
+            }
+        }
+    }
+
     return grt;
 }
 
@@ -549,7 +551,7 @@ void Model::attachDefaultObject() {
         ROS_INFO_STREAM("attach default using last tried object");
         attached_object.object = lastGraspTried;
 
-        lastHeightUnderGrasp = lastGraspTried.primitive_poses[0].position.z + 0.01;
+        objectHeightUnderGrasp = 0.25; //lastGraspTried.primitive_poses[0].position.z + 0.01;
         graspedObjectID = lastGraspTried.id;
     } else {
         shape_msgs::SolidPrimitive primitive;
@@ -571,7 +573,7 @@ void Model::attachDefaultObject() {
         attached_object.object.primitive_poses.push_back(pose);
 
         attached_object.object.id = rosTools.getDefaultObjectName();
-        lastHeightUnderGrasp = 0.10;
+        objectHeightUnderGrasp = 0.25;
         graspedObjectID = rosTools.getDefaultObjectName();
     }
 
@@ -671,9 +673,9 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
           ROS_INFO_STREAM("Use default orientation");
           orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
       }**/
-    if (lastHeightUnderGrasp == 0.0) {
-        lastHeightUnderGrasp = 0.15;
-        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightUnderGrasp);
+    if (objectHeightUnderGrasp == 0.0) {
+        objectHeightUnderGrasp = 0.25;
+        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << objectHeightUnderGrasp);
     }
 
     std::vector<moveit_msgs::PlaceLocation> pls;
@@ -698,11 +700,13 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     float surfaceSizeY = 0;
     float surfaceSizeZ = 0;
 
+    int placecenter = false;
     if (colSurface.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
         ROS_INFO_STREAM("Place on a Cylinder");
         surfaceSizeX = colSurface.primitives[0].dimensions[1]*2; //radius * 2
         surfaceSizeY = colSurface.primitives[0].dimensions[1]*2; //radius * 2
-        surfaceSizeZ = colSurface.primitives[0].dimensions[0]; //height
+        surfaceSizeZ = colSurface.primitives[0].dimensions[0]; //
+        placecenter = true;
     } else if (colSurface.primitives[0].type == shape_msgs::SolidPrimitive::BOX) {
         ROS_INFO_STREAM("Place on a Box");
         surfaceSizeX = colSurface.primitives[0].dimensions[0]; //x
@@ -735,9 +739,13 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = colSurface.header.frame_id;
             float param = y * 2 * M_PI / place_rot;
-            pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param) / 5; // /5  only place near the center for Masterthesis
-            pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param) / 5; // /5 only place near the center for Masterthesis
-            pl.place_pose.pose.position.z = surfaceCenterZ + lastHeightUnderGrasp + surfaceSizeZ / 2 + 0.02; //test place 2cm over the Object for Masterthesis
+            pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
+            pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
+            pl.place_pose.pose.position.z = surfaceCenterZ + objectHeightUnderGrasp + surfaceSizeZ / 2 + 0.03; //test place 3cm over the Object for Masterthesis
+            if (placecenter) {
+                pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param) / 5;
+                pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param) / 5;
+            }
             Eigen::Quaternionf quat(orientMsg.w, orientMsg.x, orientMsg.y, orientMsg.z);
 
             for (int r = 0; r < rotation; r++) {

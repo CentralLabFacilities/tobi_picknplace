@@ -37,7 +37,7 @@ Katana::Katana() : Model() {
 
     rosTools.waitForAction(movementActionClient, ros::Duration(0, 0),
             "katana_arm_controller/joint_movement_action");
-
+    robot = "katana";
     ROS_INFO("KatanaModel: connected");
 }
 

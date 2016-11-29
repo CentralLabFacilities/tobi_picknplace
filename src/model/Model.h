@@ -103,6 +103,7 @@ protected:
 
     std::vector<std::string> touchlinks;
     std::string frame;
+    std::string robot;
 
     moveit::planning_interface::MoveGroup *groupArm;
     moveit::planning_interface::MoveGroup *groupEe;
@@ -110,7 +111,7 @@ protected:
     GraspGenerator::Ptr graspGenerator;
     TransformerTF tfTransformer;
 
-    double lastHeightUnderGrasp;
+    double objectHeightUnderGrasp;
     std::string filterTypes;
     std::string graspedObjectID;
     moveit_msgs::CollisionObject lastGraspTried;

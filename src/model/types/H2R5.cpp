@@ -45,6 +45,7 @@ H2R5::H2R5() :
     target_publisher = nh.advertise<trajectory_msgs::JointTrajectory>(
             output_scope, 100);
 
+    robot = "h2r5";
     ROS_INFO("H2R5Model: connected");
 
 }
@@ -232,7 +233,7 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
     tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameArm);
 
     ROS_INFO_STREAM(
-            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightUnderGrasp);
+            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << objectHeightUnderGrasp);
     geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
     tf::Quaternion orientation = tf::Quaternion(orientMsg.x, orientMsg.y,
             orientMsg.z, orientMsg.w);
@@ -259,7 +260,7 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
     tfTransformer.transform(obj, obj, ParamReader::getParamReader().frameArm);
 
     ROS_INFO_STREAM(
-            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << lastHeightUnderGrasp);
+            "generate_place_locations(): lastGraspPose:" << lastGraspPose << " - lastHeightAboveTable: " << objectHeightUnderGrasp);
     geometry_msgs::Quaternion orientMsg = lastGraspPose.pose.orientation;
     tf::Quaternion orientation = tf::Quaternion(orientMsg.x, orientMsg.y,
             orientMsg.z, orientMsg.w);
@@ -269,10 +270,10 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
     }
 
     Vec t = obj.center;
-    if (lastHeightUnderGrasp == 0.0) {
+    if (objectHeightUnderGrasp == 0.0) {
         t.xMeter += DEFAULT_PLACE_HEIGHT;
     } else {
-        t.xMeter += lastHeightUnderGrasp;
+        t.xMeter += objectHeightUnderGrasp;
     }
 
     return graspGenerator->generate_place_locations(t.xMeter, t.yMeter, t.zMeter,
