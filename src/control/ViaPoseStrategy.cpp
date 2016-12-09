@@ -112,20 +112,6 @@ bool ViaPoseStrategy::planTo(const string& poseName)
 
 GraspReturnType ViaPoseStrategy::placeObject(const string &surface, bool simulate) {
     GraspReturnType ret = model->placeObject(surface, simulate);
-
-    if (ret.result == GraspReturnType::ROBOT_CRASHED) {
-        // recover !!!
-        ROS_WARN_STREAM("  try to RECOVER !!");
-        if (model->isSomethingInGripper()) {
-            if (moveTo("carry_side")) {
-                ret.result = GraspReturnType::COLLISION_HANDLED;
-            }
-        } else {
-            if (moveTo("fold_up")) {
-                ret.result = GraspReturnType::SUCCESS;
-            }
-        }
-    }
     return ret;
 }
 
