@@ -37,7 +37,7 @@ RosTools::RosTools() {
     grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
 
     scene_subscriber = nh.subscribe("planning_scene", 10, &RosTools::sceneCallback, this);
-    scene_publisher =  nh.advertise<moveit_msgs::PlanningScene>("planning_scene",10);
+    scene_publisher = nh.advertise<moveit_msgs::PlanningScene>("planning_scene", 10);
 }
 
 RosTools::~RosTools() {
@@ -120,7 +120,7 @@ void RosTools::publish_collision_object(grasping_msgs::Object msg) {
     //ros::spinOnce();
 
     //manipulationObjects.push_back(target_object);
-    ROS_DEBUG_STREAM_NAMED(NAME, "have " << manipulationObjects.size() );
+    ROS_DEBUG_STREAM_NAMED(NAME, "have " << manipulationObjects.size());
 
 }
 
@@ -141,6 +141,15 @@ void RosTools::clear_collision_objects(bool with_surface) {
                 object.operation = object.REMOVE;
                 object.id = o.id;
 
+                update.world.collision_objects.push_back(object);
+            }
+
+            for (auto o : attachedObjects) {
+                if (o.id.find("surface") != std::string::npos) continue;
+                moveit_msgs::CollisionObject object;
+                object.operation = object.REMOVE;
+                object.id = o.id;
+                ROS_INFO_STREAM("Clear collision object, test: " << o.id);
                 update.world.collision_objects.push_back(object);
             }
 
@@ -272,7 +281,7 @@ void RosTools::remove_collision_object(const string id) {
         ROS_INFO_STREAM_NAMED(NAME, "remove collision object " << id);
 
         for (auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
-            if (it->id == id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+            if (it->id == id) it = manipulationObjects.erase(it); // Returns the new iterator to continue from.
             else ++it;
         }
 
@@ -319,6 +328,7 @@ void RosTools::detach_collision_object() {
     ros::spinOnce();
 
 }
+
 void RosTools::attach_collision_object(moveit_msgs::AttachedCollisionObject& attached_object) {
 
     removeFromManipulationObjects(attached_object.object.id);
@@ -333,6 +343,15 @@ void RosTools::attach_collision_object(moveit_msgs::AttachedCollisionObject& att
     //object_att_publisher.publish(attached_object);
     ros::spinOnce();
 
+}
+
+void RosTools::saveGraspedObject(const std::string id) {
+    attachedObjects.clear();
+    moveit_msgs::CollisionObject obj;
+    obj.id = id;
+    obj.operation = obj.ADD;
+    ROS_INFO_STREAM("Grasped Object: " << id);
+    attachedObjects.push_back(obj);
 }
 
 bool RosTools::has_attached_object() {
@@ -355,14 +374,14 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
     boost::mutex::scoped_lock lock(sceneMutex);
     currentPlanningScene = currentScene;
 
-    if(currentScene.is_diff) {
-        for(auto o : currentScene.world.collision_objects) {
-            for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
-                if (it->id == o.id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+    if (currentScene.is_diff) {
+        for (auto o : currentScene.world.collision_objects) {
+            for (auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
+                if (it->id == o.id) it = manipulationObjects.erase(it); // Returns the new iterator to continue from.
                 else ++it;
             }
 
-            if(o.operation == o.ADD || o.operation == o.MOVE) {
+            if (o.operation == o.ADD || o.operation == o.MOVE) {
                 manipulationObjects.push_back(o);
             } else if (o.operation == o.REMOVE) {
             }
@@ -371,7 +390,7 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
 
     } else {
         manipulationObjects.clear();
-        for(auto o : currentScene.world.collision_objects) {
+        for (auto o : currentScene.world.collision_objects) {
             manipulationObjects.push_back(o);
         }
     }
@@ -384,8 +403,8 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
     boost::mutex::scoped_lock lock(sceneMutex);
     ROS_DEBUG_STREAM_NAMED(NAME, "invoked: getCollisionObjectByName, have " << manipulationObjects.size() << " objects");
 
-    for(auto o : manipulationObjects) {
-        if(o.id == id) {
+    for (auto o : manipulationObjects) {
+        if (o.id == id) {
             obj = o;
             ROS_DEBUG_STREAM_NAMED(NAME, "Found CollisionObject with id" << o.id);
             return true;
@@ -394,7 +413,7 @@ bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::Coll
 
 
     ROS_DEBUG_STREAM_NAMED(NAME, "Did not find CollisionObject with id:" << id << " all objects:");
-    for(auto o : manipulationObjects) {
+    for (auto o : manipulationObjects) {
         ROS_DEBUG_STREAM_NAMED(NAME, "id" << o.id);
     }
     return false;
@@ -449,8 +468,8 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
 bool RosTools::getGraspingObjectByName(const std::string &name, grasping_msgs::Object &msg) {
     boost::mutex::scoped_lock lock(sceneMutex);
 
-    for(auto o : manipulationObjects) {
-        if(o.id == name) {
+    for (auto o : manipulationObjects) {
+        if (o.id == name) {
             msg = convertMoveItToGrasping(o);
             return true;
         }
@@ -464,11 +483,11 @@ bool RosTools::getCollisionObjectByHeight(const double &h, moveit_msgs::Collisio
 
     double best = DBL_MAX;
     double cur;
-    for(auto& o : manipulationObjects) {
+    for (auto& o : manipulationObjects) {
 
         std::smatch m;
         bool hasMatch = std::regex_search(o.id, m, e);
-        if( !hasMatch) continue;
+        if (!hasMatch) continue;
 
         //todo hack, should search best primitive? getCollisionPrimitiveByHeigth?
         double oh = o.primitive_poses[0].position.z;
@@ -486,8 +505,8 @@ bool RosTools::getCollisionObjectByHeight(const double &h, moveit_msgs::Collisio
 }
 
 void RosTools::removeFromManipulationObjects(const std::string& id) {
-    for(auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
-        if (it->id == id) it = manipulationObjects.erase(it);  // Returns the new iterator to continue from.
+    for (auto it = manipulationObjects.begin(); it != end(manipulationObjects);) {
+        if (it->id == id) it = manipulationObjects.erase(it); // Returns the new iterator to continue from.
         else ++it;
     }
 }

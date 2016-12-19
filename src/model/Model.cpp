@@ -331,10 +331,14 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
                         graspedObject.primitives[0].dimensions[0] / 2);
 
                 ROS_INFO_STREAM("objectHeightUnderGrasp" << objectHeightUnderGrasp);
+                
+                ROS_INFO_STREAM("Save: " << graspedObject.id);
+                rosTools.saveGraspedObject(graspedObject.id);
             }
             if (graspObjectHeight = 0) {
                 objectHeightUnderGrasp = 0.15; // default value
             }
+
 
             grt.result = GraspReturnType::SUCCESS;
             ROS_INFO("  Grasped object at %.3f, %.3f, %.3f (frame: %s).", grt.point.xMeter, grt.point.yMeter, grt.point.zMeter, grt.point.frame.c_str());

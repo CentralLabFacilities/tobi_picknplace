@@ -41,6 +41,7 @@ private:
 
 	std::vector<moveit_msgs::CollisionObject> manipulationObjects;
 	std::vector<moveit_msgs::CollisionObject> manipulationSurfaces;
+        std::vector<moveit_msgs::CollisionObject> attachedObjects;
 
     mutable boost::mutex sceneMutex;
     moveit_msgs::PlanningScene currentPlanningScene;
@@ -61,6 +62,7 @@ public:
 	
 	void publish_collision_object(const std::string &id, ObjectShape shape, double sleep_seconds);
 	void remove_collision_object(const std::string id);
+        void saveGraspedObject(const std::string id);
 	void detach_collision_object();
 	void attach_collision_object(moveit_msgs::AttachedCollisionObject& attached_object);
 	bool has_attached_object();
