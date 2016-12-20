@@ -163,6 +163,24 @@ void RosTools::clear_collision_objects(bool with_surface) {
 
 }
 
+void RosTools::clear_attached_objects() {
+    ROS_INFO("Clear attached objects.");
+    boost::mutex::scoped_lock lock(sceneMutex);
+    moveit_msgs::PlanningScene update;
+    update.is_diff = true;
+    ROS_INFO_STREAM("attachedObjects.size: " << attachedObjects.size());
+    for (auto o : attachedObjects) {
+        moveit_msgs::CollisionObject object;
+        object.operation = object.REMOVE;
+        object.id = o.id;
+        ROS_INFO_STREAM("Clear collision object: " << o.id);
+        update.world.collision_objects.push_back(object);
+    }
+    scene_publisher.publish(update);
+    ros::spinOnce();
+
+}
+
 void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color) {
     visualization_msgs::MarkerArray markers;
     int i = 0;
@@ -346,12 +364,15 @@ void RosTools::attach_collision_object(moveit_msgs::AttachedCollisionObject& att
 }
 
 void RosTools::saveGraspedObject(const std::string id) {
-    attachedObjects.clear();
+    //TODO: clear attachedObjects sometimes, didnt found the right place atm.
     moveit_msgs::CollisionObject obj;
     obj.id = id;
-    obj.operation = obj.ADD;
+    obj.operation = obj.REMOVE;
+    ROS_INFO_STREAM("attachedObjects.size: " << attachedObjects.size());
     ROS_INFO_STREAM("Grasped Object: " << id);
     attachedObjects.push_back(obj);
+    ROS_INFO_STREAM("attachedObjects.size: " << attachedObjects.size());
+
 }
 
 bool RosTools::has_attached_object() {

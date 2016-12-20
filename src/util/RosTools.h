@@ -63,6 +63,7 @@ public:
 	void publish_collision_object(const std::string &id, ObjectShape shape, double sleep_seconds);
 	void remove_collision_object(const std::string id);
         void saveGraspedObject(const std::string id);
+        void clear_attached_objects();
 	void detach_collision_object();
 	void attach_collision_object(moveit_msgs::AttachedCollisionObject& attached_object);
 	bool has_attached_object();
