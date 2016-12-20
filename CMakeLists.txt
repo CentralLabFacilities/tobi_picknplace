@@ -146,9 +146,9 @@ set(ENABLE_CPPLINT 1)
 include(${CMAKE_CURRENT_SOURCE_DIR}/stylecheck/CpplintWrapper.cmake)
 CPPLINT_RECURSIVE(cpplint_src
   ${CMAKE_CURRENT_SOURCE_DIR}/src
-  ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/
   ${CMAKE_CURRENT_BINARY_DIR}/src)
-add_dependencies(${PROJECT_NAME} cpplint_src)
+add_dependencies(tobi_picknplace_server_node cpplint_src)
 
 
 #############
