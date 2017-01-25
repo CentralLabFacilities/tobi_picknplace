@@ -276,6 +276,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
     }
 
     if (!rosTools.getCollisionObjectByName(obj, lastGraspTried)) {
+        ROS_ERROR_STREAM("Did not get collision object of object to grasp");
         lastGraspTried.id = "";
     }
 
@@ -312,7 +313,6 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
             grt.point.zMeter = resultGrasp.grasp_pose.pose.position.z;
             grt.point.frame = resultGrasp.grasp_pose.header.frame_id;
             lastGraspPose = resultGrasp.grasp_pose;
-
             moveit_msgs::CollisionObject colSurface;
             graspedObjectID = obj;
             if (rosTools.getCollisionObjectByName(surface, colSurface)) {
@@ -373,19 +373,20 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
     return grt;
 }
 
-GraspReturnType Model::placeObject(const std::string &surface, std::vector<moveit_msgs::PlaceLocation> locations, bool simulate, const std::string &startPose) {
-
-    GraspReturnType grt;
+GraspReturnType Model::placeObject(const string &obj, const std::string &surface, std::vector<moveit_msgs::PlaceLocation> locations, bool simulate, const std::string &startPose) {
+    ROS_INFO_STREAM_NAMED(NAME, "Trying to place object " << obj << " on " << surface);
+    
+    GraspReturnType grt; //TODO: rename PlaceReturnType
 
     EefPose eefStart = getEefPose();
 
-    if (!pickActionClient) {
-        ROS_ERROR_STREAM("Pick action client not found");
+    if (!placeActionClient) {
+        ROS_ERROR_STREAM("Place action client not found");
         grt.result = GraspReturnType::FAIL;
         return grt;
     }
-    if (!pickActionClient->isServerConnected()) {
-        ROS_ERROR_STREAM("Pick action server not connected");
+    if (!placeActionClient->isServerConnected()) {
+        ROS_ERROR_STREAM("Place action server not connected");
         grt.result = GraspReturnType::FAIL;
         return grt;
     }
@@ -398,15 +399,15 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
     for (int i = 0; i < 3; i++) {
 
         if (rosTools.getCollisionObjectByName(surface, o)) {
-            goal = buildPlaceGoal(surface, locations, simulate);
+            goal = buildPlaceGoal(obj, surface, locations, simulate);
         } else {
             //todo/hack could be left empty but we assume defaul hack
             ROS_WARN_STREAM("collisionObject: " << surface << " not in planning scene, assuming default:" << DEFAULT_SURFACE);
             //goal.support_surface_name = "";
             if (rosTools.getCollisionObjectByName(DEFAULT_SURFACE, o)) {
-                goal = buildPlaceGoal(DEFAULT_SURFACE, locations, simulate);
+                goal = buildPlaceGoal(obj, DEFAULT_SURFACE, locations, simulate);
             } else {
-                goal = buildPlaceGoal("", locations, simulate);
+                goal = buildPlaceGoal(obj, "", locations, simulate);
             }
         };
 
@@ -469,16 +470,17 @@ GraspReturnType Model::placeObject(const std::string &surface, std::vector<movei
 
 //TODO: params
 
-moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &surface,
+moveit_msgs::PlaceGoal Model::buildPlaceGoal(const string &obj, 
+        const string &surface,
         const vector<moveit_msgs::PlaceLocation>& locations, bool simulate) {
     moveit_msgs::PlaceGoal goal;
-    goal.attached_object_name = graspedObjectID;
-    goal.allowed_touch_objects.push_back(graspedObjectID);
+    goal.attached_object_name = obj;
+    goal.allowed_touch_objects.push_back(obj);
     goal.group_name = groupArm->getName();
     goal.allowed_planning_time = groupArm->getPlanningTime();
     goal.support_surface_name = surface;
     goal.planner_id = ParamReader::getParamReader().plannerId;
-    goal.place_eef = true;
+    goal.place_eef = false;
     goal.place_locations = locations;
     goal.planning_options.plan_only = simulate;
     goal.planning_options.look_around = false;
@@ -581,7 +583,6 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
         ROS_ERROR("No known robot name, robot name should be tobi or meka");
     }
 
-
     grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
     grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
     grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
@@ -591,7 +592,7 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
     grasp.post_grasp_retreat.direction.vector.z = 1.0;
     grasp.post_grasp_retreat.direction.vector.x = -1.0;
     grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
-    grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; //base_link!
+    grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; // frameArm = base_link for meka
     grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
     grasp.post_grasp_retreat.desired_distance = params.liftUpDesiredDistance;
 
@@ -608,14 +609,25 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
 void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
 
     ParamReader& params = ParamReader::getParamReader();
-
-    // place down in base_link
-    pl.pre_place_approach.direction.vector.z = -1.0;
+   
+    
+    // place down in base_link ?
+    if (params.robot == "tobi") {
+        pl.pre_place_approach.direction.vector.x = 1.0;
+        pl.pre_place_approach.direction.vector.y = 0.0;
+        pl.pre_place_approach.direction.vector.z = 0.0;
+    } else if (params.robot == "meka") {
+        pl.pre_place_approach.direction.vector.x = 0.0;
+        pl.pre_place_approach.direction.vector.y = 0.0;
+        pl.pre_place_approach.direction.vector.z = -1.0;// meka->hand_tool_frame_left = z is in direction of the palm, x in negative direction of the thumb if sticking out
+    } else {
+        ROS_ERROR("No known robot name, robot name should be tobi or meka");
+    }
+ 
     pl.pre_place_approach.direction.header.stamp = ros::Time::now();
     pl.pre_place_approach.direction.header.frame_id = params.frameArm;
     pl.pre_place_approach.min_distance = params.approachMinDistance;
     pl.pre_place_approach.desired_distance = params.approachDesiredDistance;
-
     // retreat in negative hand direction
 
     if (params.robot == "tobi") {
@@ -623,14 +635,14 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
         pl.post_place_retreat.direction.vector.y = 0.0;
         pl.post_place_retreat.direction.vector.z = 0.0;
     } else if (params.robot == "meka") {
-        pl.post_place_retreat.direction.vector.x = 0.0;
+        pl.post_place_retreat.direction.vector.x = -1.0;
         pl.post_place_retreat.direction.vector.y = 0.0;
-        pl.post_place_retreat.direction.vector.z = -1.0;
+        pl.post_place_retreat.direction.vector.z = 1.0;
     } else {
         ROS_ERROR("No known robot name, robot name should be tobi or meka");
     }
     pl.post_place_retreat.direction.header.stamp = ros::Time::now();
-    pl.post_place_retreat.direction.header.frame_id = params.frameGripper;
+    pl.post_place_retreat.direction.header.frame_id = params.frameArm; // frameArm = base_link for meka
     pl.post_place_retreat.min_distance = params.liftUpMinDistance;
     pl.post_place_retreat.desired_distance = params.liftUpDesiredDistance;
 
@@ -654,7 +666,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 
     std::vector<moveit_msgs::PlaceLocation> pls;
 
-    moveit_msgs::CollisionObject colSurface;
+    moveit_msgs::CollisionObject colSurface; // "surface" is the object where the attached object should be placed on
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
 
     if (!success) {
@@ -692,7 +704,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     }
 
     //dirty Hack, for not place on the edge of the object
-    surfaceSizeX -= 0.03;
+    surfaceSizeX -= 0.03; //TODO: use the object to place diameter here to make sure to only generate place locations that support the obect completely!
     surfaceSizeY -= 0.03;
 
     if (surfaceSizeX < 0)
@@ -709,26 +721,29 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     for (int x = 0; x < rounds; x++) {
         for (int y = 0; y < place_rot; y++) {
             moveit_msgs::PlaceLocation pl;
-            pl.place_pose.header.frame_id = colSurface.header.frame_id;
+            pl.place_pose.header.frame_id = "base_link";//colSurface.header.frame_id; //baselink for clafu
             float param = y * 2 * M_PI / place_rot;
             pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
             pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
-            pl.place_pose.pose.position.z = surfaceCenterZ + lastHeightAboveTable + surfaceSizeZ / 2;
+            pl.place_pose.pose.position.z = surfaceCenterZ + (lastHeightAboveTable/2) + surfaceSizeZ / 2; //TODO: use object height here instead of lastHeightAboveTable?
+            pl.place_pose.pose.orientation.w = 1;  
+            fillPlace(pl);
+            pls.push_back(pl);
             Eigen::Quaternionf quat(orientMsg.w, orientMsg.x, orientMsg.y, orientMsg.z);
 
-            for (int r = 0; r < rotation; r++) {
-                float rot = 2 * M_PI * r / rotation;
-                Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
-                Eigen::Matrix3f result = (rotate.toRotationMatrix() * quat.toRotationMatrix());
-                Eigen::Quaternionf quatresult(result);
-                quatresult.normalize();
-                pl.place_pose.pose.orientation.x = quatresult.x();
-                pl.place_pose.pose.orientation.y = quatresult.y();
-                pl.place_pose.pose.orientation.z = quatresult.z();
-                pl.place_pose.pose.orientation.w = quatresult.w();
-                fillPlace(pl);
-                pls.push_back(pl);
-            }
+//            for (int r = 0; r < rotation; r++) {
+//                float rot = 2 * M_PI * r / rotation;
+//                Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
+//                Eigen::Matrix3f result = (rotate.toRotationMatrix()); //* quat.toRotationMatrix());
+//                Eigen::Quaternionf quatresult(result);
+//                quatresult.normalize();
+//                pl.place_pose.pose.orientation.x = quatresult.x();
+//                pl.place_pose.pose.orientation.y = quatresult.y();
+//                pl.place_pose.pose.orientation.z = quatresult.z();
+//                pl.place_pose.pose.orientation.w = quatresult.w();
+//                fillPlace(pl);
+//                pls.push_back(pl);
+//            }
         }
     }
     return pls;

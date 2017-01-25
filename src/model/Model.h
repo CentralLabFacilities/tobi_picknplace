@@ -83,7 +83,8 @@ public:
     virtual GraspReturnType placeObject(const std::string &surface,
             bool simulate, const std::string &startPose = "") = 0;
 
-    virtual GraspReturnType placeObject(const std::string &surface,
+    virtual GraspReturnType placeObject(const std::string &obj, 
+            const std::string &surface,
             std::vector<moveit_msgs::PlaceLocation> placeLocation,
             bool simulate, const std::string &startPose = "");
     
@@ -120,10 +121,8 @@ protected:
 
 private:
 
-
-
-    moveit_msgs::PlaceGoal buildPlaceGoal(const std::string &surface,
-            const std::vector<moveit_msgs::PlaceLocation>& locations,
+    moveit_msgs::PlaceGoal buildPlaceGoal(const std::string &obj, 
+            const std::string &surface, const std::vector<moveit_msgs::PlaceLocation>& locations,
             bool simulate);
     moveit_msgs::PickupGoal buildPickupGoal(const std::string &obj,
             const std::string &surface,

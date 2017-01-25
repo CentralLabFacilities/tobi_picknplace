@@ -173,7 +173,7 @@ GraspReturnType H2R5::placeObject(EefPose obj, bool simulate,
             obj);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject("", locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID, "", locations, simulate, startPose);
 }
 
 GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
@@ -184,17 +184,20 @@ GraspReturnType H2R5::placeObject(ObjectShape obj, bool simulate,
             obj);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject("", locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID, "", locations, simulate, startPose);
 }
 
 GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
         const string &startPose) {
-    ROS_INFO("### Invoked placeObject Surface (str) ###");
+    ROS_INFO("### Invoked placeObject: place grasped object %s on surface %s ###", graspedObjectID.c_str(), surface.c_str());
 
     vector<moveit_msgs::PlaceLocation> locations = Model::generate_place_locations(surface);
+    
+    ROS_INFO("### placeObject: generated %i place locations ###", locations.size());
+    
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject(surface, locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID, surface, locations, simulate, startPose);
 }
 
 
