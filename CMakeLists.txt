@@ -127,7 +127,7 @@ add_executable(tobi_picknplace_client
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(tobi_picknplace_server_node "")
+add_dependencies(tobi_picknplace_server_node "/vol/meka/graspma/nightly/lib")
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(tobi_picknplace_server_node

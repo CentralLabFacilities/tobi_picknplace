@@ -6,7 +6,7 @@ touchLinks: ["palm_left", "hand_tool_frame_left", "thumb0_left", "thumb1_left",
 "thumb2_right", "index0_right", "index1_right", "index2_right", "ring0_right", 
 "ring1_right", "ring2_right", "pinky0_right", "pinky1_right", "pinky2_right"] 
 eefPosClosed: [1.84, 2.0944, 3.14159, 3.14159, 3.14159]
-eefPosOpen: [1.84, 0.0, 0.0, 0.0, 0.0]
+eefPosOpen: [0.0, 0.0, 0.0, 0.0, 0.0]
 eefCmdScope: "/meka_roscontrol/left_hand_position_trajectory_controller/command"
 graspRot: [-1.5708, 0, 0]
 goalJointTolerance: 0.01 #rad

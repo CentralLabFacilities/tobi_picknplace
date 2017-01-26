@@ -76,7 +76,6 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
     ROS_INFO_STREAM("fitted " << results->objects.size() << " objects" );
     
     rosTools.clear_collision_objects(false);
-    rosTools.clear_attached_objects();
     rosTools.clear_grasps();
     rosTools.clear_grasps_markerarray();
     

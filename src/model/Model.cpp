@@ -227,6 +227,7 @@ int Model::findObjects() {
     ROS_INFO_NAMED(NAME, "### Invoked findObjects ###");
 
     vector<grasping_msgs::Object> grasps;
+    rosTools.clear_attached_objects();
     grasps = graspGenerator->find_objects(false);
     return grasps.size();
 }
@@ -331,7 +332,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
                         graspedObject.primitives[0].dimensions[0] / 2);
 
                 ROS_INFO_STREAM("objectHeightUnderGrasp" << objectHeightUnderGrasp);
-                
+
                 ROS_INFO_STREAM("Save: " << graspedObject.id);
                 rosTools.saveGraspedObject(graspedObject.id);
             }
@@ -624,7 +625,7 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
 
     // direction: lift up
     grasp.post_grasp_retreat.direction.vector.z = 1.0;
-    grasp.post_grasp_retreat.direction.vector.x = -1.0;
+    //grasp.post_grasp_retreat.direction.vector.x = -1.0;
     grasp.post_grasp_retreat.direction.header.stamp = ros::Time::now();
     grasp.post_grasp_retreat.direction.header.frame_id = params.frameArm; //base_link!
     grasp.post_grasp_retreat.min_distance = params.liftUpMinDistance;
@@ -656,7 +657,7 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
     if (params.robot == "tobi") {
         pl.post_place_retreat.direction.vector.x = -1.0;
         pl.post_place_retreat.direction.vector.y = 0.0;
-        pl.post_place_retreat.direction.vector.z = 0.0;       
+        pl.post_place_retreat.direction.vector.z = 0.0;
     } else if (params.robot == "meka") {
         pl.post_place_retreat.direction.vector.x = 0.0;
         pl.post_place_retreat.direction.vector.y = 0.0;
@@ -740,21 +741,34 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     float surfaceCenterX = colSurface.primitive_poses[0].position.x;
     float surfaceCenterY = colSurface.primitive_poses[0].position.y;
     float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
-    
+
     double objectSizeX = 0;
     double objectSizeY = 0;
 
     moveit_msgs::CollisionObject graspedObject;
     if (rosTools.getCollisionObjectByName(graspedObjectID, graspedObject)) {
-        if(graspedObject.primitives[0].type = shape_msgs::SolidPrimitive::CYLINDER){
+        if (graspedObject.primitives[0].type = shape_msgs::SolidPrimitive::CYLINDER) {
             objectSizeX = graspedObject.primitives[0].dimensions[1];
             objectSizeY = objectSizeX;
         } else if (graspedObject.primitives[0].type == shape_msgs::SolidPrimitive::BOX) {
-             objectSizeX = graspedObject.primitives[0].dimensions[0]; //x
-             objectSizeY = graspedObject.primitives[0].dimensions[1]; //y
+            objectSizeX = graspedObject.primitives[0].dimensions[0]; //x
+            objectSizeY = graspedObject.primitives[0].dimensions[1]; //y
         }
         ROS_INFO_STREAM("ObjectSizeX: " << objectSizeX << "ObjectSizeY: " << objectSizeY);
     }
+    Eigen::Quaternionf quat(orientMsg.w, orientMsg.x, orientMsg.y, orientMsg.z);
+   /* ROS_ERROR_STREAM("TestQuat, w,x,y,z: " << orientMsg.w << " " << orientMsg.x << " " << orientMsg.y << " " << orientMsg.z);
+
+    Eigen::Vector3f euler = quathelp.toRotationMatrix().eulerAngles(0, 1, 2);
+    ROS_ERROR_STREAM("Euler " << euler[0] << " " << euler[1] << " " << euler[2]);
+    Eigen::Quaternionf quat;
+    if (abs(euler[0]) < 2) {
+        ROS_ERROR("SIDE");
+        quat = Eigen::Quaternionf(0.5,0.5,0.5,-0.5);
+    } else {
+        ROS_ERROR("TOP");
+        quat = Eigen::Quaternionf(0.0,0.707,0.707,-0.0);
+    }*/
 
     for (int x = 0; x < rounds; x++) {
         for (int y = 0; y < place_rot; y++) {
@@ -763,11 +777,9 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             float param = y * 2 * M_PI / place_rot;
             //pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param);
             //pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param);
-            pl.place_pose.pose.position.z = surfaceCenterZ + objectHeightUnderGrasp + surfaceSizeZ / 2 + 0.03; //test place 3cm over the Object for Masterthesis
+            pl.place_pose.pose.position.z = surfaceCenterZ + objectHeightUnderGrasp + surfaceSizeZ / 2;
             pl.place_pose.pose.position.x = surfaceCenterX + surfaceSizeX / 2 * (x / rounds) * sin(param) / 5;
             pl.place_pose.pose.position.y = surfaceCenterY + surfaceSizeY / 2 * (x / rounds) * cos(param) / 5;
-
-            Eigen::Quaternionf quat(orientMsg.w, orientMsg.x, orientMsg.y, orientMsg.z);
 
             for (int r = 0; r < rotation; r++) {
                 float rot = 2 * M_PI * r / rotation;
