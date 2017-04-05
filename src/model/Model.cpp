@@ -37,7 +37,7 @@ Model::Model() {
 
     lastHeightAboveTable = 0.0;
     graspedObjectID = "";
-    filterTypes = "side"; // all, top, side
+    filterTypes = "all"; // all, top, side
 
     for (const string &i : ParamReader::getParamReader().touchLinks)
         touchlinks.push_back(i);
