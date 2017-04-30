@@ -53,6 +53,7 @@ Model::Model() {
     groupArm->setGoalJointTolerance(ParamReader::getParamReader().goalJointTolerance);
     groupArm->setGoalPositionTolerance(ParamReader::getParamReader().goalPositionTolerance);
     groupArm->setGoalOrientationTolerance(ParamReader::getParamReader().goalOrientationTolerance);
+    
 
     groupEe = new moveit::planning_interface::MoveGroup(
             ParamReader::getParamReader().groupEef);
@@ -205,7 +206,8 @@ ArmPose Model::getRememberedPose(const std::string &name) const {
 EefPose Model::getEefPose() const {
     ROS_INFO_NAMED(NAME, "### Invoked getEefPose ###");
     EefPose pose;
-    geometry_msgs::PoseStamped ps = groupArm->getCurrentPose();
+    std::cout << "using eef passed down to paramreader: " << ParamReader::getParamReader().endEffector << std::endl;
+    geometry_msgs::PoseStamped ps = groupArm->getCurrentPose(ParamReader::getParamReader().endEffector);
 
     ROS_DEBUG_STREAM("getEefPose() before transformation: " << ps.pose.position.x << "," << ps.pose.position.y << "," << ps.pose.position.z << "," << ps.header.frame_id);
 

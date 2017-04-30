@@ -2,8 +2,8 @@
 <launch>
   <arg name="model" default="h2r5" />  <!--katana-->
   <arg name="endEffector" default="left_hand" />
-  <arg name="frameArm" default="base_link" /> <!--katana_base_link-->
-  <arg name="frameGripper" default="hand_tool_frame_left" /> <!--katana_gripper_tool_frame-->
+  <arg name="frameArm" default="base_footprint" /> <!--katana_base_link-->
+  <arg name="frameGripper" default="l_wrist" /> <!--katana_gripper_tool_frame-->
   <arg name="groupArm" default="left_arm" /> <!--"arm"-->
   <arg name="groupEe" default="left_hand" /> <!--gripper-->
   <arg name="plannerId" default="RRTConnectkConfigDefault" />
