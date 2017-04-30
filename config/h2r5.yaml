@@ -1,13 +1,14 @@
 planningTime: 120
-touchLinks: ["palm_left", "hand_tool_frame_left", "thumb0_left", "thumb1_left", 
-"thumb2_left", "index0_left", "index1_left", "index2_left", "ring0_left", 
-"ring1_left", "ring2_left", "pinky0_left", "pinky1_left", "pinky2_left", 
-"palm_right", "hand_tool_frame_right", "thumb0_right", "thumb1_right", 
-"thumb2_right", "index0_right", "index1_right", "index2_right", "ring0_right", 
-"ring1_right", "ring2_right", "pinky0_right", "pinky1_right", "pinky2_right"] 
-eefPosClosed: [1.84, 2.0944, 3.14159, 3.14159, 3.14159]
-eefPosOpen: [1.84, 0.0, 0.0, 0.0, 0.0]
-eefCmdScope: "/meka_roscontrol/left_hand_position_trajectory_controller/command"
+touchLinks: [ "LFinger11_link", "LFinger12_link", "LFinger13_link",
+"LFinger21_link",  "LFinger22_link",  "LFinger23_link",
+"LFinger31_link",  "LFinger32_link",  "LFinger33_link",
+"LFinger41_link",  "LFinger42_link",  "LFinger43_link",
+"LThumb1_link", "LThumb2_link",
+ "l_gripper", "LHandTouchBack_frame"]
+eefPosClosed: [0.02]
+eefPosOpen: [0.98]
+eefCmdScope: "/pepper_dcm/LeftHand_controller/command"
+frameArm: "base_footprint"
 graspRot: [-1.5708, 0, 0]
 goalJointTolerance: 0.01 #rad
 goalPositionTolerance: 0.01 #m
