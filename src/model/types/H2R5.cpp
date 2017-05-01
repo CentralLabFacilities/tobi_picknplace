@@ -21,6 +21,7 @@
 #include "../../interface/AGNIInterface.h"
 #include <moveit_msgs/CollisionObject.h>
 #include <moveit_msgs/PlaceLocation.h>
+#include <eigen3/Eigen/src/Core/PlainObjectBase.h>
 
 using namespace std;
 using namespace moveit;
@@ -158,8 +159,16 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
 
     //fill up with pre and post grasp postures, model specific!
     for (moveit_msgs::Grasp &i : grasps) {
-        //tfTransformer.transform(i,i,"l_wrist"); // l_wrist for pepper
-        tfTransformer.transform(i, i, ParamReader::getParamReader().frameGripper);
+        //manually changing orientation from grasp frame to gripper frame. Only for pepper
+        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+        Eigen::Matrix3f result = quat.toRotationMatrix();
+        result.col(0).swap(result.col(1));
+        result.col(2) *= -1.0;
+        Eigen::Quaternionf quatresult(result);
+        i.grasp_pose.pose.orientation.w = quatresult.w();
+        i.grasp_pose.pose.orientation.x = quatresult.x();
+        i.grasp_pose.pose.orientation.y = quatresult.y();
+        i.grasp_pose.pose.orientation.z = quatresult.z();
         fillGrasp(i);
     }
 
