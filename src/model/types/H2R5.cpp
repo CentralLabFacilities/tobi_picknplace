@@ -158,21 +158,17 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
     }
 
     //fill up with pre and post grasp postures, model specific!
-    bool printCheck = true;
     for (moveit_msgs::Grasp &i : grasps) {
         //manually changing orientation from grasp frame to gripper frame. Only for pepper
-        if (printCheck) {
-            Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-            Eigen::Matrix3f result = quat.toRotationMatrix();
-            result.col(0).swap(result.col(1));
-            result.col(2) *= -1.0;
-            Eigen::Quaternionf quatresult(result);
-            i.grasp_pose.pose.orientation.w = quatresult.w();
-            i.grasp_pose.pose.orientation.x = quatresult.x();
-            i.grasp_pose.pose.orientation.y = quatresult.y();
-            i.grasp_pose.pose.orientation.z = quatresult.z();
-            printCheck = false;
-        }
+        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+        Eigen::Matrix3f result = quat.toRotationMatrix();
+        result.col(0).swap(result.col(1));
+        result.col(2) *= -1.0;
+        Eigen::Quaternionf quatresult(result);
+        i.grasp_pose.pose.orientation.w = quatresult.w();
+        i.grasp_pose.pose.orientation.x = quatresult.x();
+        i.grasp_pose.pose.orientation.y = quatresult.y();
+        i.grasp_pose.pose.orientation.z = quatresult.z();
         fillGrasp(i);
     }
 
