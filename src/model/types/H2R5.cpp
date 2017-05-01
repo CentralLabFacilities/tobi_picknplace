@@ -158,6 +158,8 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
 
     //fill up with pre and post grasp postures, model specific!
     for (moveit_msgs::Grasp &i : grasps)
+        //tfTransformer.transform(i,i,"l_wrist"); // l_wrist for pepper
+        tfTransformer.transform(i,i,ParamReader::getParamReader().frameGripper);
         fillGrasp(i);
 
     ROS_INFO("Publish grasps.");
