@@ -30,7 +30,7 @@ using namespace moveit::planning_interface;
 static const double DEFAULT_PLACE_HEIGHT = 0.15;
 
 H2R5::H2R5() :
-        Model() {
+Model() {
 
     string group = ParamReader::getParamReader().groupArm;
     string substr;
@@ -147,9 +147,9 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
 
     vector<moveit_msgs::Grasp> grasps;
 
-    if(graspGenerator->getName() == CENTROID_GRASP_NAME) {
+    if (graspGenerator->getName() == CENTROID_GRASP_NAME) {
         tfTransformer.transform(collisionObject, collisionObject,
-                    ParamReader::getParamReader().frameArm);
+                ParamReader::getParamReader().frameArm);
         grasps = graspGenerator->generate_grasps(collisionObject);
     } else { //agni
         grasps = graspGenerator->generate_grasps(obj);
@@ -157,10 +157,11 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
     }
 
     //fill up with pre and post grasp postures, model specific!
-    for (moveit_msgs::Grasp &i : grasps)
+    for (moveit_msgs::Grasp &i : grasps) {
         //tfTransformer.transform(i,i,"l_wrist"); // l_wrist for pepper
-        tfTransformer.transform(i,i,ParamReader::getParamReader().frameGripper);
+        tfTransformer.transform(i, i, ParamReader::getParamReader().frameGripper);
         fillGrasp(i);
+    }
 
     ROS_INFO("Publish grasps.");
     rosTools.publish_grasps_as_markerarray(grasps);
@@ -194,14 +195,13 @@ GraspReturnType H2R5::placeObject(const string &surface, bool simulate,
     ROS_INFO("### Invoked placeObject: place grasped object %s on surface %s ###", graspedObjectID.c_str(), surface.c_str());
 
     vector<moveit_msgs::PlaceLocation> locations = Model::generate_place_locations(surface);
-    
+
     ROS_INFO("### placeObject: generated %i place locations ###", locations.size());
-    
+
     rosTools.publish_place_locations_as_markerarray(locations);
 
     return Model::placeObject(graspedObjectID, surface, locations, simulate, startPose);
 }
-
 
 /**std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
         const string &surface) {
@@ -286,6 +286,7 @@ std::vector<moveit_msgs::PlaceLocation> H2R5::generate_place_locations(
 }
 
 //todo: generalize
+
 trajectory_msgs::JointTrajectory H2R5::generate_close_eef_msg() {
     trajectory_msgs::JointTrajectory msg;
     trajectory_msgs::JointTrajectoryPoint p;
