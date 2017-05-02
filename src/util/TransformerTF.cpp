@@ -22,6 +22,15 @@ TransformerTF::TransformerTF():tfListener(tfBuffer) {
 TransformerTF::~TransformerTF() {
 }
 
+//! Change frame of reference of the input vector coordinates in 'from' frame to output vector coordinates in 'to' frame
+//! @param x input coordinate on axis-x
+//! @param y input coordinate on axis-y
+//! @param z input coordinate on axis-z
+//! @param from input frame name
+//! @param xOut output coordinate on axis-x
+//! @param yOut output coordinate on axis-y
+//! @param zOut output coordinate on axis-z
+//! @param to desired target frame for output
 bool TransformerTF::transform(double x, double y, double z, const std::string &from, double &xOut,double &yOut,double &zOut, const std::string &to) const {
 
 	geometry_msgs::Vector3Stamped vec;
@@ -40,6 +49,10 @@ bool TransformerTF::transform(double x, double y, double z, const std::string &f
 	}
 }
 
+//! Change frame of reference of the input End-Effector pose with given frame to a 'to' frame
+//! @param pose input End-Effector pose containing source frame
+//! @param poseOut output End-Effector pose
+//! @param to desired target frame for output pose
 bool TransformerTF::transform(const EefPose &pose, EefPose &poseOut, const string &to) const {
 
 	geometry_msgs::PoseStamped ps;
@@ -68,6 +81,10 @@ bool TransformerTF::transform(const EefPose &pose, EefPose &poseOut, const strin
 	}
 }
 
+//! Change only the orientation of a frame of reference of the input grasp pose with given frame to a 'to' frame, keeping position as input.
+//! @param grasp input grasp containing pose and source frame
+//! @param graspOut output grasp
+//! @param to desired target frame for output grasp
 bool TransformerTF::localtransform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const string &to) const {
   
   geometry_msgs::PoseStamped ps;
@@ -93,6 +110,10 @@ bool TransformerTF::localtransform(const moveit_msgs::Grasp &grasp, moveit_msgs:
   }
 }
 
+//! Change frame of reference of the input grasp pose with given frame to a 'to' frame
+//! @param grasp input grasp containing pose and source frame
+//! @param graspOut output grasp
+//! @param to desired target frame for output grasp
 bool TransformerTF::transform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const string &to) const {
 
 	geometry_msgs::PoseStamped ps;
@@ -121,6 +142,10 @@ bool TransformerTF::transform(const moveit_msgs::Grasp &grasp, moveit_msgs::Gras
 	}
 }
 
+//! Change frame of reference of the input ObjectShape with given frame to a 'to' frame 
+//! @param object input ObjectShape containing pose and source frame
+//! @param objectOut output ObjectShape
+//! @param to desired target frame for output ObjectShape
 bool TransformerTF::transform(const ObjectShape &object, ObjectShape &objectOut, const string &to) const {
 
 	geometry_msgs::Vector3Stamped vec;
@@ -143,6 +168,10 @@ bool TransformerTF::transform(const ObjectShape &object, ObjectShape &objectOut,
 	}
 }
 
+//! Change frame of reference of the input CollisionObject with given frame to a 'to' frame 
+//! @param obj input CollisionObject containing pose and source frame
+//! @param objOut output CollisionObject
+//! @param to desired target frame for output CollisionObject
 bool TransformerTF::transform(const CollisionObject &obj, CollisionObject &objOut, const std::string &to) const {
     try{
         CollisionObject myObj = obj;
@@ -161,6 +190,10 @@ bool TransformerTF::transform(const CollisionObject &obj, CollisionObject &objOu
     }
 }
 
+//! Change frame of reference of the input PoseStamped with given frame to a 'to' frame 
+//! @param pose input PoseStamped containing pose and source frame
+//! @param poseOut output PoseStamped
+//! @param to desired target frame for output PoseStamped
 bool TransformerTF::transform(const geometry_msgs::PoseStamped &pose,geometry_msgs::PoseStamped &poseOut,  const std::string &to) const {
 	try{
 		geometry_msgs::PoseStamped myPose = pose;
@@ -177,6 +210,10 @@ bool TransformerTF::transform(const geometry_msgs::PoseStamped &pose,geometry_ms
 	}
 }
 
+//! Change frame of reference of the input Vector3Stamped with given frame to a 'to' frame 
+//! @param vec input Vector3Stamped containing position and source frame
+//! @param vecOut output Vector3Stamped
+//! @param to desired target frame for output Vector3Stamped
 bool TransformerTF::transform(const geometry_msgs::Vector3Stamped &vec, geometry_msgs::Vector3Stamped &vecOut, const std::string &to) const {
 	try{
 		geometry_msgs::Vector3Stamped myVec = vec;
