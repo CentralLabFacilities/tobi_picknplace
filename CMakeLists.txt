@@ -22,9 +22,11 @@ endif()
 set(CTKN_PKGS
     roscpp
     tf2
+    tf2_geometry_msgs
     moveit_ros_planning_interface
     actionlib
     geometric_shapes
+    geometry_msgs
     shape_msgs
     grasp_viewer
     moveit_msgs

@@ -11,6 +11,7 @@
 #include <kdl/frames.hpp>
 #include <moveit_msgs/Grasp.h>
 #include <boost/algorithm/string.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 using namespace std;
 using namespace moveit_msgs;
@@ -230,94 +231,10 @@ bool TransformerTF::transform(const geometry_msgs::Vector3Stamped &vec, geometry
 	}
 }
 
+
+}
+
 namespace tf2 {
-
-KDL::Frame gmTransformToKDL(const geometry_msgs::TransformStamped& t) {
-	return KDL::Frame(
-			KDL::Rotation::Quaternion(t.transform.rotation.x, t.transform.rotation.y,
-					t.transform.rotation.z, t.transform.rotation.w),
-			KDL::Vector(t.transform.translation.x, t.transform.translation.y,
-					t.transform.translation.z));
-}
-
-// ##########################
-// geometry_msgs::PoseStamped
-// ##########################
-
-// method to extract timestamp from object
-template<>
-const ros::Time& getTimestamp(const geometry_msgs::PoseStamped& t) {
-	return t.header.stamp;
-}
-
-// method to extract frame id from object
-template<>
-const std::string& getFrameId(const geometry_msgs::PoseStamped& t) {
-	return t.header.frame_id;
-}
-
-// this method needs to be implemented by client library developers
-template<>
-void doTransform(const geometry_msgs::PoseStamped& t_in, geometry_msgs::PoseStamped& t_out,
-		const geometry_msgs::TransformStamped& transform) {
-	KDL::Vector v(t_in.pose.position.x, t_in.pose.position.y, t_in.pose.position.z);
-	KDL::Rotation r = KDL::Rotation::Quaternion(t_in.pose.orientation.x, t_in.pose.orientation.y,
-			t_in.pose.orientation.z, t_in.pose.orientation.w);
-
-	tf2::Stamped<KDL::Frame> v_out = tf2::Stamped<KDL::Frame>(
-			gmTransformToKDL(transform) * KDL::Frame(r, v), transform.header.stamp,
-			transform.header.frame_id);
-	t_out.pose.position.x = v_out.p[0];
-	t_out.pose.position.y = v_out.p[1];
-	t_out.pose.position.z = v_out.p[2];
-	v_out.M.GetQuaternion(t_out.pose.orientation.x, t_out.pose.orientation.y,
-			t_out.pose.orientation.z, t_out.pose.orientation.w);
-	t_out.header.stamp = v_out.stamp_;
-	t_out.header.frame_id = v_out.frame_id_;
-}
-geometry_msgs::PoseStamped toMsg(const geometry_msgs::PoseStamped& in) {
-	return in;
-}
-void fromMsg(const geometry_msgs::PoseStamped& msg, geometry_msgs::PoseStamped& out) {
-	out = msg;
-}
-
-// #############################
-// geometry_msgs::Vector3Stamped
-// #############################
-
-// method to extract timestamp from object
-template<>
-const ros::Time& getTimestamp(const geometry_msgs::Vector3Stamped& t) {
-	return t.header.stamp;
-}
-
-// method to extract frame id from object
-template<>
-const std::string& getFrameId(const geometry_msgs::Vector3Stamped& t) {
-	return t.header.frame_id;
-}
-
-template<>
-void doTransform(const geometry_msgs::Vector3Stamped& t_in, geometry_msgs::Vector3Stamped& t_out,
-		const geometry_msgs::TransformStamped& transform) {
-	KDL::Vector v(t_in.vector.x, t_in.vector.y, t_in.vector.z);
-
-	tf2::Stamped<KDL::Vector> v_out = tf2::Stamped<KDL::Vector>(
-			gmTransformToKDL(transform) * v, transform.header.stamp,
-			transform.header.frame_id);
-	t_out.vector.x = v_out.data[0];
-	t_out.vector.y = v_out.data[1];
-	t_out.vector.z = v_out.data[2];
-	t_out.header.stamp = v_out.stamp_;
-	t_out.header.frame_id = v_out.frame_id_;
-}
-geometry_msgs::Vector3Stamped toMsg(const geometry_msgs::Vector3Stamped& in) {
-	return in;
-}
-void fromMsg(const geometry_msgs::Vector3Stamped& msg, geometry_msgs::Vector3Stamped& out) {
-	out = msg;
-}
 
 // #############################
 // moveit_msgs::CollisionObject
