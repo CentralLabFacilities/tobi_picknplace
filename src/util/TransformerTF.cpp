@@ -144,6 +144,39 @@ bool TransformerTF::transform(const moveit_msgs::Grasp &grasp, moveit_msgs::Gras
 	}
 }
 
+//! Transform data representing a child link into data representing a parent link, both in the same frame of reference
+//! @param grasp input grasp containing pose in source frame
+//! @param graspOut output grasp reprensenting target_link pose in source frame
+//! @param from name telling what frame the input pose represents in source frame
+//! @param to name telling what frame the output pose should represent in source frame
+bool TransformerTF::transformLink(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const std::string &from,  const std::string &to) const {
+
+	geometry_msgs::PoseStamped ps;
+
+	ps.pose.position.x = grasp.grasp_pose.pose.position.x;
+	ps.pose.position.y = grasp.grasp_pose.pose.position.y;
+	ps.pose.position.z = grasp.grasp_pose.pose.position.z;
+	ps.pose.orientation.w = grasp.grasp_pose.pose.orientation.w;
+	ps.pose.orientation.x = grasp.grasp_pose.pose.orientation.x;
+	ps.pose.orientation.y = grasp.grasp_pose.pose.orientation.y;
+	ps.pose.orientation.z = grasp.grasp_pose.pose.orientation.z;
+	ps.header.frame_id = grasp.grasp_pose.header.frame_id;
+
+	if (transformLink(ps, ps, from, to)) {
+		graspOut.grasp_pose.pose.position.x = ps.pose.position.x;
+		graspOut.grasp_pose.pose.position.y = ps.pose.position.y;
+		graspOut.grasp_pose.pose.position.z = ps.pose.position.z;
+		graspOut.grasp_pose.pose.orientation.w = ps.pose.orientation.w;
+		graspOut.grasp_pose.pose.orientation.x = ps.pose.orientation.x;
+		graspOut.grasp_pose.pose.orientation.y = ps.pose.orientation.y;
+		graspOut.grasp_pose.pose.orientation.z = ps.pose.orientation.z;
+		graspOut.grasp_pose.header.frame_id = ps.header.frame_id;
+		return true;
+	} else {
+		return false;
+	}
+}
+
 //! Change frame of reference of the input ObjectShape with given frame to a 'to' frame 
 //! @param object input ObjectShape containing pose and source frame
 //! @param objectOut output ObjectShape
@@ -234,7 +267,7 @@ bool TransformerTF::transform(const geometry_msgs::Vector3Stamped &vec, geometry
 
 //! Transform data representing a child link into data representing a parent link, both in the same frame of reference
 //! @param pose input PoseStamped containing pose and source frame
-//! @param from name telling what frame the input pose represents in source_frame
+//! @param from name telling what frame the input pose represents in source frame
 //! @param to name telling what frame the output pose should represent in source frame
 //! @param poseOut output PoseStamped reprensenting target_link pose in source frame
 bool TransformerTF::transformLink(const geometry_msgs::PoseStamped &pose, geometry_msgs::PoseStamped &poseOut, const std::string &from,  const std::string &to) const {
