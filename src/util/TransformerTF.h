@@ -28,6 +28,7 @@ public:
 	bool transform(const moveit_msgs::CollisionObject &obj, moveit_msgs::CollisionObject &objOut, const std::string &to) const;
 	bool transform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const std::string &to) const ;
 	bool localtransform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const std::string &to) const ;
+	bool transformLink(const geometry_msgs::PoseStamped &pose, geometry_msgs::PoseStamped &poseOut, const std::string &from,  const std::string &to) const;
 
 
 private:

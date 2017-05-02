@@ -8,6 +8,7 @@
 #include "TransformerTF.h"
 
 #include <ros/ros.h>
+#include <tf2/convert.h>
 #include <kdl/frames.hpp>
 #include <moveit_msgs/Grasp.h>
 #include <boost/algorithm/string.hpp>
@@ -231,7 +232,34 @@ bool TransformerTF::transform(const geometry_msgs::Vector3Stamped &vec, geometry
 	}
 }
 
+//! Transform data representing a child link into data representing a parent link, both in the same frame of reference
+//! @param pose input PoseStamped containing pose and source frame
+//! @param from name telling what frame the input pose represents in source_frame
+//! @param to name telling what frame the output pose should represent in source frame
+//! @param poseOut output PoseStamped reprensenting target_link pose in source frame
+bool TransformerTF::transformLink(const geometry_msgs::PoseStamped &pose, geometry_msgs::PoseStamped &poseOut, const std::string &from,  const std::string &to) const {
+	try{
+		// get the transform converting 'from' to 'to' frames
+		geometry_msgs::TransformStamped t_from_to;
+		t_from_to = tfBuffer.lookupTransform (from, to, ros::Time(0), ros::Duration(2.0));
 
+		// use KDL frame for input pose
+		KDL::Vector v(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
+		KDL::Rotation r = KDL::Rotation::Quaternion(pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w);
+
+		// frameid_T^to = frameid_T^from * from_T^to
+		KDL::Frame v_out = KDL::Frame(r, v) * tf2::gmTransformToKDL(t_from_to);
+		poseOut.pose.position.x = v_out.p[0];
+		poseOut.pose.position.y = v_out.p[1];
+		poseOut.pose.position.z = v_out.p[2];
+		v_out.M.GetQuaternion(poseOut.pose.orientation.x, poseOut.pose.orientation.y, poseOut.pose.orientation.z, poseOut.pose.orientation.w);
+		poseOut.header = pose.header;
+		return true;
+	} catch (tf2::TransformException &ex) {
+		ROS_ERROR("%s", ex.what());
+		ros::Duration(1.0).sleep();
+		return false;
+	}
 }
 
 namespace tf2 {
