@@ -280,19 +280,19 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 
 
     //rotate all grasps by 90deg around Y to bring them into the correct coordinate system.
-    for (moveit_msgs::Grasp &i : grasps) {
-        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitY()));
-
-        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
-
-        Eigen::Quaternionf quatresult(result);
-        i.grasp_pose.pose.orientation.w = quatresult.w();
-        i.grasp_pose.pose.orientation.x = quatresult.x();
-        i.grasp_pose.pose.orientation.y = quatresult.y();
-        i.grasp_pose.pose.orientation.z = quatresult.z();
-
-    }
+//    for (moveit_msgs::Grasp &i : grasps) {
+//        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+//        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitY()));
+//
+//        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
+//
+//        Eigen::Quaternionf quatresult(result);
+//        i.grasp_pose.pose.orientation.w = quatresult.w();
+//        i.grasp_pose.pose.orientation.x = quatresult.x();
+//        i.grasp_pose.pose.orientation.y = quatresult.y();
+//        i.grasp_pose.pose.orientation.z = quatresult.z();
+//
+//    }
     vector<moveit_msgs::Grasp> old_grasps = grasps;
     shape_msgs::SolidPrimitive primitive;
     if (collisionObject.primitives[0].type == primitive.CYLINDER) {
