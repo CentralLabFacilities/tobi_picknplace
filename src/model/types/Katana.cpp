@@ -263,8 +263,9 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     ROS_INFO("### Invoked graspObject(string) ###");
 
     moveit_msgs::CollisionObject collisionObject;
+    
     bool success = rosTools.getCollisionObjectByName(obj, collisionObject);
-
+    
     GraspReturnType grt;
     if (!success) {
         ROS_WARN_STREAM("No object with id \"" << obj << "\" found in planning scene");
@@ -279,20 +280,35 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     rosTools.publish_grasps_as_markerarray(grasps, "white");
 
 
-    //rotate all grasps by 90deg around Y to bring them into the correct coordinate system.
+    //rotate all grasps by 90deg around Y to bring them into the correct coordinate system
+    const auto shape = collisionObject.primitives.begin().base();
+    const std::string types[5] = {"OBJTYPE EMPTY","BOX", "SPHERE", "CYLINDER", "CONE"};
+    ROS_DEBUG_STREAM("object type: " << types[shape->type] << " " << shape->type);
     for (moveit_msgs::Grasp &i : grasps) {
-        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitY()));
-
-        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
-
-        Eigen::Quaternionf quatresult(result);
-        i.grasp_pose.pose.orientation.w = quatresult.w();
-        i.grasp_pose.pose.orientation.x = quatresult.x();
-        i.grasp_pose.pose.orientation.y = quatresult.y();
-        i.grasp_pose.pose.orientation.z = quatresult.z();
-
+        float height=-42;
+        switch(shape->type){
+            case(1): //Box
+                height = shape->BOX_Z;
+                break;
+            case(2)://sphere
+                height = 2*shape->SPHERE_RADIUS;
+                break;
+            case 3: //cylinder
+                height = shape->CYLINDER_HEIGHT;
+                break;
+            case 4://cone
+                height = shape->CONE_HEIGHT;
+                break;
+            default: break;    
+            }
+        
+        ROS_DEBUG_STREAM("object height: " << height);
+        ROS_DEBUG_STREAM("height -.5*height " <<  i.grasp_pose.pose.position.z - .5*height);
+        i.grasp_pose.pose.position.z -= 0.02;
+        ROS_DEBUG_STREAM("GRASP HEIGHT " << i.grasp_pose.pose.position.z);
     }
+        ROS_DEBUG_STREAM("\n\n");
+    
     vector<moveit_msgs::Grasp> old_grasps = grasps;
     shape_msgs::SolidPrimitive primitive;
     if (collisionObject.primitives[0].type == primitive.CYLINDER) {
@@ -427,7 +443,7 @@ GraspReturnType Katana::placeObject(EefPose obj, bool simulate,
             obj);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject("", locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID,"", locations, simulate, startPose);
 }
 
 GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
@@ -438,7 +454,7 @@ GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
             obj);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject("", locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID,"", locations, simulate, startPose);
 }
 
 GraspReturnType Katana::placeObject(const string &surface, bool simulate,
@@ -449,7 +465,7 @@ GraspReturnType Katana::placeObject(const string &surface, bool simulate,
     vector<moveit_msgs::PlaceLocation> locations = Model::generate_place_locations(surface);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject(surface, locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID,surface, locations, simulate, startPose);
 }
 
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
