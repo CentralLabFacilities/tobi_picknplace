@@ -180,6 +180,7 @@ MoveResult Model::moveTo(const EefPose& pose, bool linear, bool orientation) {
 ArmPoses Model::getRememberedPoses() const {
     ROS_INFO_NAMED(NAME, "### Invoked getRememberedPoses ###");
     string planningGroup = groupArm->getName();
+    ROS_DEBUG_STREAM("PLANNING GROUP NAME " << planningroup);
     const robot_model::JointModelGroup* jmg =
             groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(planningGroup);
     vector<string> names = jmg->getDefaultStateNames();
@@ -299,6 +300,9 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
     }
 
     ROS_INFO("###########################");
+    while(pickActionClient->getState() == SimpleClientGoalState::ACTIVE) {
+        ROS_INFO("Grasp Active. Looping.");
+    }
     if (pickActionClient->getState() == SimpleClientGoalState::SUCCEEDED) {
         ROS_INFO("Pick Action succeeded. (err_code: %d, state: %s)", pickActionClient->getResult()->error_code.val, pickActionClient->getState().toString().c_str());
 
