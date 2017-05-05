@@ -424,9 +424,12 @@ grasping_msgs::Object RosTools::convertMoveItToGrasping(moveit_msgs::CollisionOb
     //fill hight manually:
     moveit_msgs::CollisionObject collisionObjectArmCoords;
 
-    tfTransformer.transform(obj, collisionObjectArmCoords,
-            "base_footprint");
-    ROS_DEBUG("Calculate tableHeight base_footprint");
+    tfTransformer.transform(obj, collisionObjectArmCoords, "base_link");
+
+    ROS_DEBUG("Calculate tableHeight base_link");
+    ROS_DEBUG("collision object arm coords poses 0 position z: %d ", collisionObjectArmCoords.primitive_poses[0].position.z);
+    ROS_DEBUG("collision object arm coords primitives dimension 2: %d ", collisionObjectArmCoords.primitives[0].dimensions[2]);
+
     //ROS_DEBUG_STREAM_NAMED(NAME, obj);
     double tableHeightArmCoords =
             collisionObjectArmCoords.primitive_poses[0].position.z

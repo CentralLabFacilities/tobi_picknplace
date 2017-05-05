@@ -8,9 +8,11 @@
 #include "TransformerTF.h"
 
 #include <ros/ros.h>
+#include <tf2/convert.h>
 #include <kdl/frames.hpp>
 #include <moveit_msgs/Grasp.h>
 #include <boost/algorithm/string.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 using namespace std;
 using namespace moveit_msgs;
@@ -22,6 +24,15 @@ TransformerTF::TransformerTF():tfListener(tfBuffer) {
 TransformerTF::~TransformerTF() {
 }
 
+//! Change frame of reference of the input vector coordinates in 'from' frame to output vector coordinates in 'to' frame
+//! @param x input coordinate on axis-x
+//! @param y input coordinate on axis-y
+//! @param z input coordinate on axis-z
+//! @param from input frame name
+//! @param xOut output coordinate on axis-x
+//! @param yOut output coordinate on axis-y
+//! @param zOut output coordinate on axis-z
+//! @param to desired target frame for output
 bool TransformerTF::transform(double x, double y, double z, const std::string &from, double &xOut,double &yOut,double &zOut, const std::string &to) const {
 
 	geometry_msgs::Vector3Stamped vec;
@@ -40,6 +51,10 @@ bool TransformerTF::transform(double x, double y, double z, const std::string &f
 	}
 }
 
+//! Change frame of reference of the input End-Effector pose with given frame to a 'to' frame
+//! @param pose input End-Effector pose containing source frame
+//! @param poseOut output End-Effector pose
+//! @param to desired target frame for output pose
 bool TransformerTF::transform(const EefPose &pose, EefPose &poseOut, const string &to) const {
 
 	geometry_msgs::PoseStamped ps;
@@ -68,6 +83,10 @@ bool TransformerTF::transform(const EefPose &pose, EefPose &poseOut, const strin
 	}
 }
 
+//! Change only the orientation of a frame of reference of the input grasp pose with given frame to a 'to' frame, keeping position as input.
+//! @param grasp input grasp containing pose and source frame
+//! @param graspOut output grasp
+//! @param to desired target frame for output grasp
 bool TransformerTF::localtransform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const string &to) const {
   
   geometry_msgs::PoseStamped ps;
@@ -93,6 +112,10 @@ bool TransformerTF::localtransform(const moveit_msgs::Grasp &grasp, moveit_msgs:
   }
 }
 
+//! Change frame of reference of the input grasp pose with given frame to a 'to' frame
+//! @param grasp input grasp containing pose and source frame
+//! @param graspOut output grasp
+//! @param to desired target frame for output grasp
 bool TransformerTF::transform(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const string &to) const {
 
 	geometry_msgs::PoseStamped ps;
@@ -121,6 +144,43 @@ bool TransformerTF::transform(const moveit_msgs::Grasp &grasp, moveit_msgs::Gras
 	}
 }
 
+//! Transform data representing a child link into data representing a parent link, both in the same frame of reference
+//! @param grasp input grasp containing pose in source frame
+//! @param graspOut output grasp reprensenting target_link pose in source frame
+//! @param from name telling what frame the input pose represents in source frame
+//! @param to name telling what frame the output pose should represent in source frame
+bool TransformerTF::transformLink(const moveit_msgs::Grasp &grasp, moveit_msgs::Grasp &graspOut, const std::string &from,  const std::string &to) const {
+
+	geometry_msgs::PoseStamped ps;
+
+	ps.pose.position.x = grasp.grasp_pose.pose.position.x;
+	ps.pose.position.y = grasp.grasp_pose.pose.position.y;
+	ps.pose.position.z = grasp.grasp_pose.pose.position.z;
+	ps.pose.orientation.w = grasp.grasp_pose.pose.orientation.w;
+	ps.pose.orientation.x = grasp.grasp_pose.pose.orientation.x;
+	ps.pose.orientation.y = grasp.grasp_pose.pose.orientation.y;
+	ps.pose.orientation.z = grasp.grasp_pose.pose.orientation.z;
+	ps.header.frame_id = grasp.grasp_pose.header.frame_id;
+
+	if (transformLink(ps, ps, from, to)) {
+		graspOut.grasp_pose.pose.position.x = ps.pose.position.x;
+		graspOut.grasp_pose.pose.position.y = ps.pose.position.y;
+		graspOut.grasp_pose.pose.position.z = ps.pose.position.z;
+		graspOut.grasp_pose.pose.orientation.w = ps.pose.orientation.w;
+		graspOut.grasp_pose.pose.orientation.x = ps.pose.orientation.x;
+		graspOut.grasp_pose.pose.orientation.y = ps.pose.orientation.y;
+		graspOut.grasp_pose.pose.orientation.z = ps.pose.orientation.z;
+		graspOut.grasp_pose.header.frame_id = ps.header.frame_id;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+//! Change frame of reference of the input ObjectShape with given frame to a 'to' frame 
+//! @param object input ObjectShape containing pose and source frame
+//! @param objectOut output ObjectShape
+//! @param to desired target frame for output ObjectShape
 bool TransformerTF::transform(const ObjectShape &object, ObjectShape &objectOut, const string &to) const {
 
 	geometry_msgs::Vector3Stamped vec;
@@ -143,6 +203,10 @@ bool TransformerTF::transform(const ObjectShape &object, ObjectShape &objectOut,
 	}
 }
 
+//! Change frame of reference of the input CollisionObject with given frame to a 'to' frame 
+//! @param obj input CollisionObject containing pose and source frame
+//! @param objOut output CollisionObject
+//! @param to desired target frame for output CollisionObject
 bool TransformerTF::transform(const CollisionObject &obj, CollisionObject &objOut, const std::string &to) const {
     try{
         CollisionObject myObj = obj;
@@ -161,6 +225,10 @@ bool TransformerTF::transform(const CollisionObject &obj, CollisionObject &objOu
     }
 }
 
+//! Change frame of reference of the input PoseStamped with given frame to a 'to' frame 
+//! @param pose input PoseStamped containing pose and source frame
+//! @param poseOut output PoseStamped
+//! @param to desired target frame for output PoseStamped
 bool TransformerTF::transform(const geometry_msgs::PoseStamped &pose,geometry_msgs::PoseStamped &poseOut,  const std::string &to) const {
 	try{
 		geometry_msgs::PoseStamped myPose = pose;
@@ -177,6 +245,10 @@ bool TransformerTF::transform(const geometry_msgs::PoseStamped &pose,geometry_ms
 	}
 }
 
+//! Change frame of reference of the input Vector3Stamped with given frame to a 'to' frame 
+//! @param vec input Vector3Stamped containing position and source frame
+//! @param vecOut output Vector3Stamped
+//! @param to desired target frame for output Vector3Stamped
 bool TransformerTF::transform(const geometry_msgs::Vector3Stamped &vec, geometry_msgs::Vector3Stamped &vecOut, const std::string &to) const {
 	try{
 		geometry_msgs::Vector3Stamped myVec = vec;
@@ -193,94 +265,37 @@ bool TransformerTF::transform(const geometry_msgs::Vector3Stamped &vec, geometry
 	}
 }
 
+//! Transform data representing a child link into data representing a parent link, both in the same frame of reference
+//! @param pose input PoseStamped containing pose and source frame
+//! @param from name telling what frame the input pose represents in source frame
+//! @param to name telling what frame the output pose should represent in source frame
+//! @param poseOut output PoseStamped reprensenting target_link pose in source frame
+bool TransformerTF::transformLink(const geometry_msgs::PoseStamped &pose, geometry_msgs::PoseStamped &poseOut, const std::string &from,  const std::string &to) const {
+	try{
+		// get the transform converting 'from' to 'to' frames
+		geometry_msgs::TransformStamped t_from_to;
+		t_from_to = tfBuffer.lookupTransform (from, to, ros::Time(0), ros::Duration(2.0));
+
+		// use KDL frame for input pose
+		KDL::Vector v(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
+		KDL::Rotation r = KDL::Rotation::Quaternion(pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w);
+
+		// frameid_T^to = frameid_T^from * from_T^to
+		KDL::Frame v_out = KDL::Frame(r, v) * tf2::gmTransformToKDL(t_from_to);
+		poseOut.pose.position.x = v_out.p[0];
+		poseOut.pose.position.y = v_out.p[1];
+		poseOut.pose.position.z = v_out.p[2];
+		v_out.M.GetQuaternion(poseOut.pose.orientation.x, poseOut.pose.orientation.y, poseOut.pose.orientation.z, poseOut.pose.orientation.w);
+		poseOut.header = pose.header;
+		return true;
+	} catch (tf2::TransformException &ex) {
+		ROS_ERROR("%s", ex.what());
+		ros::Duration(1.0).sleep();
+		return false;
+	}
+}
+
 namespace tf2 {
-
-KDL::Frame gmTransformToKDL(const geometry_msgs::TransformStamped& t) {
-	return KDL::Frame(
-			KDL::Rotation::Quaternion(t.transform.rotation.x, t.transform.rotation.y,
-					t.transform.rotation.z, t.transform.rotation.w),
-			KDL::Vector(t.transform.translation.x, t.transform.translation.y,
-					t.transform.translation.z));
-}
-
-// ##########################
-// geometry_msgs::PoseStamped
-// ##########################
-
-// method to extract timestamp from object
-template<>
-const ros::Time& getTimestamp(const geometry_msgs::PoseStamped& t) {
-	return t.header.stamp;
-}
-
-// method to extract frame id from object
-template<>
-const std::string& getFrameId(const geometry_msgs::PoseStamped& t) {
-	return t.header.frame_id;
-}
-
-// this method needs to be implemented by client library developers
-template<>
-void doTransform(const geometry_msgs::PoseStamped& t_in, geometry_msgs::PoseStamped& t_out,
-		const geometry_msgs::TransformStamped& transform) {
-	KDL::Vector v(t_in.pose.position.x, t_in.pose.position.y, t_in.pose.position.z);
-	KDL::Rotation r = KDL::Rotation::Quaternion(t_in.pose.orientation.x, t_in.pose.orientation.y,
-			t_in.pose.orientation.z, t_in.pose.orientation.w);
-
-	tf2::Stamped<KDL::Frame> v_out = tf2::Stamped<KDL::Frame>(
-			gmTransformToKDL(transform) * KDL::Frame(r, v), transform.header.stamp,
-			transform.header.frame_id);
-	t_out.pose.position.x = v_out.p[0];
-	t_out.pose.position.y = v_out.p[1];
-	t_out.pose.position.z = v_out.p[2];
-	v_out.M.GetQuaternion(t_out.pose.orientation.x, t_out.pose.orientation.y,
-			t_out.pose.orientation.z, t_out.pose.orientation.w);
-	t_out.header.stamp = v_out.stamp_;
-	t_out.header.frame_id = v_out.frame_id_;
-}
-geometry_msgs::PoseStamped toMsg(const geometry_msgs::PoseStamped& in) {
-	return in;
-}
-void fromMsg(const geometry_msgs::PoseStamped& msg, geometry_msgs::PoseStamped& out) {
-	out = msg;
-}
-
-// #############################
-// geometry_msgs::Vector3Stamped
-// #############################
-
-// method to extract timestamp from object
-template<>
-const ros::Time& getTimestamp(const geometry_msgs::Vector3Stamped& t) {
-	return t.header.stamp;
-}
-
-// method to extract frame id from object
-template<>
-const std::string& getFrameId(const geometry_msgs::Vector3Stamped& t) {
-	return t.header.frame_id;
-}
-
-template<>
-void doTransform(const geometry_msgs::Vector3Stamped& t_in, geometry_msgs::Vector3Stamped& t_out,
-		const geometry_msgs::TransformStamped& transform) {
-	KDL::Vector v(t_in.vector.x, t_in.vector.y, t_in.vector.z);
-
-	tf2::Stamped<KDL::Vector> v_out = tf2::Stamped<KDL::Vector>(
-			gmTransformToKDL(transform) * v, transform.header.stamp,
-			transform.header.frame_id);
-	t_out.vector.x = v_out.data[0];
-	t_out.vector.y = v_out.data[1];
-	t_out.vector.z = v_out.data[2];
-	t_out.header.stamp = v_out.stamp_;
-	t_out.header.frame_id = v_out.frame_id_;
-}
-geometry_msgs::Vector3Stamped toMsg(const geometry_msgs::Vector3Stamped& in) {
-	return in;
-}
-void fromMsg(const geometry_msgs::Vector3Stamped& msg, geometry_msgs::Vector3Stamped& out) {
-	out = msg;
-}
 
 // #############################
 // moveit_msgs::CollisionObject

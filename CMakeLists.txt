@@ -22,9 +22,11 @@ endif()
 set(CTKN_PKGS
     roscpp
     tf2
+    tf2_geometry_msgs
     moveit_ros_planning_interface
     actionlib
     geometric_shapes
+    geometry_msgs
     shape_msgs
     grasp_viewer
     moveit_msgs
@@ -128,6 +130,23 @@ add_executable(tobi_picknplace_client
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(tobi_picknplace_server_node "")
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(tobi_picknplace_server_node
+  ${catkin_LIBRARIES}
+  ${ALL_RSB_LIBRARIES}
+)
+target_link_libraries(tobi_picknplace_client
+  ${catkin_LIBRARIES}
+  ${ALL_RSB_LIBRARIES}
+)
+
+## Add test
+add_executable(test_transformTF src/test/test_transformTF.cpp src/util/TransformerTF.cpp)
+target_link_libraries(test_transformTF
+  ${catkin_LIBRARIES}
+)
+
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(tobi_picknplace_server_node
