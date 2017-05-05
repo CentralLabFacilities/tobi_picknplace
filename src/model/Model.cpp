@@ -180,7 +180,7 @@ MoveResult Model::moveTo(const EefPose& pose, bool linear, bool orientation) {
 ArmPoses Model::getRememberedPoses() const {
     ROS_INFO_NAMED(NAME, "### Invoked getRememberedPoses ###");
     string planningGroup = groupArm->getName();
-    ROS_DEBUG_STREAM("PLANNING GROUP NAME " << planningroup);
+    ROS_DEBUG_STREAM("PLANNING GROUP NAME " << planningGroup);
     const robot_model::JointModelGroup* jmg =
             groupArm->getCurrentState()->getRobotModel()->getJointModelGroup(planningGroup);
     vector<string> names = jmg->getDefaultStateNames();
