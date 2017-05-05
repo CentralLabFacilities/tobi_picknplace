@@ -343,6 +343,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
         rosTools.clear_octomap();
         ROS_INFO_STREAM("moving to start pose");
         moveTo(eefStart, false, false);
+        grt.result = GraspReturnType::FAIL;
         if (pickActionClient->getResult()->error_code.val == MoveItErrorCode::PLANNING_FAILED) {
             grt.result = GraspReturnType::FAIL;
         }
