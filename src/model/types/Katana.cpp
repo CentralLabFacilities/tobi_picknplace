@@ -263,9 +263,9 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     ROS_INFO("### Invoked graspObject(string) ###");
 
     moveit_msgs::CollisionObject collisionObject;
-    
+
     bool success = rosTools.getCollisionObjectByName(obj, collisionObject);
-    
+
     GraspReturnType grt;
     if (!success) {
         ROS_WARN_STREAM("No object with id \"" << obj << "\" found in planning scene");
@@ -277,157 +277,41 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(
             collisionObject);
 
-    rosTools.publish_grasps_as_markerarray(grasps, "white");
-
-
-    //rotate all grasps by 90deg around Y to bring them into the correct coordinate system
-//    const auto shape = collisionObject.primitives.begin().base();
-//    const std::string types[5] = {"OBJTYPE EMPTY","BOX", "SPHERE", "CYLINDER", "CONE"};
-//    ROS_DEBUG_STREAM("object type: " << types[shape->type] << " " << shape->type);
-//    for (moveit_msgs::Grasp &i : grasps) {
-//        float height=-42;
-//        switch(shape->type){
-//            case(1): //Box
-//               height = shape->BOX_Z;
-//                break;
-//            case(2)://sphere
-//                height = 2*shape->SPHERE_RADIUS;
-//                break;
-//            case 3: //cylinder
-//                height = shape->CYLINDER_HEIGHT;
-//                break;
-//            case 4://cone
-//                height = shape->CONE_HEIGHT;
-//                break;
-//            default: break;    
-//            }
-        
-//        ROS_DEBUG_STREAM("object height: " << height);
-//      ROS_DEBUG_STREAM("height -.5*height " <<  i.grasp_pose.pose.position.z - .5*height);
-        //i.grasp_pose.pose.position.z -= 0.02;
-//        ROS_DEBUG_STREAM("GRASP HEIGHT " << i.grasp_pose.pose.position.z);
-//    }
-//        ROS_DEBUG_STREAM("\n\n");
-    
-//    for (moveit_msgs::Grasp &i : grasps) {
-//        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-//        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitY()));
-//
-//        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
-//
-//        Eigen::Quaternionf quatresult(result);
-//        i.grasp_pose.pose.orientation.w = quatresult.w();
-//        i.grasp_pose.pose.orientation.x = quatresult.x();
-//        i.grasp_pose.pose.orientation.y = quatresult.y();
-//        i.grasp_pose.pose.orientation.z = quatresult.z();
-//
-//    }
-    
     vector<moveit_msgs::Grasp> old_grasps = grasps;
     shape_msgs::SolidPrimitive primitive;
     if (collisionObject.primitives[0].type == primitive.CYLINDER) {
         ROS_WARN_STREAM("Generate Grasps for Cylinder");
 
-        float cylinderX = collisionObject.primitive_poses[0].position.x;
-        float cylinderY = collisionObject.primitive_poses[0].position.y;
-        float cylinderZ = collisionObject.primitive_poses[0].position.z;
-        ROS_WARN_STREAM(" Collision Object: X: " << cylinderX
-                << " Y: " << cylinderY
-                << " Z: " << cylinderZ
-                << " TF: " << collisionObject.header.frame_id);
-
-        moveit_msgs::Grasp &i = old_grasps[0];
         for (moveit_msgs::Grasp &i : old_grasps) {
             float graspX = i.grasp_pose.pose.position.x;
             float graspY = i.grasp_pose.pose.position.y;
             float graspZ = i.grasp_pose.pose.position.z;
-            ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << graspX << " y: " << graspY
-                    << " z: " << graspZ << " Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y
-                    << " z: " << i.grasp_pose.pose.position.z << " w: " << i.grasp_pose.pose.orientation.w);
-            moveit_msgs::Grasp new_grasp;
-            Eigen::Vector3f local(cylinderX - graspX, cylinderY - graspY, cylinderZ - graspZ);
-            geometry_msgs::Point localcoordinate;
-            localcoordinate.x = cylinderX - graspX;
-            localcoordinate.y = cylinderY - graspY;
-            localcoordinate.z = cylinderZ - graspZ;
-            Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-            Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitZ()));
-            Eigen::Quaternionf rotation2(Eigen::AngleAxisf(-0.5 * M_PI, Eigen::Vector3f::UnitZ()));
-            Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation2.toRotationMatrix());
 
-            ROS_WARN_STREAM(" Diff Object-Grasp: X: " << localcoordinate.x
-                    << " Y: " << localcoordinate.y
-                    << " Z: " << localcoordinate.z);
+            float varyx = -0.4;
+            float varyy = -0.4;
+            for (; varyy <= 0.4; varyy + 0.1) {
+                moveit_msgs::Grasp new_grasp;
+                Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+                Eigen::Quaternionf rotation(Eigen::AngleAxisf(varyy, Eigen::Vector3f::UnitY()));
+                Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
 
-            Eigen::Vector3f translation = rotation.toRotationMatrix() * local;
+                Eigen::Quaternionf quatresult(result);
+                new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
+                new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
+                new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
+                new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
+                new_grasp.grasp_pose.pose.position.x = graspX;
+                new_grasp.grasp_pose.pose.position.y = graspY;
+                new_grasp.grasp_pose.pose.position.z = graspZ;
 
-            ROS_WARN_STREAM(" Diff Object-Grasp-Rot: X: " << translation(0)
-                    << " Y: " << translation(1)
-                    << " Z: " << translation(2));
+                new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+                new_grasp.id = i.id + "_alt" + std::to_string(varyy);
 
-            Eigen::Quaternionf quatresult(result);
-            new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
-            new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
-            new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
-            new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
-            new_grasp.grasp_pose.pose.position.x = graspX + localcoordinate.x - translation(0);
-            new_grasp.grasp_pose.pose.position.y = graspY + localcoordinate.y - translation(1);
-            new_grasp.grasp_pose.pose.position.z = graspZ + localcoordinate.z - translation(2);
-
-            new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
-            new_grasp.id=i.id + "_alt";
-
-            grasps.push_back(new_grasp);
+                grasps.push_back(new_grasp);
+            }
         }
     }
-    //create more grasps by varying the angle by 0.2rad around X.
-    /**old_grasps = grasps;
-    for (moveit_msgs::Grasp &i : old_grasps) {
-        ROS_DEBUG_STREAM("GraspInfo: " << i.grasp_pose.header.frame_id << " x: " << i.grasp_pose.pose.position.x << " y: " << i.grasp_pose.pose.position.y
-                << " z: " << i.grasp_pose.pose.position.z << " Rot x: " << i.grasp_pose.pose.orientation.x << " y: " << i.grasp_pose.pose.orientation.y
-                << " z: " << i.grasp_pose.pose.position.z << " w: " << i.grasp_pose.pose.orientation.w);
-        moveit_msgs::Grasp new_grasp;
-        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitX()));
 
-        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
-
-        Eigen::Quaternionf quatresult(result);
-        new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
-        new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
-        new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
-        new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
-        new_grasp.grasp_pose.pose.position.x = i.grasp_pose.pose.position.x;
-        new_grasp.grasp_pose.pose.position.y = i.grasp_pose.pose.position.y;
-        new_grasp.grasp_pose.pose.position.z = i.grasp_pose.pose.position.z;
-
-        new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
-
-        grasps.push_back(new_grasp);
-    }
-
-    //create more grasps by varying the angle by 0.2rad around Y.
-    old_grasps = grasps;
-    for (moveit_msgs::Grasp &i : old_grasps) {
-        moveit_msgs::Grasp new_grasp;
-        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitY()));
-
-        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
-
-        Eigen::Quaternionf quatresult(result);
-        new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
-        new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
-        new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
-        new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
-        new_grasp.grasp_pose.pose.position.x = i.grasp_pose.pose.position.x;
-        new_grasp.grasp_pose.pose.position.y = i.grasp_pose.pose.position.y;
-        new_grasp.grasp_pose.pose.position.z = i.grasp_pose.pose.position.z;
-
-        new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
-        grasps.push_back(new_grasp);
-    }
-     * **/
     for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
 
@@ -458,7 +342,7 @@ GraspReturnType Katana::placeObject(EefPose obj, bool simulate,
             obj);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject(graspedObjectID,"", locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID, "", locations, simulate, startPose);
 }
 
 GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
@@ -469,7 +353,7 @@ GraspReturnType Katana::placeObject(ObjectShape obj, bool simulate,
             obj);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject(graspedObjectID,"", locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID, "", locations, simulate, startPose);
 }
 
 GraspReturnType Katana::placeObject(const string &surface, bool simulate,
@@ -480,7 +364,7 @@ GraspReturnType Katana::placeObject(const string &surface, bool simulate,
     vector<moveit_msgs::PlaceLocation> locations = Model::generate_place_locations(surface);
     rosTools.publish_place_locations_as_markerarray(locations);
 
-    return Model::placeObject(graspedObjectID,surface, locations, simulate, startPose);
+    return Model::placeObject(graspedObjectID, surface, locations, simulate, startPose);
 }
 
 std::vector<moveit_msgs::PlaceLocation> Katana::generate_place_locations(
