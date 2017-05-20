@@ -375,6 +375,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
             new_grasp.grasp_pose.pose.position.z = graspZ + localcoordinate.z - translation(2);
 
             new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+            new_grasp.id=i.id + "_alt";
 
             grasps.push_back(new_grasp);
         }
