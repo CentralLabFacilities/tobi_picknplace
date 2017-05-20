@@ -55,7 +55,7 @@ void ViaPoseStrategy::setTransitions(const std::vector<Transition>& transitions)
 }**/
 
 GraspReturnType ViaPoseStrategy::graspObject(const string &obj, const std::string &surface, bool simulate) {
-    model->openEef(false);
+    //model->openEef(false);
     GraspReturnType ret = model->graspObject(obj, surface, simulate);
 
     return ret;

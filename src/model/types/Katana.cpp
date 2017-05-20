@@ -309,19 +309,19 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 //    }
 //        ROS_DEBUG_STREAM("\n\n");
     
-        for (moveit_msgs::Grasp &i : grasps) {
-        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitY()));
-
-        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
-
-        Eigen::Quaternionf quatresult(result);
-        i.grasp_pose.pose.orientation.w = quatresult.w();
-        i.grasp_pose.pose.orientation.x = quatresult.x();
-        i.grasp_pose.pose.orientation.y = quatresult.y();
-        i.grasp_pose.pose.orientation.z = quatresult.z();
-
-    }
+//    for (moveit_msgs::Grasp &i : grasps) {
+//        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+//        Eigen::Quaternionf rotation(Eigen::AngleAxisf(0.5 * M_PI, Eigen::Vector3f::UnitY()));
+//
+//        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
+//
+//        Eigen::Quaternionf quatresult(result);
+//        i.grasp_pose.pose.orientation.w = quatresult.w();
+//        i.grasp_pose.pose.orientation.x = quatresult.x();
+//        i.grasp_pose.pose.orientation.y = quatresult.y();
+//        i.grasp_pose.pose.orientation.z = quatresult.z();
+//
+//    }
     
     vector<moveit_msgs::Grasp> old_grasps = grasps;
     shape_msgs::SolidPrimitive primitive;
@@ -435,7 +435,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     //closeEef(false);
     auto ret = Model::graspObject(obj, surface, grasps, simulate, startPose);
     if (ret.result == GraspReturnType::ROBOT_CRASHED) {
-        ROS_WARN_STREAM("  try to RECOVER !!");
+        ROS_INFO_STREAM("  try to RECOVER !!");
         if (isSomethingInGripper()) {
             if (moveTo("carry_side", true)) {
                 ret.result = GraspReturnType::COLLISION_HANDLED;
