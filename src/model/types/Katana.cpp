@@ -289,7 +289,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
 
             float varyx = -0.4;
             float varyy = -0.4;
-            for (; varyy <= 0.4; varyy + 0.1) {
+            for (; varyy <= 0.4; varyy = varyy + 0.1) {
                 ROS_WARN_STREAM("vary: " << toString(varyy));
                 moveit_msgs::Grasp new_grasp;
                 Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
