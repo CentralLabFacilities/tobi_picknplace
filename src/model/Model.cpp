@@ -574,9 +574,9 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
 
     ParamReader& params = ParamReader::getParamReader();
     if (params.robot == "tobi") {
-        grasp.pre_grasp_approach.direction.vector.x = 1.0;
+        grasp.pre_grasp_approach.direction.vector.x = 0.0;
         grasp.pre_grasp_approach.direction.vector.y = 0.0;
-        grasp.pre_grasp_approach.direction.vector.z = 0.0;
+        grasp.pre_grasp_approach.direction.vector.z = 1.0;
     } else if (params.robot == "meka") {
         grasp.pre_grasp_approach.direction.vector.x = 0.0;
         grasp.pre_grasp_approach.direction.vector.y = 0.0;
