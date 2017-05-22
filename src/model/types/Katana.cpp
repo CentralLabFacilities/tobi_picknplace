@@ -312,7 +312,7 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         }
     }
     
-    vector<moveit_msgs::Grasp> old_grasps = grasps;
+    old_grasps = grasps;
     for (moveit_msgs::Grasp &i : old_grasps) {
         float graspX = i.grasp_pose.pose.position.x;
         float graspY = i.grasp_pose.pose.position.y;
