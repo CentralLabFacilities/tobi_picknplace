@@ -311,6 +311,32 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
             }
         }
     }
+    
+    vector<moveit_msgs::Grasp> old_grasps = grasps;
+    for (moveit_msgs::Grasp &i : old_grasps) {
+        float graspX = i.grasp_pose.pose.position.x;
+        float graspY = i.grasp_pose.pose.position.y;
+        float graspZ = i.grasp_pose.pose.position.z;
+        
+        moveit_msgs::Grasp new_grasp;
+        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
+        Eigen::Quaternionf rotation(Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitZ()));
+        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
+
+        Eigen::Quaternionf quatresult(result);
+        new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
+        new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
+        new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
+        new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
+        new_grasp.grasp_pose.pose.position.x = graspX;
+        new_grasp.grasp_pose.pose.position.y = graspY;
+        new_grasp.grasp_pose.pose.position.z = graspZ;
+
+        new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
+        new_grasp.id = i.id + "_rot180";
+
+        grasps.push_back(new_grasp);
+    }
 
     for (moveit_msgs::Grasp &i : grasps)
         fillGrasp(i);
