@@ -153,12 +153,38 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
         grasps = graspGenerator->generate_grasps(collisionObject);
     } else { //agni
         grasps = graspGenerator->generate_grasps(obj);
-        //todo: do we have to do a transformation?
     }
 
     //fill up with pre and post grasp postures, model specific!
-    for (moveit_msgs::Grasp &i : grasps)
-        fillGrasp(i);
+    
+    /* incoming grasps represent the chosen grasp_frame for each grasp in given frame-id=reference frame
+    * transformation is needed to find what is the equivalent end-effector frame pose to go to 
+    * (ee frame = last link of arm chain or = first link of eef ) in the reference frame
+    * that would reach such a grasp_frame. 
+    * If ee frame = grasp_frame no transform needed
+    */
+    std::string grasp_frame = ParamReader::getParamReader().frameGripper;
+    std::string ee_frame = groupArm->getEndEffectorLink();
+    if (grasp_frame == ee_frame)
+    {
+      ROS_INFO_STREAM("grasp_frame '" << grasp_frame << "' is equal to ee_frame '" << ee_frame << "' no transformation needed to all grasps");
+      for (moveit_msgs::Grasp &i : grasps)
+      {
+          // fill the postures
+          fillGrasp(i);
+      }
+    }
+    else
+    {
+      ROS_INFO_STREAM("grasp_frame '" << grasp_frame << " is not equal to ee_frame '" << ee_frame << "' transformation will be applied to all grasps");
+      for (moveit_msgs::Grasp &i : grasps)
+      {
+          tfTransformer.transformLink(i, i, grasp_frame, ee_frame);
+          // fill the postures
+          fillGrasp(i);
+      }
+    }
+    
 
     ROS_INFO("Publish grasps.");
     rosTools.publish_grasps_as_markerarray(grasps);
