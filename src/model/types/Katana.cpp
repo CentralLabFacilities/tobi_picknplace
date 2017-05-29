@@ -277,71 +277,16 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
     vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(
             collisionObject);
 
-    vector<moveit_msgs::Grasp> old_grasps = grasps;
     shape_msgs::SolidPrimitive primitive;
+
     if (collisionObject.primitives[0].type == primitive.CYLINDER) {
-        ROS_WARN_STREAM("Generate Grasps for Cylinder");
-
-        for (moveit_msgs::Grasp &i : old_grasps) {
-            float graspX = i.grasp_pose.pose.position.x;
-            float graspY = i.grasp_pose.pose.position.y;
-            float graspZ = i.grasp_pose.pose.position.z;
-
-            float varyx = -0.4;
-            float varyy = -0.4;
-            for (; varyy <= 0.4; varyy = varyy + 0.1) {
-                moveit_msgs::Grasp new_grasp;
-                Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-                Eigen::Quaternionf rotation(Eigen::AngleAxisf(varyy, Eigen::Vector3f::UnitY()));
-                Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
-
-                Eigen::Quaternionf quatresult(result);
-                new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
-                new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
-                new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
-                new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
-                new_grasp.grasp_pose.pose.position.x = graspX;
-                new_grasp.grasp_pose.pose.position.y = graspY;
-                new_grasp.grasp_pose.pose.position.z = graspZ;
-
-                new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
-                new_grasp.id = i.id + "_alt" + std::to_string(varyy);
-
-                grasps.push_back(new_grasp);
-            }
-        }
-    }
-    
-    old_grasps = grasps;
-    for (moveit_msgs::Grasp &i : old_grasps) {
-        float graspX = i.grasp_pose.pose.position.x;
-        float graspY = i.grasp_pose.pose.position.y;
-        float graspZ = i.grasp_pose.pose.position.z;
-        
-        moveit_msgs::Grasp new_grasp;
-        Eigen::Quaternionf quat(i.grasp_pose.pose.orientation.w, i.grasp_pose.pose.orientation.x, i.grasp_pose.pose.orientation.y, i.grasp_pose.pose.orientation.z);
-        Eigen::Quaternionf rotation(Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitZ()));
-        Eigen::Matrix3f result = (quat.toRotationMatrix() * rotation.toRotationMatrix());
-
-        Eigen::Quaternionf quatresult(result);
-        new_grasp.grasp_pose.pose.orientation.w = quatresult.w();
-        new_grasp.grasp_pose.pose.orientation.x = quatresult.x();
-        new_grasp.grasp_pose.pose.orientation.y = quatresult.y();
-        new_grasp.grasp_pose.pose.orientation.z = quatresult.z();
-        new_grasp.grasp_pose.pose.position.x = graspX;
-        new_grasp.grasp_pose.pose.position.y = graspY;
-        new_grasp.grasp_pose.pose.position.z = graspZ;
-
-        new_grasp.grasp_pose.header.frame_id = i.grasp_pose.header.frame_id;
-        new_grasp.id = i.id + "_rot180";
-
-        grasps.push_back(new_grasp);
+        grasps = augmentCylinderGrasps(collisionObject, grasps);
     }
 
     /* incoming grasps represent the chosen grasp_frame for each grasp in given frame-id=reference frame
-    * transformation is needed to find what is the equivalent end-effector frame pose to go to 
+    * transformation is needed to find what is the equivalent end-effector frame pose to go to
     * (ee frame = last link of arm chain or = first link of eef ) in the reference frame
-    * that would reach such a grasp_frame. 
+    * that would reach such a grasp_frame.
     * If ee frame = grasp_frame no transform needed
     */
     std::string grasp_frame = ParamReader::getParamReader().frameGripper;
@@ -520,4 +465,113 @@ trajectory_msgs::JointTrajectory Katana::generate_open_eef_msg() {
             params.eefPosOpen.at(0));
 
     return msg;
+}
+
+vector<moveit_msgs::Grasp> Katana::augmentCylinderGrasps(moveit_msgs::CollisionObject collisionObject, vector<moveit_msgs::Grasp> graspsIn){
+    ROS_INFO_STREAM("Generate Grasps for Cylinder");
+
+    vector<moveit_msgs::Grasp> newGrasps = graspsIn;
+    //vary grasps around y axis of grasp frame
+    for (moveit_msgs::Grasp &i : graspsIn) {
+        //only vary side grasps around y
+        if(i.id.find("Side") == std::string::npos){
+            continue;
+        }
+
+        Eigen::Vector3d graspY(0.0,1.0,0.0);
+        Eigen::Quaterniond graspOrientation(i.grasp_pose.pose.orientation.w,
+                i.grasp_pose.pose.orientation.x,
+                i.grasp_pose.pose.orientation.y,
+                i.grasp_pose.pose.orientation.z);
+        graspY = graspOrientation * graspY;
+
+        Eigen::Vector3d graspPos;
+        tf2::fromMsg(i.grasp_pose.pose.position, graspPos);
+
+        double vary = -0.2;
+        for (; vary <= 0.2; vary = vary + 0.1) {
+            if(vary == 0.0){
+                continue;
+            }
+
+            moveit_msgs::Grasp augGrasp;
+            augGrasp = rotateGrasp(i,vary,graspY,graspPos);
+
+            augGrasp.id = i.id + "_augY" + std::to_string(vary);
+            newGrasps.push_back(augGrasp);
+        }
+    }
+
+    //vary grasps around the z-axis of the object
+    //determine z axis of object
+    Eigen::Vector3d objectZ(0.0,0.0,1.0);
+    Eigen::Quaterniond objectOrientation(collisionObject.primitive_poses[0].orientation.w,
+            collisionObject.primitive_poses[0].orientation.x,
+            collisionObject.primitive_poses[0].orientation.y,
+            collisionObject.primitive_poses[0].orientation.z);
+    objectZ = objectOrientation * objectZ;
+
+    Eigen::Vector3d objectPos;
+    tf2::fromMsg(collisionObject.primitive_poses[0].position, objectPos);
+
+    graspsIn = newGrasps;
+    for (moveit_msgs::Grasp &i : graspsIn) {
+        //only vary side grasps around y
+        if(i.id.find("Side") == std::string::npos){
+            continue;
+        }
+
+        double vary = -0.4;
+        for (; vary <= 0.4; vary = vary + 0.2) {
+            if(vary == 0.0){
+                continue;
+            }
+
+            moveit_msgs::Grasp augGrasp;
+            augGrasp = rotateGrasp(i,vary,objectZ, objectPos);
+
+            augGrasp.id = i.id + "_augZ" + std::to_string(vary);
+            newGrasps.push_back(augGrasp);
+        }
+    }
+
+    //rotate sidegrasps around z by 180 degree to allow different wrist positions
+    graspsIn = newGrasps;
+    for (moveit_msgs::Grasp &i : graspsIn) {
+        if(i.id.find("Side") == std::string::npos){
+            continue;
+        }
+
+        Eigen::Vector3d graspZ(0.0,0.0,1.0);
+        Eigen::Quaterniond graspOrientation(i.grasp_pose.pose.orientation.w,
+                i.grasp_pose.pose.orientation.x,
+                i.grasp_pose.pose.orientation.y,
+                i.grasp_pose.pose.orientation.z);
+        graspZ = graspOrientation * graspZ;
+
+        Eigen::Vector3d graspPos;
+        tf2::fromMsg(i.grasp_pose.pose.position, graspPos);
+
+        moveit_msgs::Grasp augGrasp;
+        augGrasp = rotateGrasp(i,M_PI,graspZ,graspPos);
+
+        augGrasp.id = i.id + "_rot180";
+        newGrasps.push_back(augGrasp);
+    }
+
+    //rosTools.publish_grasps_as_markerarray(newGrasps);
+    return newGrasps;
+}
+
+moveit_msgs::Grasp Katana::rotateGrasp(moveit_msgs::Grasp grasp, double angle, Eigen::Vector3d axis, Eigen::Vector3d rotationCenter) {
+    Eigen::Affine3d graspPose;
+    tf2::fromMsg(grasp.grasp_pose.pose, graspPose);
+
+    Eigen::Affine3d A = Eigen::Translation3d(rotationCenter) * Eigen::AngleAxisd(angle, axis) * Eigen::Translation3d(-rotationCenter);
+    moveit_msgs::Grasp augGrasp;
+    A = A * graspPose;
+    augGrasp.grasp_pose.pose = Eigen::toMsg(A);
+
+    augGrasp.grasp_pose.header.frame_id = grasp.grasp_pose.header.frame_id;
+    return augGrasp;
 }
