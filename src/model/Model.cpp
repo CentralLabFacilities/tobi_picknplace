@@ -574,9 +574,9 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
 
     ParamReader& params = ParamReader::getParamReader();
     if (params.robot == "tobi") {
-        grasp.pre_grasp_approach.direction.vector.x = 0.0;
+        grasp.pre_grasp_approach.direction.vector.x = 1.0;
         grasp.pre_grasp_approach.direction.vector.y = 0.0;
-        grasp.pre_grasp_approach.direction.vector.z = 1.0;
+        grasp.pre_grasp_approach.direction.vector.z = 0.0;
     } else if (params.robot == "meka") {
         grasp.pre_grasp_approach.direction.vector.x = 0.0;
         grasp.pre_grasp_approach.direction.vector.y = 0.0;
@@ -586,7 +586,7 @@ void Model::fillGrasp(moveit_msgs::Grasp& grasp) {
     }
 
     grasp.pre_grasp_approach.direction.header.stamp = ros::Time::now();
-    grasp.pre_grasp_approach.direction.header.frame_id = params.frameGripper;
+    grasp.pre_grasp_approach.direction.header.frame_id = groupArm->getEndEffectorLink();
     grasp.pre_grasp_approach.min_distance = params.approachMinDistance;
     grasp.pre_grasp_approach.desired_distance = params.approachDesiredDistance;
 
