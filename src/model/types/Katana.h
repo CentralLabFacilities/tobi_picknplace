@@ -73,7 +73,7 @@ public:
     virtual trajectory_msgs::JointTrajectory generate_close_eef_msg();
     virtual trajectory_msgs::JointTrajectory generate_open_eef_msg();
 
-//private:
+private:
 
     boost::scoped_ptr<
             actionlib::SimpleActionClient<katana_msgs::JointMovementAction> > movementActionClient;
@@ -95,7 +95,11 @@ public:
     katana_msgs::JointMovementGoal buildMovementGoal(
             const std::string &poseName);
 
-    static std::vector<moveit_msgs::Grasp> augmentCylinderGrasps(moveit_msgs::CollisionObject collisionObject, std::vector<moveit_msgs::Grasp> graspsIn);
+    std::vector<moveit_msgs::Grasp> augmentCylinderGrasps(moveit_msgs::CollisionObject collisionObject, std::vector<moveit_msgs::Grasp> graspsIn);
 
-    static moveit_msgs::Grasp rotateGrasp(moveit_msgs::Grasp grasp, double angle, Eigen::Vector3d axis, Eigen::Vector3d rotationCenter);
+    std::vector<moveit_msgs::Grasp> augmentBoxGrasps(moveit_msgs::CollisionObject collisionObject, std::vector<moveit_msgs::Grasp> graspsIn);
+
+    std::vector<moveit_msgs::Grasp> augmentSphereGrasps(moveit_msgs::CollisionObject collisionObject, std::vector<moveit_msgs::Grasp> graspsIn);
+
+    moveit_msgs::Grasp rotateGrasp(moveit_msgs::Grasp grasp, double angle, Eigen::Vector3d axis, Eigen::Vector3d rotationCenter);
 };
