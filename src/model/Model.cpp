@@ -295,8 +295,10 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
     }
 
     pickActionClient->sendGoal(goal);
+    sleep(250);
     if (!pickActionClient->waitForResult()) {
         ROS_INFO_STREAM("Pickup action returned early");
+        sleep(250);
     }
 
     ROS_INFO("###########################");
