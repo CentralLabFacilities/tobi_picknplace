@@ -616,13 +616,13 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
     
     // place down in base_link ?
     if (params.robot == "tobi") {
-        pl.pre_place_approach.direction.vector.x = -1.0;
+        pl.pre_place_approach.direction.vector.x = 0.0;
         pl.pre_place_approach.direction.vector.y = 0.0;
-        pl.pre_place_approach.direction.vector.z = 0.0;
+        pl.pre_place_approach.direction.vector.z = -1.0;
     } else if (params.robot == "meka") {
         pl.pre_place_approach.direction.vector.x = 0.0;
         pl.pre_place_approach.direction.vector.y = 0.0;
-        pl.pre_place_approach.direction.vector.z = -1.0;// meka->hand_tool_frame_left = z is in direction of the palm, x in negative direction of the thumb if sticking out
+        pl.pre_place_approach.direction.vector.z = -1.0;//meka->hand_tool_frame_left = z is in direction of the palm, x in negative direction of the thumb if sticking out.
     } else {
         ROS_ERROR("No known robot name, robot name should be tobi or meka");
     }
