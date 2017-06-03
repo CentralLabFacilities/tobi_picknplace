@@ -645,7 +645,7 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
         ROS_ERROR("No known robot name, robot name should be tobi or meka");
     }
     pl.post_place_retreat.direction.header.stamp = ros::Time::now();
-    pl.post_place_retreat.direction.header.frame_id = params.frameGripper; // retreat allways away from object and not up in world coordinates
+    pl.post_place_retreat.direction.header.frame_id = groupArm->getEndEffectorLink(); // retreat allways away from object and not up in world coordinates
     pl.post_place_retreat.min_distance = params.liftUpMinDistance;
     pl.post_place_retreat.desired_distance = params.liftUpDesiredDistance;
 
