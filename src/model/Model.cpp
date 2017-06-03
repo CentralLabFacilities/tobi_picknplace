@@ -16,6 +16,9 @@
 #include <eigen3/Eigen/src/Core/PlainObjectBase.h>
 #include <eigen3/Eigen/src/Geometry/Quaternion.h>
 
+#include <thread>
+#include <chrono>
+
 #include "../grasping/CentroidGrasping.h"
 #include "../interface/AGNIInterface.h"
 
@@ -295,15 +298,16 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
     }
 
     pickActionClient->sendGoal(goal);
-    sleep(250);
     if (!pickActionClient->waitForResult()) {
         ROS_INFO_STREAM("Pickup action returned early");
-        sleep(250);
     }
 
     ROS_INFO("###########################");
+    ros::Duration(0.25).sleep();
+    ROS_DEBUG_STEAM("pickActionClient State " << pickActionClient->getState().text_);
     while(pickActionClient->getState() == SimpleClientGoalState::ACTIVE) {
         ROS_INFO("Grasp Active. Looping.");
+        ros::Duration(0.25).sleep();
     }
     if (pickActionClient->getState() == SimpleClientGoalState::SUCCEEDED) {
         ROS_INFO("Pick Action succeeded. (err_code: %d, state: %s)", pickActionClient->getResult()->error_code.val, pickActionClient->getState().toString().c_str());
