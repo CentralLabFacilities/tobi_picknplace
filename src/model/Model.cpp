@@ -721,7 +721,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     pl.place_pose.header.frame_id = lastGraspTried.header.frame_id; //"base_link";//colSurface.header.frame_id; //baselink for clafu
     pl.place_pose.pose.position.x = surfaceCenterX;
     pl.place_pose.pose.position.y = surfaceCenterY;
-    pl.place_pose.pose.position.z = surfaceCenterZ + (lastHeightAboveTable + 5) + surfaceSizeZ / 2;
+    pl.place_pose.pose.position.z = surfaceCenterZ + (lastHeightAboveTable + 0.05) + surfaceSizeZ / 2;
     
     //pl.place_pose.pose.orientation.w = 1; Johannes: Does this make sense on the meka? Flips place poses for tobi
     fillPlace(pl);
