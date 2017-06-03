@@ -731,33 +731,32 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 
     float rounds = 5; //TODO: Parameters for theses values
     int place_rot = 8;
-    int rotation = 20;
+    int rotation = 10;
     for (int x = 0; x < rounds; x++) {
         for (int y = 0; y < place_rot; y++) {
-//            moveit_msgs::PlaceLocation pl;
-//            float param = y * 2 * M_PI / place_rot;
-//            pl.place_pose.pose.position.x = surfaceCenterX + (surfaceSizeX / 2) /4 * (x / rounds) * sin(param);
-//            pl.place_pose.pose.position.y = surfaceCenterY + (surfaceSizeY / 2) /4 * (x / rounds) * cos(param);
-//            pl.place_pose.pose.position.z = surfaceCenterZ + (lastHeightAboveTable/2) + surfaceSizeZ / 2; //TODO: use object height here instead of lastHeightAboveTable?
-//            pl.place_pose.pose.orientation.w = 1;  
-//            fillPlace(pl);
-//            pls.push_back(pl);
-//            Eigen::Quaternionf quat(orientMsg.w, orientMsg.x, orientMsg.y, orientMsg.z);
+            //vary location of place
+            moveit_msgs::PlaceLocation pl;
+            float param = y * 2 * M_PI / place_rot;
+            pl.place_pose.header.frame_id = lastGraspTried.header.frame_id;
+            pl.place_pose.pose.position.x = surfaceCenterX + (surfaceSizeX / 2) /4 * (x / rounds) * sin(param);
+            pl.place_pose.pose.position.y = surfaceCenterY + (surfaceSizeY / 2) /4 * (x / rounds) * cos(param);
+            pl.place_pose.pose.position.z = surfaceCenterZ + (lastHeightAboveTable + 0.05) + surfaceSizeZ / 2; //TODO: use object height here instead of lastHeightAboveTable?
+            pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
+            fillPlace(pl);
+            pls.push_back(pl);
 
-            for (int r = 0; r < rotation; r++) {
-                float rot = 2 * M_PI * r / rotation;
-                Eigen::Quaternionf rotate(Eigen::AngleAxisf(rot, Eigen::Vector3f::UnitZ()));
-                Eigen::Matrix3f result = (rotate.toRotationMatrix()); //* quat.toRotationMatrix());
-                Eigen::Quaternionf quatresult(result);
-                quatresult.normalize();
-                pl.place_pose.pose.orientation.x = quatresult.x();
-                pl.place_pose.pose.orientation.y = quatresult.y();
-                pl.place_pose.pose.orientation.z = quatresult.z();
-                pl.place_pose.pose.orientation.w = quatresult.w();
-                fillPlace(pl);
+            //vary orientation of gripper only around base_link's z axis to keep object in same orientation
+            for (int r = -10; r < rotation; r++) {
+                Eigen::Affine3d graspPose;
+                tf2::fromMsg(lastGraspPose.pose, graspPose);
+                Eigen::Vector3d rotationCenter;
+                tf2::fromMsg(pl.place_pose.pose.position, graspPos);
+
+                float angle = (M_PI / 2) * r / rotation;
+                Eigen::Affine3d A = Eigen::Translation3d(rotationCenter) * Eigen::AngleAxisd(angle, Eigen::Vector3f::UnitZ()) * Eigen::Translation3d(-rotationCenter);
+                A = A * graspPose;
+                pl.place_pose.pose = Eigen::toMsg(A);
                 pls.push_back(pl);
-                    ROS_INFO_STREAM("Rotated object " << lastGraspTried.header.frame_id);
-
             }
         }
     }
