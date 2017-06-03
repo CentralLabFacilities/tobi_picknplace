@@ -304,7 +304,7 @@ GraspReturnType Model::graspObject(const string &obj, const string &surface, con
 
     ROS_INFO("###########################");
     ros::Duration(0.25).sleep();
-    ROS_DEBUG_STEAM("pickActionClient State " << pickActionClient->getState().text_);
+    ROS_DEBUG_STREAM("pickActionClient State " << pickActionClient->getState().text_);
     while(pickActionClient->getState() == SimpleClientGoalState::ACTIVE) {
         ROS_INFO("Grasp Active. Looping.");
         ros::Duration(0.25).sleep();
