@@ -731,15 +731,15 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     pl.id = "orig";
     pls.push_back(pl);
 
-    int xSteps = 10; //TODO: Parameters for theses values
-    int ySteps = 10;
-    double xStepSize = ((surfaceSizeX/2) * (1-(4/xSteps))) / xSteps;
-    double yStepSize = ((surfaceSizeY/2) * (1-(4/ySteps))) / ySteps;
+    double xSteps = 10.0; //TODO: Parameters for theses values
+    double ySteps = 10.0;
+    double xStepSize = ((surfaceSizeX/2) * (1.0-(4.0/xSteps))) / xSteps;
+    double yStepSize = ((surfaceSizeY/2) * (1.0-(4.0/ySteps))) / ySteps;
     ROS_INFO_STREAM("surfaceCenterX" << surfaceCenterX << "\n" << "surfaceCenterY" << surfaceCenterY << "\n");
     ROS_INFO_STREAM("surfaceSizeX" << surfaceSizeX << "\n" << "surfaceSizeY" << surfaceSizeY << "\n" << "xStepSize" << xStepSize << "\n" << "yStepSize" << yStepSize << "\n");
     int rotation = 10;
-    for (int x = -10; x < xSteps; x++) {
-        for (int y = -10; y < ySteps; y++) {
+    for (int x = -10; x <= xSteps; x++) {
+        for (int y = -10; y <= ySteps; y++) {
             //vary location of place
             moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = lastGraspTried.header.frame_id;
