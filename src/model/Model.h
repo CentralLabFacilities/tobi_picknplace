@@ -15,6 +15,7 @@
 #include <moveit_msgs/PlaceAction.h>
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
+#include <tf2_eigen/tf2_eigen.h>
 
 #include "ModelTypes.h"
 

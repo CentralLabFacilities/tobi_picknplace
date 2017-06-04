@@ -750,10 +750,10 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
                 Eigen::Affine3d graspPose;
                 tf2::fromMsg(lastGraspPose.pose, graspPose);
                 Eigen::Vector3d rotationCenter;
-                tf2::fromMsg(pl.place_pose.pose.position, graspPos);
+                tf2::fromMsg(pl.place_pose.pose.position, rotationCenter);
 
-                float angle = (M_PI / 2) * r / rotation;
-                Eigen::Affine3d A = Eigen::Translation3d(rotationCenter) * Eigen::AngleAxisd(angle, Eigen::Vector3f::UnitZ()) * Eigen::Translation3d(-rotationCenter);
+                double angle = (M_PI / 2) * r / rotation;
+                Eigen::Affine3d A = Eigen::Translation3d(rotationCenter) * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()) * Eigen::Translation3d(-rotationCenter);
                 A = A * graspPose;
                 pl.place_pose.pose = Eigen::toMsg(A);
                 pls.push_back(pl);
