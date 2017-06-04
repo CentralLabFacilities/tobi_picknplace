@@ -741,7 +741,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             //vary location of place
             moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = lastGraspTried.header.frame_id;
-            pl.place_pose.pose.position.x = surfaceCenterX + xStepsize * x;
+            pl.place_pose.pose.position.x = surfaceCenterX + xStepSize * x;
             pl.place_pose.pose.position.y = surfaceCenterY + yStepSize * y;
             pl.place_pose.pose.position.z = placeHeight;
             pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
