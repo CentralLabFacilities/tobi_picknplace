@@ -765,9 +765,17 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
                 A = A * placePose;
                 plr.place_pose.pose = Eigen::toMsg(A);
                 plr.id = pl.id + "var" + std::to_string(r);
+                fillPlace(plr);
                 pls.push_back(plr);
             }
         }
+    }
+
+    //vary place height
+    for(moveit_msgs::PlaceLocation &i : pls) {
+        moveit_msgs::PlaceLocation newPlace = i;
+        newPlace.place_pose.pose.position.z = newPlace.place_pose.pose.position.z - 0.025;
+        pls.push_back(newPlace);
     }
     return pls;
 }
