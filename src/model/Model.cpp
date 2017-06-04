@@ -733,14 +733,16 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 
     int xSteps = 10; //TODO: Parameters for theses values
     int ySteps = 10;
+    double xStepSize = ((surfaceSizeX/2) * (1-(2/xSteps))) / xSteps;
+    double yStepSize = ((surfaceSizeY/2) * (1-(2/ySteps))) / ySteps;
     int rotation = 10;
     for (int x = -10; x < xSteps; x++) {
         for (int y = -10; y < ySteps; y++) {
             //vary location of place
             moveit_msgs::PlaceLocation pl;
             pl.place_pose.header.frame_id = lastGraspTried.header.frame_id;
-            pl.place_pose.pose.position.x = surfaceCenterX + ((surfaceSizeX/2)/xSteps) * x;
-            pl.place_pose.pose.position.y = surfaceCenterY + ((surfaceSizeY/2)/ySteps) * y;
+            pl.place_pose.pose.position.x = surfaceCenterX + xStepsize * x;
+            pl.place_pose.pose.position.y = surfaceCenterY + yStepSize * y;
             pl.place_pose.pose.position.z = placeHeight;
             pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
             pl.id = "x" + std::to_string(xSteps) + "y" + std::to_string(ySteps);
