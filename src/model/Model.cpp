@@ -721,41 +721,45 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     pl.place_pose.header.frame_id = lastGraspTried.header.frame_id; //"base_link";//colSurface.header.frame_id; //baselink for clafu
     pl.place_pose.pose.position.x = surfaceCenterX;
     pl.place_pose.pose.position.y = surfaceCenterY;
-    pl.place_pose.pose.position.z = surfaceCenterZ + (lastHeightAboveTable + 0.05) + surfaceSizeZ / 2;
+    double placeHeight = surfaceCenterZ + (lastHeightAboveTable + 0.05) + surfaceSizeZ / 2;
+    pl.place_pose.pose.position.z = placeHeight;
 
     pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
     
     //pl.place_pose.pose.orientation.w = 1; Johannes: Does this make sense on the meka? Flips place poses for tobi
     fillPlace(pl);
+    pl.id = "orig";
     pls.push_back(pl);
 
-    float rounds = 5; //TODO: Parameters for theses values
-    int place_rot = 8;
+    int xSteps = 10; //TODO: Parameters for theses values
+    int ySteps = 10;
     int rotation = 10;
-    for (int x = 0; x < rounds; x++) {
-        for (int y = 0; y < place_rot; y++) {
+    for (int x = -10; x < xSteps; x++) {
+        for (int y = -10; y < ySteps; y++) {
             //vary location of place
             moveit_msgs::PlaceLocation pl;
-            float param = y * 2 * M_PI / place_rot;
             pl.place_pose.header.frame_id = lastGraspTried.header.frame_id;
-            pl.place_pose.pose.position.x = surfaceCenterX + (surfaceSizeX / 2) /4 * (x / rounds) * sin(param);
-            pl.place_pose.pose.position.y = surfaceCenterY + (surfaceSizeY / 2) /4 * (x / rounds) * cos(param);
-            pl.place_pose.pose.position.z = surfaceCenterZ + (lastHeightAboveTable + 0.05) + surfaceSizeZ / 2; //TODO: use object height here instead of lastHeightAboveTable?
+            pl.place_pose.pose.position.x = surfaceCenterX + ((surfaceSizeX/2)/xSteps) * x;
+            pl.place_pose.pose.position.y = surfaceCenterY + ((surfaceSizeY/2)/ySteps) * y;
+            pl.place_pose.pose.position.z = placeHeight;
             pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
+            pl.id = "x" + std::to_string(xSteps) + "y" + std::to_string(ySteps);
+
             fillPlace(pl);
             pls.push_back(pl);
 
             //vary orientation of gripper only around base_link's z axis to keep object in same orientation
             for (int r = -10; r < rotation; r++) {
-                Eigen::Affine3d graspPose;
-                tf2::fromMsg(lastGraspPose.pose, graspPose);
+                Eigen::Affine3d placePose;
+                tf2::fromMsg(pl.place_pose.pose, placePose);
                 Eigen::Vector3d rotationCenter;
                 tf2::fromMsg(pl.place_pose.pose.position, rotationCenter);
 
                 double angle = (M_PI / 2) * r / rotation;
                 Eigen::Affine3d A = Eigen::Translation3d(rotationCenter) * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()) * Eigen::Translation3d(-rotationCenter);
-                A = A * graspPose;
+                A = A * placePose;
                 pl.place_pose.pose = Eigen::toMsg(A);
+                pl.id = pl.id + "var" + std::to_string(r);
                 pls.push_back(pl);
             }
         }
