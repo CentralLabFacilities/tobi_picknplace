@@ -733,8 +733,8 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 
     int xSteps = 10; //TODO: Parameters for theses values
     int ySteps = 10;
-    double xStepSize = ((surfaceSizeX/2) * (1-(2/xSteps))) / xSteps;
-    double yStepSize = ((surfaceSizeY/2) * (1-(2/ySteps))) / ySteps;
+    double xStepSize = ((surfaceSizeX/2) * (1-(4/xSteps))) / xSteps;
+    double yStepSize = ((surfaceSizeY/2) * (1-(4/ySteps))) / ySteps;
     int rotation = 10;
     for (int x = -10; x < xSteps; x++) {
         for (int y = -10; y < ySteps; y++) {
@@ -751,18 +751,19 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             pls.push_back(pl);
 
             //vary orientation of gripper only around base_link's z axis to keep object in same orientation
+            Eigen::Affine3d placePose;
+            tf2::fromMsg(pl.place_pose.pose, placePose);
+            Eigen::Vector3d rotationCenter;
+            tf2::fromMsg(pl.place_pose.pose.position, rotationCenter);
             for (int r = -10; r < rotation; r++) {
-                Eigen::Affine3d placePose;
-                tf2::fromMsg(pl.place_pose.pose, placePose);
-                Eigen::Vector3d rotationCenter;
-                tf2::fromMsg(pl.place_pose.pose.position, rotationCenter);
-
+                moveit_msgs::PlaceLocation plr;
+                plr.place_pose.header.frame_id = lastGraspTried.header.frame_id;
                 double angle = (M_PI / 2) * r / rotation;
                 Eigen::Affine3d A = Eigen::Translation3d(rotationCenter) * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()) * Eigen::Translation3d(-rotationCenter);
                 A = A * placePose;
-                pl.place_pose.pose = Eigen::toMsg(A);
-                pl.id = pl.id + "var" + std::to_string(r);
-                pls.push_back(pl);
+                plr.place_pose.pose = Eigen::toMsg(A);
+                plr.id = pl.id + "var" + std::to_string(r);
+                pls.push_back(plr);
             }
         }
     }
