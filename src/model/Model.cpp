@@ -616,7 +616,7 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
     
     // place down in base_link ?
     if (params.robot == "tobi") {
-        pl.pre_place_approach.direction.vector.x = 1.0;
+        pl.pre_place_approach.direction.vector.x = 0.0;
         pl.pre_place_approach.direction.vector.y = 0.0;
         pl.pre_place_approach.direction.vector.z = 0.0;
     } else if (params.robot == "meka") {
@@ -735,6 +735,8 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     int ySteps = 10;
     double xStepSize = ((surfaceSizeX/2) * (1-(4/xSteps))) / xSteps;
     double yStepSize = ((surfaceSizeY/2) * (1-(4/ySteps))) / ySteps;
+    ROS_INFO_STREAM("surfaceCenterX" << surfaceCenterX << "\n" << "surfaceCenterY" << surfaceCenterY << "\n");
+    ROS_INFO_STREAM("surfaceSizeX" << surfaceSizeX << "\n" << "surfaceSizeY" << surfaceSizeY << "\n" << "xStepSize" << xStepSize << "\n" << "yStepSize" << yStepSize << "\n");
     int rotation = 10;
     for (int x = -10; x < xSteps; x++) {
         for (int y = -10; y < ySteps; y++) {
