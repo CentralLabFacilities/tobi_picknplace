@@ -618,7 +618,7 @@ void Model::fillPlace(moveit_msgs::PlaceLocation& pl) {
     if (params.robot == "tobi") {
         pl.pre_place_approach.direction.vector.x = 1.0;
         pl.pre_place_approach.direction.vector.y = 0.0;
-        pl.pre_place_approach.direction.vector.z = 0.0;
+        pl.pre_place_approach.direction.vector.z = -1.0;
     } else if (params.robot == "meka") {
         pl.pre_place_approach.direction.vector.x = 0.0;
         pl.pre_place_approach.direction.vector.y = 0.0;
@@ -662,15 +662,25 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
           ROS_INFO_STREAM("Use default orientation");
           orientation = tf::createQuaternionFromRPY(-M_PI_2, 0, 0);
       }**/
-    if (lastHeightAboveTable == 0.0) {
-        lastHeightAboveTable = 0.15;
-        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
-    }
+//    if (lastHeightAboveTable == 0.0) {
+//        lastHeightAboveTable = 0.15;
+//        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
+//    }
 
     std::vector<moveit_msgs::PlaceLocation> pls;
 
     moveit_msgs::CollisionObject colSurface; // "surface" is the object where the attached object should be placed on
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
+
+    moveit_msgs::CollisionObject objectToPlace;
+    rosTools.getCollisionObjectByName(graspedObjectID, objectToPlace);
+
+    double objectHeight;
+    if (objectToPlace.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
+        objectHeight = colSurface.primitives[0].dimensions[0]; //height
+    } else if (colSurface.primitives[0].type == shape_msgs::SolidPrimitive::BOX) {
+        objectHeight = colSurface.primitives[0].dimensions[2]; //z
+    }
 
     if (!success) {
         ROS_WARN_STREAM("No CollisionObject for Placing with Name: " << surface << " try default: " << DEFAULT_SURFACE);
@@ -721,12 +731,12 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     pl.place_pose.header.frame_id = lastGraspTried.header.frame_id; //"base_link";//colSurface.header.frame_id; //baselink for clafu
     pl.place_pose.pose.position.x = surfaceCenterX;
     pl.place_pose.pose.position.y = surfaceCenterY;
-    double placeHeight = surfaceCenterZ + (lastHeightAboveTable + 0.05) + surfaceSizeZ / 2;
+    double placeHeight = surfaceCenterZ + ((objectHeight/2.0) + 0.03) + (surfaceSizeZ / 2);
     pl.place_pose.pose.position.z = placeHeight;
 
-    pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
+    //pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
     
-    //pl.place_pose.pose.orientation.w = 1; Johannes: Does this make sense on the meka? Flips place poses for tobi
+    pl.place_pose.pose.orientation.w = 1;
     fillPlace(pl);
     pl.id = "orig";
     pls.push_back(pl);
@@ -735,8 +745,6 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     double ySteps = 10.0;
     double xStepSize = ((surfaceSizeX/2) * (1.0-(2.0/xSteps))) / xSteps;
     double yStepSize = ((surfaceSizeY/2) * (1.0-(2.0/ySteps))) / ySteps;
-    ROS_INFO_STREAM("surfaceCenterX" << surfaceCenterX << "\n" << "surfaceCenterY" << surfaceCenterY << "\n");
-    ROS_INFO_STREAM("surfaceSizeX" << surfaceSizeX << "\n" << "surfaceSizeY" << surfaceSizeY << "\n" << "xStepSize" << xStepSize << "\n" << "yStepSize" << yStepSize << "\n");
     int rotation = 10;
     for (int x = -10; x <= xSteps; x++) {
         for (int y = -10; y <= ySteps; y++) {
@@ -746,7 +754,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             pl.place_pose.pose.position.x = surfaceCenterX + xStepSize * x;
             pl.place_pose.pose.position.y = surfaceCenterY + yStepSize * y;
             pl.place_pose.pose.position.z = placeHeight;
-            pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
+            pl.place_pose.pose.orientation.w = 1;
             pl.id = "x" + std::to_string(xSteps) + "y" + std::to_string(ySteps);
 
             fillPlace(pl);
@@ -760,7 +768,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             for (int r = -10; r < rotation; r++) {
                 moveit_msgs::PlaceLocation plr;
                 plr.place_pose.header.frame_id = lastGraspTried.header.frame_id;
-                double angle = (M_PI / 2) * r / rotation;
+                double angle = M_PI * r / rotation;
                 Eigen::Affine3d A = Eigen::Translation3d(rotationCenter) * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()) * Eigen::Translation3d(-rotationCenter);
                 A = A * placePose;
                 plr.place_pose.pose = Eigen::toMsg(A);
@@ -772,12 +780,12 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     }
 
     //vary place height
-    for(moveit_msgs::PlaceLocation &i : pls) {
-        moveit_msgs::PlaceLocation newPlace = i;
-        newPlace.place_pose.pose.position.z = newPlace.place_pose.pose.position.z - 0.025;
-        pls.push_back(newPlace);
-    }
-    return pls;
+//    for(moveit_msgs::PlaceLocation &i : pls) {
+//        moveit_msgs::PlaceLocation newPlace = i;
+//        newPlace.place_pose.pose.position.z = newPlace.place_pose.pose.position.z - 0.025;
+//        pls.push_back(newPlace);
+//    }
+//    return pls;
 }
 
 std::string Model::getSurfaceByHeight(const float h) {
