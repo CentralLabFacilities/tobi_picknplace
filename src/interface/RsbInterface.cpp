@@ -178,7 +178,7 @@ public:
 
     boost::shared_ptr<void> closeGripperByForce() {
         ROS_DEBUG_STREAM("Invoked closeGripperByForce");
-        listener->requestCloseGripper(true);
+        listener->requestCloseGripper(false);
         return boost::shared_ptr<void>();
     }
 
