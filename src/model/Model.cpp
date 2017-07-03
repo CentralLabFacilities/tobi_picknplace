@@ -734,7 +734,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     pl.place_pose.pose.position.x = surfaceCenterX;
     pl.place_pose.pose.position.y = surfaceCenterY;
     double placeHeight = surfaceCenterZ + ((objectHeight/2.0) + 0.03) + (surfaceSizeZ / 2);
-    ROS_DEBUG_STREAM("SurfaceCenterZ: "<<surfaceCeterZ<<" surfaceSizeZ: "<<surfaceSizeZ);
+    ROS_DEBUG_STREAM("SurfaceCenterZ: "<<surfaceCenterZ<< "objectHeight/2: " << objectHeight/2 <<" surfaceSizeZ: "<<surfaceSizeZ);
     pl.place_pose.pose.position.z = placeHeight;
 
     //pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
