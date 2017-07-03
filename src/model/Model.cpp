@@ -719,11 +719,13 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     if (surfaceSizeY < 0)
         surfaceSizeY = 0;
 
-    ROS_DEBUG_STREAM("Placesize X: " << surfaceSizeX << "PlaceSize Y: " << surfaceSizeY);
+    ROS_DEBUG_STREAM("Placesize X: " << surfaceSizeX << " PlaceSize Y: " << surfaceSizeY << " PlaceSize Z: "<< surfaceSizeZ);
 
     float surfaceCenterX = colSurface.primitive_poses[0].position.x;
     float surfaceCenterY = colSurface.primitive_poses[0].position.y;
     float surfaceCenterZ = colSurface.primitive_poses[0].position.z;
+    
+    
     
     ROS_INFO_STREAM("Place object in frame " << lastGraspTried.header.frame_id);
     moveit_msgs::PlaceLocation pl;
@@ -732,6 +734,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     pl.place_pose.pose.position.x = surfaceCenterX;
     pl.place_pose.pose.position.y = surfaceCenterY;
     double placeHeight = surfaceCenterZ + ((objectHeight/2.0) + 0.03) + (surfaceSizeZ / 2);
+    ROS_DEBUG_STREAM("SurfaceCenterZ: "<<surfaceCeterZ<<" surfaceSizeZ: "<<surfaceSizeZ);
     pl.place_pose.pose.position.z = placeHeight;
 
     //pl.place_pose.pose.orientation = lastGraspPose.pose.orientation;
