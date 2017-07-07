@@ -673,7 +673,13 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     bool success = rosTools.getCollisionObjectByName(surface, colSurface);
 
     moveit_msgs::CollisionObject objectToPlace;
-    rosTools.getCollisionObjectByName(graspedObjectID, objectToPlace);
+    bool successObj = rosTools.getCollisionObjectByName(graspedObjectID, objectToPlace);
+
+	
+    if(!successObj){
+	ROS_ERROR_STREAM("No Object attached to Gripper with Name: " << graspedObjectID);
+        return pls;
+    }
 
     double objectHeight;
     if (objectToPlace.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
