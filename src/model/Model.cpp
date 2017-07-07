@@ -68,15 +68,15 @@ Model::Model() {
 
     pickActionClient.reset(
             new actionlib::SimpleActionClient<moveit_msgs::PickupAction>(nh,
-            move_group::PICKUP_ACTION, false));
+            "pickup", false));
     placeActionClient.reset(
             new actionlib::SimpleActionClient<moveit_msgs::PlaceAction>(nh,
-            move_group::PLACE_ACTION, false));
+            "place", false));
 
     rosTools.waitForAction(pickActionClient, ros::Duration(0, 0),
-            move_group::PICKUP_ACTION);
+           "pickup");
     rosTools.waitForAction(placeActionClient, ros::Duration(0, 0),
-            move_group::PLACE_ACTION);
+           "place");
 }
 
 void Model::stop() const {
