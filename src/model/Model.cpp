@@ -677,9 +677,9 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 
     double objectHeight;
     if (objectToPlace.primitives[0].type == shape_msgs::SolidPrimitive::CYLINDER) {
-        objectHeight = colSurface.primitives[0].dimensions[0]; //height
+        objectHeight = objectToPlace.primitives[0].dimensions[0]; //height
     } else if (colSurface.primitives[0].type == shape_msgs::SolidPrimitive::BOX) {
-        objectHeight = colSurface.primitives[0].dimensions[2]; //z
+        objectHeight = objectToPlace.primitives[0].dimensions[2]; //z
     }
 
     if (!success) {
