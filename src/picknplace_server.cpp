@@ -72,17 +72,22 @@ int main(int argc, char **argv) {
 	Model::Ptr model = ModelFactory::create(vm["model"].as<string>());
 
 	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));
+    cout << "a" << endl;
 	if (vm.count("transitions")) {
 		TransitionsReader reader;
 		vector<Transition> t = reader.read(vm["transitions"].as<string>());
 		strategy->setTransitions(t);
 	}
-
+    cout << "b" << endl;
 	RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
+    cout << "c" << endl;
 	ViewInterface::Ptr viewInterface(new ViewInterface());
+    cout << "d" << endl;
 
 	Controller controller(model, strategy);
+    cout << "e" << endl;
 	controller.addControlInterface(rsbInterface);
+    cout << "f" << endl;
 	controller.addControlInterface(viewInterface);
 
 	cout << "running ..." << endl;
