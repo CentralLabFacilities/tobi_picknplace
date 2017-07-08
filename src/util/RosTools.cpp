@@ -32,7 +32,7 @@ RosTools::RosTools() {
 
     std::string service = "/display_grasp";
     ROS_INFO_NAMED(NAME, "Wait for Service: %s", service.c_str());
-    ros::service::waitForService(service);
+    //ros::service::waitForService(service);
     // TODO test if service was found
     grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
 
