@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>biron_posture_execution_msgs</name>
+  <version>1.0.7</version>
+  <description>
+     This package contains messages for Biron Posture Execution
+  </description>
+  <license>GPL</license>
+  <maintainer email="ffriese@techfak.uni-bielefeld.de">Felix Friese</maintainer>
+  <author>Felix Friese</author>
+
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

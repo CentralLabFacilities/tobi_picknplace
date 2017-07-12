@@ -32,7 +32,6 @@ set(CTKN_PKGS
     moveit_msgs
     visualization_msgs
     grasping_msgs
-    message_generation
 )
 
 
@@ -58,17 +57,6 @@ endif(WITH_KATANA)
 
 include_directories(${catkin_INCLUDE_DIRS})
 
-## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   BironPostureExecution.srv
-)
-
-## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   std_msgs
-)
 
 
 

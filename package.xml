@@ -61,7 +61,6 @@
   <run_depend>grasp_viewer</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>katana_msgs</run_depend>
-  <run_depend>message_generation</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
