@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 		strategy->setTransitions(t);
     }
     RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
-    ServiceInterface::Ptr serviceInterface(new ServiceInterface("/biron_posture"));
+    ServiceInterface::Ptr serviceInterface(new ServiceInterface("bla", "/biron_posture"));
     ViewInterface::Ptr viewInterface(new ViewInterface());
     Controller controller(model, strategy);
     controller.addControlInterface(rsbInterface);
