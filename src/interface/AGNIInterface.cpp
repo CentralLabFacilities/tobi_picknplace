@@ -26,7 +26,7 @@ AGNIInterface::AGNIInterface() {
 	cl_agni.reset(
 	            new actionlib::SimpleActionClient<grasping_msgs::GraspPlanningAction>(
 	                    nh_, ParamReader::getParamReader().graspNode, false));
-
+/*
 	rosTools.waitForAction(cl_object_fitter, ros::Duration(0, 0), ParamReader::getParamReader().fitterNode);
 	rosTools.waitForAction(cl_agni, ros::Duration(0, 0), ParamReader::getParamReader().graspNode);
 
@@ -35,7 +35,7 @@ AGNIInterface::AGNIInterface() {
 
 	if (cl_agni->isServerConnected())
         ROS_INFO_STREAM("Grasp manager server connected!");
-
+*/
 	//string service = "/display_grasp";
 
 	pub_markers = nh_.advertise<visualization_msgs::Marker>("/primitive_marker", 10);
