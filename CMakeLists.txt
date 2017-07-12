@@ -32,7 +32,9 @@ set(CTKN_PKGS
     moveit_msgs
     visualization_msgs
     grasping_msgs
+    message_generation
 )
+
 
 set(CTKN_CMPNTS
     ${CTKN_PKGS}
@@ -56,6 +58,20 @@ endif(WITH_KATANA)
 
 include_directories(${catkin_INCLUDE_DIRS})
 
+## Generate services in the 'srv' folder
+ add_service_files(
+   FILES
+   BironPostureExecution.srv
+)
+
+## Generate added messages and services with any dependencies listed here
+ generate_messages(
+   DEPENDENCIES
+   std_msgs
+)
+
+
+
 if(WITH_KATANA)
     catkin_package(CATKIN_DEPENDS
         ${CTKN_PKGS}
@@ -68,6 +84,11 @@ else(WITH_KATANA)
         ${CTKN_PKGS}
 )
 endif(WITH_KATANA)
+
+
+
+
+
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system filesystem thread)
@@ -98,6 +119,7 @@ set(DEFAULT_FILES
   src/grasping/CentroidGrasping.cpp
   src/interface/AGNIInterface.cpp
   src/interface/RsbInterface.cpp
+  src/interface/ServiceInterface.cpp
   src/interface/ViewInterface.cpp
   src/model/ModelFactory.cpp
   src/util/TransitionReader.cpp

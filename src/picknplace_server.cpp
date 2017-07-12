@@ -9,6 +9,7 @@
 #include "control/ViaPoseStrategy.h"
 #include "model/ModelFactory.h"
 #include "interface/RsbInterface.h"
+#include "interface/ServiceInterface.h"
 #include "interface/ViewInterface.h"
 #include <boost/program_options.hpp>
 
@@ -68,27 +69,22 @@ int main(int argc, char **argv) {
         ros::shutdown();
         return 0;
     }
-    cout << "ModelxsDASDASD: " << vm["model"].as<string>() << endl;
+    cout << "Model: " << vm["model"].as<string>() << endl;
 	Model::Ptr model = ModelFactory::create(vm["model"].as<string>());
 
-	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));
-    cout << "a" << endl;
+    ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));
 	if (vm.count("transitions")) {
 		TransitionsReader reader;
 		vector<Transition> t = reader.read(vm["transitions"].as<string>());
 		strategy->setTransitions(t);
-	}
-    cout << "b" << endl;
-	RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
-    cout << "c" << endl;
-	ViewInterface::Ptr viewInterface(new ViewInterface());
-    cout << "d" << endl;
-
-	Controller controller(model, strategy);
-    cout << "e" << endl;
-	controller.addControlInterface(rsbInterface);
-    cout << "f" << endl;
-	controller.addControlInterface(viewInterface);
+    }
+    RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
+    ServiceInterface::Ptr serviceInterface(new ServiceInterface("/biron_posture"));
+    ViewInterface::Ptr viewInterface(new ViewInterface());
+    Controller controller(model, strategy);
+    controller.addControlInterface(rsbInterface);
+    controller.addControlInterface(serviceInterface);
+    controller.addControlInterface(viewInterface);
 
 	cout << "running ..." << endl;
 
