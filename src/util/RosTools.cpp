@@ -44,6 +44,7 @@ RosTools::~RosTools() {
 
 MoveResult RosTools::moveResultFromMoveit(
         moveit::planning_interface::MoveItErrorCode errorCode) {
+    cout << "in result" << endl;
     switch (errorCode.val) {
         case moveit_msgs::MoveItErrorCodes::SUCCESS:
             return SUCCESS;

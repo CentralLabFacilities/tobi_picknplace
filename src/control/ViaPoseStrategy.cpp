@@ -101,6 +101,7 @@ GraspReturnType ViaPoseStrategy::placeObject(EefPose obj, bool simulate) {
 bool ViaPoseStrategy::planTo(const string& poseName)
 {
 	MoveResult success = model->moveTo(poseName, true);
+	cout << "in stragegy" << endl;
 	if (success != SUCCESS) {
 		ROS_ERROR_STREAM("Cannot find a plan to pose \"" << poseName << "\"");
 		return false;
