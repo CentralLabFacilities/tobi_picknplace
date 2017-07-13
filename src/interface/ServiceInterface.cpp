@@ -49,29 +49,27 @@ public:
 
         if(request.method == METHOD_PLACE_ON_SURFACE){
             ROS_INFO_STREAM("Method: " << METHOD_PLACE_ON_SURFACE);
-            listener->requestPlaceObject(request.args, false);
-            response.success = true;
-        }
+            GraspReturnType grt = listener->requestPlaceObject(request.args, false);
 
-        if(request.method == METHOD_OPEN){
+            if(grt.result == GraspReturnType::SUCCESS){
+                response.success = true;
+            } else {
+                response.success = false;
+            }
+
+        } else if(request.method == METHOD_OPEN){
             ROS_INFO_STREAM("Method: " << METHOD_OPEN);
             listener->requestOpenGripper(false);
             response.success = true;
-        }
-
-        if(request.method == METHOD_OPEN_TOUCH){
+        } else if(request.method == METHOD_OPEN_TOUCH){
             ROS_INFO_STREAM("Method: " << METHOD_OPEN_TOUCH);
             listener->requestOpenGripper(true);
             response.success = true;
-        }
-
-        if(request.method == METHOD_CLOSE){
+        } else if(request.method == METHOD_CLOSE){
             ROS_INFO_STREAM("Method: " << METHOD_CLOSE);
             listener->requestCloseGripper(false);
             response.success = true;
-        }
-
-        if(request.method == METHOD_PLAN){
+        } else if(request.method == METHOD_PLAN){
             ROS_INFO_STREAM("Method: " << METHOD_PLAN);
             bool success = listener->requestPlanTo(request.args);
             response.success = success;
