@@ -73,8 +73,6 @@ Model::Model() {
             new actionlib::SimpleActionClient<moveit_msgs::PlaceAction>(nh,
             "place", false));
 
-    rosTools.waitForAction(pickActionClient, ros::Duration(0, 0),
-           "pickup");
     rosTools.waitForAction(placeActionClient, ros::Duration(0, 0),
            "place");
 }

@@ -70,10 +70,13 @@ int main(int argc, char **argv) {
 		vector<Transition> t = reader.read(vm["transitions"].as<string>());
 		strategy->setTransitions(t);
     }
-    RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
+
     ServiceInterface::Ptr serviceInterface(new ServiceInterface("/biron_posture"));
+    RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
     ViewInterface::Ptr viewInterface(new ViewInterface());
+
     Controller controller(model, strategy);
+
     controller.addControlInterface(rsbInterface);
     controller.addControlInterface(serviceInterface);
     controller.addControlInterface(viewInterface);

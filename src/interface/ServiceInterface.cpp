@@ -16,9 +16,9 @@
 class ServiceInterface::Private {
 public:
 
-    Private(std::string service_name) :
+    Private(const std::string &service_name) :
             listener(new EmptyControlInterfaceListener()) {
-            ROS_INFO_STREAM("creating " << service_name << " ...");
+            ROS_INFO_STREAM("creating service " << service_name);
             service_ptr_.reset(new ros::ServiceServer(nh.advertiseService(service_name, &Private::posture_callback, this)));
     }
 
@@ -82,9 +82,7 @@ public:
 
 };
 
-ServiceInterface::ServiceInterface(std::string service_name) :
-        serverScope(serverScope), d(new Private(service_name)) {
-}
+ServiceInterface::ServiceInterface(const std::string &service_name) : d(new Private(service_name)) {}
 
 ServiceInterface::~ServiceInterface() {
 }
