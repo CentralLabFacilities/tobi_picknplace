@@ -32,6 +32,7 @@ set(CTKN_PKGS
     moveit_msgs
     visualization_msgs
     grasping_msgs
+    biron_posture_execution_msgs
 )
 
 

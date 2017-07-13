@@ -15,7 +15,7 @@
 #include <rsc/misc/SignalWaiter.h>
 
 #include <ros/ros.h>
-#include "tobi_picknplace/BironPostureExecution.h"
+#include "biron_posture_execution_msgs/BironPostureExecution.h"
 
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
 #include <rsb/Factory.h>
@@ -103,14 +103,13 @@ public:
     const string METHOD_PLAN = "planToPose";
 
 
-    bool posture_callback(tobi_picknplace::BironPostureExecution::Request &request, tobi_picknplace::BironPostureExecution::Response &response){
+    bool posture_callback(biron_posture_execution_msgs::BironPostureExecution::Request &request, biron_posture_execution_msgs::BironPostureExecution::Response &response){
         ROS_DEBUG_STREAM("got called");
 
-        if(request.method == METHOD_PLAN){
-            ROS_INFO_STREAM("SERVICE " << METHOD_PLAN);
-            listener->requestPlanTo(request.args);
+            ROS_INFO_STREAM("SERVICEE " << METHOD_PLAN);
+            listener->requestOpenGripper(true);
             ROS_INFO("done.");
-        }
+
 
         return true;
     }

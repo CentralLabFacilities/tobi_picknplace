@@ -38,6 +38,7 @@ bool Controller::requestMoveTo(const std::string &poseName) {
 }
 
 bool Controller::requestPlanTo(const std::string &poseName) {
+	ROS_INFO_STREAM("got here");
 	//return katana->moveTo(poseName);
 	return strategy->planTo(poseName);
 	//return strategy->moveTo(poseName);
@@ -90,6 +91,7 @@ map<string, double> Controller::requestJointAngles() const {
 }
 
 void Controller::requestOpenGripper(bool withSensors) {
+	cout << "got here also" << endl;
 	model->openEef(withSensors);
 }
 
