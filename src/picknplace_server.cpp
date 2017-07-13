@@ -56,14 +56,6 @@ int main(int argc, char **argv) {
 	}
 	ros::init(argc, argv, "tobi_picknplace_server");
 
-//    ros::console::Level level = ros::console::levels::Info;
-//    if (vm.count("debug")) {
-//        level = ros::console::levels::Debug;
-//    }
-//    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, level) ) {
-//        ros::console::notifyLoggerLevelsChanged();
-//    }
-
     if (!vm.count("model")) {
         cerr << "No model specified. Use --model <MODELNAME>. Exiting.." << endl;
         ros::shutdown();
@@ -79,7 +71,7 @@ int main(int argc, char **argv) {
 		strategy->setTransitions(t);
     }
     RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
-    ServiceInterface::Ptr serviceInterface(new ServiceInterface("bla", "/biron_posture"));
+    ServiceInterface::Ptr serviceInterface(new ServiceInterface("/biron_posture"));
     ViewInterface::Ptr viewInterface(new ViewInterface());
     Controller controller(model, strategy);
     controller.addControlInterface(rsbInterface);

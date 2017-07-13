@@ -14,10 +14,8 @@ class ServiceInterface: public ControlInterface {
 public:
 	typedef boost::shared_ptr<ServiceInterface> Ptr;
 
-	ServiceInterface(const std::string &serverScope, std::string service_name);
+	ServiceInterface(std::string service_name);
 	virtual ~ServiceInterface();
-
-	void init();
 
 	virtual void setListener(ControlInterfaceListener* listener);
 	virtual void removeListener();

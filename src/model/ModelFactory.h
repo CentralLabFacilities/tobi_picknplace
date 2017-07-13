@@ -11,8 +11,6 @@
 
 class ModelFactory {
 public:
-    static Model::Ptr create(std::string const &type); //todo: parameters?
-    //static Model::Ptr create(std::string const &path);
-
+    static Model::Ptr create(std::string const &type);
 };
 

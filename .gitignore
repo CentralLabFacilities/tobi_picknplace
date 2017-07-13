@@ -7,4 +7,5 @@ catkin_generated
 build
 CTestTestfile.cmake
 *~
-
+.idea/
+cmake-build-debug/
