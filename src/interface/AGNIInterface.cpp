@@ -19,28 +19,9 @@ AGNIInterface::AGNIInterface() {
 
     name = AGNI_GRASP_NAME;
 
-	cl_object_fitter.reset(
-			new actionlib::SimpleActionClient<grasping_msgs::FindGraspableObjectsAction>(
-					nh_, ParamReader::getParamReader().fitterNode, false));
-
 	cl_agni.reset(
 	            new actionlib::SimpleActionClient<grasping_msgs::GraspPlanningAction>(
 	                    nh_, ParamReader::getParamReader().graspNode, false));
-/*
-	rosTools.waitForAction(cl_object_fitter, ros::Duration(0, 0), ParamReader::getParamReader().fitterNode);
-	rosTools.waitForAction(cl_agni, ros::Duration(0, 0), ParamReader::getParamReader().graspNode);
-
-	if (cl_object_fitter->isServerConnected())
-	    ROS_INFO_STREAM("Object fitter server connected!");
-
-	if (cl_agni->isServerConnected())
-        ROS_INFO_STREAM("Grasp manager server connected!");
-*/
-	//string service = "/display_grasp";
-
-	pub_markers = nh_.advertise<visualization_msgs::Marker>("/primitive_marker", 10);
-	//ros::service::waitForService(service);
-	//grasp_viz_client = nh_.serviceClient<grasp_viewer::DisplayGrasps>(service);
 
 }
 
@@ -51,51 +32,6 @@ AGNIInterface::~AGNIInterface() {
 vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = false) {
 
     vector<grasping_msgs::Object> graspable_objects;
-
-    if (!cl_object_fitter) {
-        ROS_ERROR_STREAM("Object fitter client not found");
-        return graspable_objects;
-    }
-
-    if (!cl_object_fitter->isServerConnected()) {
-        ROS_ERROR_STREAM("Object fitter client not connected");
-        return graspable_objects;
-    }
-
-    grasping_msgs::FindGraspableObjectsGoal goal;
-    goal.plan_grasps = plan_grasps;
-
-    cl_object_fitter->sendGoal(goal);
-
-    if(!cl_object_fitter->waitForResult(ros::Duration(10, 0))) { // wait for 10 seconds
-        ROS_ERROR_STREAM("Object fitter timeout");
-        return graspable_objects;
-    }
-
-    grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
-    ROS_INFO_STREAM("fitted " << results->objects.size() << " objects" );
-    
-    rosTools.clear_collision_objects(false);
-    rosTools.clear_grasps();
-    rosTools.clear_grasps_markerarray();
-    
-    if(!results->objects.size()) {
-        ROS_ERROR_STREAM("No objects found");
-        return graspable_objects;
-    }
-
-    for(grasping_msgs::GraspableObject obj: results->objects) {
-        graspable_objects.push_back(obj.object);
-        if(plan_grasps && !obj.grasps.size()) {
-            ROS_WARN_STREAM("No grasps for object " << obj.object.name << " found");
-        } else {
-	  rosTools.publish_collision_object(obj.object);
-	}
-    }
-
-    ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");
-
-    display_primitives(results->objects);
 
     return graspable_objects;
 }
@@ -170,48 +106,4 @@ std::vector<moveit_msgs::PlaceLocation> AGNIInterface::generate_place_locations(
     //TODO: fill method;
     
     return pls;
-}
-
-
-
-void AGNIInterface::display_primitives(const vector<grasping_msgs::GraspableObject>& grasps) {
-
-	uint i = 0;
-	for(grasping_msgs::GraspableObject o : grasps) {
-		visualization_msgs::Marker marker;
-
-		shape_msgs::SolidPrimitive shape = o.object.primitives[0];
-		geometry_msgs::Pose pose = o.object.primitive_poses[0];
-
-		if(shape.type == shape_msgs::SolidPrimitive::CYLINDER) {
-			marker.type = visualization_msgs::Marker::CYLINDER;
-			marker.scale.x = 2 * shape.dimensions[shape_msgs::SolidPrimitive::CYLINDER_RADIUS];
-			marker.scale.y = 2 * shape.dimensions[shape_msgs::SolidPrimitive::CYLINDER_RADIUS];
-			marker.scale.z = shape.dimensions[shape_msgs::SolidPrimitive::CYLINDER_HEIGHT];
-		}
-		if(shape.type == shape_msgs::SolidPrimitive::BOX) {
-			marker.type = visualization_msgs::Marker::CUBE;
-			marker.scale.x = shape.dimensions[shape_msgs::SolidPrimitive::BOX_X];
-			marker.scale.y = shape.dimensions[shape_msgs::SolidPrimitive::BOX_Y];
-			marker.scale.z = shape.dimensions[shape_msgs::SolidPrimitive::BOX_Z];
-		}
-		if(shape.type == shape_msgs::SolidPrimitive::SPHERE) {
-			marker.type = visualization_msgs::Marker::SPHERE;
-			marker.scale.x = 2 * shape.dimensions[shape_msgs::SolidPrimitive::SPHERE_RADIUS];
-			marker.scale.y = 2 * shape.dimensions[shape_msgs::SolidPrimitive::SPHERE_RADIUS];
-			marker.scale.z = 2 * shape.dimensions[shape_msgs::SolidPrimitive::SPHERE_RADIUS];
-		}
-
-		marker.header.frame_id = ParamReader::getParamReader().frameArm;
-		marker.color.r = 0.0;
-		marker.color.g = 0.5;
-		marker.color.b = 0.0;
-		marker.color.a = 0.5;
-		marker.pose = pose;
-		marker.id = i;
-
-		pub_markers.publish(marker);
-		i++;
-	}
-
 }

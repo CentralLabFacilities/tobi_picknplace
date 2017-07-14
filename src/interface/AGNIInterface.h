@@ -9,7 +9,6 @@
 
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
-#include <grasping_msgs/FindGraspableObjectsAction.h>
 #include <grasping_msgs/GraspPlanningAction.h>
 
 #include "../util/RosTools.h"
@@ -42,9 +41,6 @@ private:
 
 	ros::NodeHandle nh_;
 
-	boost::scoped_ptr<actionlib::SimpleActionClient<grasping_msgs::FindGraspableObjectsAction> > cl_object_fitter;
 	boost::scoped_ptr<actionlib::SimpleActionClient<grasping_msgs::GraspPlanningAction> > cl_agni;
-
-	void display_primitives(const std::vector<grasping_msgs::GraspableObject>& grasps);
 
 };
