@@ -1,23 +1,24 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="model" default="h2r5" />  <!--katana-->
+  <arg name="model" value="katana" />
   <arg name="endEffector" default="left_hand" />
   <arg name="frameArm" default="katana_base_link" /> <!--katana_base_link-->
-  <arg name="frameGripper" default="hand_tool_frame_left" /> <!--katana_gripper_tool_frame-->
-  <arg name="groupArm" default="left_arm" /> <!--"arm"-->
-  <arg name="groupEe" default="left_hand" /> <!--gripper-->
+  <arg name="frameGripper" value="katana_gripper_tool_agni_frame" />
+  <arg name="groupArm" value="left_arm" />
+  <arg name="groupEe" value="left_hand" />
   <arg name="plannerId" default="RRTConnectkConfigDefault" />
-  <arg name="graspGen" default="agni" />  <!--centroid or agni-->
+  <arg name="graspGen" default="agni" />
   <arg name="fitterNode" default="object_fitter" />  <!--name of object fitting node-->
   <arg name="graspNode" default="grasp_manager" />  <!--name of grasp generation node-->
-  <arg name="transitions" default="" />
+  <arg name="transitions" value="$(find tobi_bringup)/config/picknplace_transitions.cfg" />
+  <arg name="robot" value="tobi" />
+
   <arg name="use_sim" default="false" />
-  <arg name="robot" default="meka" />
 
   <arg unless="$(arg use_sim)" name="use_sim_args" value="" />
   <arg     if="$(arg use_sim)" name="use_sim_args" value="--sim" />
     
-  <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="tobi_picknplace_server_node" args="--model $(arg model) --transitions $(arg transitions) $(arg use_sim_args)" output="screen">
+  <node name="tobi_picknplace_server" pkg="tobi_picknplace" type="biron_posture_execution" args="--model $(arg model) --transitions $(arg transitions) $(arg use_sim_args)" output="screen">
     <param name="model"                   value="$(arg model)" />  
     <param name="endEffector"             value="$(arg endEffector)" />
     <param name="frameArm"                value="$(arg frameArm)" />
