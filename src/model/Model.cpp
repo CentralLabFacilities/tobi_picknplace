@@ -665,6 +665,8 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
 //        ROS_INFO_STREAM("Use default lastHeightAboveTable: " << lastHeightAboveTable);
 //    }
 
+    graspedObjectID = rosTools.getAttachedCollisionObject();
+
     std::vector<moveit_msgs::PlaceLocation> pls;
 
     moveit_msgs::CollisionObject colSurface; // "surface" is the object where the attached object should be placed on

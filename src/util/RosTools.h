@@ -46,6 +46,7 @@ private:
     moveit_msgs::PlanningScene currentPlanningScene;
     moveit::planning_interface::PlanningSceneInterface planningInterface;
 
+    std::string attachedObject;
 
 	void removeFromManipulationObjects(const std::string& id);
 
@@ -71,6 +72,8 @@ public:
 	void publish_place_locations_as_markerarray(std::vector<moveit_msgs::PlaceLocation> loc);
 
 	void clear_octomap(double sleep_seconds = 1.0);
+
+    std::string getAttachedCollisionObject();
 
 	std::string getDefaultObjectName() const;
 

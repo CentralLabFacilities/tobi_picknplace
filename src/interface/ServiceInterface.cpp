@@ -45,7 +45,11 @@ public:
 
 
     bool posture_callback(biron_posture_execution_msgs::BironPostureExecution::Request &request, biron_posture_execution_msgs::BironPostureExecution::Response &response) {
-        ROS_DEBUG_STREAM("posture service callback");
+
+
+        std::string method = request.method;
+        std::string args = request.args;
+        ROS_DEBUG_STREAM("posture service callback: "<<method<<"("<<args<<")");
 
         if(request.method == METHOD_PLACE_ON_SURFACE){
             ROS_INFO_STREAM("Method: " << METHOD_PLACE_ON_SURFACE);

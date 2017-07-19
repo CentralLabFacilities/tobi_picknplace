@@ -11,6 +11,7 @@
 #include <std_srvs/Empty.h>
 #include <grasp_viewer/DisplayGrasps.h>
 #include <grasping_msgs/Object.h>
+#include <moveit_msgs/AttachedCollisionObject.h>
 
 using namespace std;
 
@@ -368,15 +369,26 @@ void RosTools::sceneCallback(const moveit_msgs::PlanningScene& currentScene) {
             }
 
         }
-
     } else {
         manipulationObjects.clear();
         for(auto o : currentScene.world.collision_objects) {
             manipulationObjects.push_back(o);
         }
     }
+    if(!currentScene.robot_state.attached_collision_objects.empty()){
 
-    //ROS_DEBUG_STREAM_NAMED(NAME, "sceneCallback done: (attached:)" << currentScene.robot_state.attached_collision_objects.size()  );
+        moveit_msgs::AttachedCollisionObject o = currentScene.robot_state.attached_collision_objects[0];
+        attachedObject = o.object.id;
+        ROS_INFO_STREAM_NAMED(NAME, "attached object " << attachedObject  );
+    }else{
+        attachedObject = "";
+    }
+
+    ROS_INFO_STREAM_NAMED(NAME, "sceneCallback done: (attached:)" << currentScene.robot_state.attached_collision_objects.size()<< "objects"  );
+}
+
+std::string RosTools::getAttachedCollisionObject(){
+    return attachedObject;
 }
 
 bool RosTools::getCollisionObjectByName(const std::string &id, moveit_msgs::CollisionObject &obj) {
