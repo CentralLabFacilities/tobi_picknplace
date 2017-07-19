@@ -733,10 +733,10 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
     
     
     
-    ROS_INFO_STREAM("Place object in frame " << lastGraspTried.header.frame_id);
+    ROS_INFO_STREAM("Place object in frame " << "base_link");//lastGraspTried.header.frame_id);
     moveit_msgs::PlaceLocation pl;
     //create only one in the middle.
-    pl.place_pose.header.frame_id = lastGraspTried.header.frame_id; //"base_link";//colSurface.header.frame_id; //baselink for clafu
+    pl.place_pose.header.frame_id = "base_link";//lastGraspTried.header.frame_id; //"base_link";//colSurface.header.frame_id; //baselink for clafu
     pl.place_pose.pose.position.x = surfaceCenterX;
     pl.place_pose.pose.position.y = surfaceCenterY;
     double placeHeight = surfaceCenterZ + ((objectHeight/2.0) + 0.03) + (surfaceSizeZ / 2);
@@ -759,7 +759,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
         for (int y = -10; y <= ySteps; y++) {
             //vary location of place
             moveit_msgs::PlaceLocation pl;
-            pl.place_pose.header.frame_id = lastGraspTried.header.frame_id;
+            pl.place_pose.header.frame_id = "base_link";//lastGraspTried.header.frame_id;
             pl.place_pose.pose.position.x = surfaceCenterX + xStepSize * x;
             pl.place_pose.pose.position.y = surfaceCenterY + yStepSize * y;
             pl.place_pose.pose.position.z = placeHeight;
@@ -776,7 +776,7 @@ std::vector<moveit_msgs::PlaceLocation> Model::generate_place_locations(
             tf2::fromMsg(pl.place_pose.pose.position, rotationCenter);
             for (int r = -10; r < rotation; r++) {
                 moveit_msgs::PlaceLocation plr;
-                plr.place_pose.header.frame_id = lastGraspTried.header.frame_id;
+                plr.place_pose.header.frame_id = "base_link";//lastGraspTried.header.frame_id;
                 double angle = M_PI * r / rotation;
                 Eigen::Affine3d A = Eigen::Translation3d(rotationCenter) * Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()) * Eigen::Translation3d(-rotationCenter);
                 A = A * placePose;
