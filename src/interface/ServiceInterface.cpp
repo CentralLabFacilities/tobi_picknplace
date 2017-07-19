@@ -37,7 +37,7 @@ public:
     ros::NodeHandle nh;
     boost::shared_ptr<ros::ServiceServer> service_ptr_;
 
-    const std::string METHOD_PLACE_ON_SURFACE = "placeOnSurface";
+    const std::string METHOD_PLACE_ON_SURFACE = "placeObjectOnSurface";
     const std::string METHOD_OPEN = "openGripper";
     const std::string METHOD_OPEN_TOUCH = "openGripperWhenTouching";
     const std::string METHOD_CLOSE = "closeGripper";
