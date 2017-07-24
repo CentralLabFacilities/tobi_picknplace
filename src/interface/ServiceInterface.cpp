@@ -42,6 +42,8 @@ public:
     const std::string METHOD_OPEN_TOUCH = "openGripperWhenTouching";
     const std::string METHOD_CLOSE = "closeGripper";
     const std::string METHOD_PLAN = "planToPose";
+    const std::string METHOD_GRIPPER_SENSORS = "getGripperSensors";
+    const std::string METHOD_IS_SOMETHING_IN_GRIPPER = "isSomethingInGripper";
 
 
     bool posture_callback(biron_posture_execution_msgs::BironPostureExecution::Request &request, biron_posture_execution_msgs::BironPostureExecution::Response &response) {
@@ -60,7 +62,9 @@ public:
             } else {
                 response.success = false;
             }
-
+        }else if(request.method == METHOD_IS_SOMETHING_IN_GRIPPER){
+            ROS_INFO_STREAM("Method: " << METHOD_IS_SOMETHING_IN_GRIPPER);
+            response.success = listener->requestIsSomethingInGripper();
         } else if(request.method == METHOD_OPEN){
             ROS_INFO_STREAM("Method: " << METHOD_OPEN);
             listener->requestOpenGripper(false);
@@ -77,6 +81,31 @@ public:
             ROS_INFO_STREAM("Method: " << METHOD_PLAN);
             bool success = listener->requestPlanTo(request.args);
             response.success = success;
+        } else if(request.method == METHOD_GRIPPER_SENSORS){
+            ROS_INFO_STREAM("Method: " << METHOD_GRIPPER_SENSORS);
+            SensorReadings sensorReadings = listener->requestGripperSensors();
+            /*
+            double forceRightInsideNear = data[0];
+            double forceRightInsideFar = data[1];
+            double infraredRightOutside = data[2];
+            double infraredRightFront = data[3];
+            double infraredRightInsideNear = data[4];
+            double infraredRightInsideFar = data[5];
+            double forceLeftInsideNear = data[6];
+            double forceLeftInsideFar = data[7];
+            double infraredLeftOutside = data[8];
+            double infraredLeftFront = data[9];
+            double infraredLeftInsideNear = data[10];
+            double infraredLeftInsideFar = data[11];
+            double infraredMiddle = data[12];
+            */
+            double[] data = new double[13];
+            for (int i = 0; i < sensorReadings->name.size(); i++) {
+                string sensor = sensorReadings->name[i];
+                double reading = sensorReadings->position[i];
+                ROS_INFO_STREAM(sensor << "  : " << reading);
+                data[i] = reading;
+            }
         }
 
         return true;

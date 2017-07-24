@@ -2,3 +2,4 @@ string method
 string args
 ---
 bool success
+float64[] sensordata
