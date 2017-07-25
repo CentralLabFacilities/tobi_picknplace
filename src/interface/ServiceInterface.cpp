@@ -98,14 +98,15 @@ public:
             double infraredLeftInsideNear = data[10];
             double infraredLeftInsideFar = data[11];
             double infraredMiddle = data[12];
-            */
+
             double[] data = new double[13];
-            for (int i = 0; i < sensorReadings->name.size(); i++) {
-                string sensor = sensorReadings->name[i];
-                double reading = sensorReadings->position[i];
+            for (int i = 0; i < sensorReadings.name.size(); i++) {
+                string sensor = sensorReadings.name[i];
+                double reading = sensorReadings.position[i];
                 ROS_INFO_STREAM(sensor << "  : " << reading);
                 data[i] = reading;
             }
+            */
         }
 
         return true;
