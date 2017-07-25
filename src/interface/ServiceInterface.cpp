@@ -84,29 +84,30 @@ public:
         } else if(request.method == METHOD_GRIPPER_SENSORS){
             ROS_INFO_STREAM("Method: " << METHOD_GRIPPER_SENSORS);
             SensorReadings sensorReadings = listener->requestGripperSensors();
-            /*
-            double forceRightInsideNear = data[0];
-            double forceRightInsideFar = data[1];
-            double infraredRightOutside = data[2];
-            double infraredRightFront = data[3];
-            double infraredRightInsideNear = data[4];
-            double infraredRightInsideFar = data[5];
-            double forceLeftInsideNear = data[6];
-            double forceLeftInsideFar = data[7];
-            double infraredLeftOutside = data[8];
-            double infraredLeftFront = data[9];
-            double infraredLeftInsideNear = data[10];
-            double infraredLeftInsideFar = data[11];
-            double infraredMiddle = data[12];
 
-            double[] data = new double[13];
-            for (int i = 0; i < sensorReadings.name.size(); i++) {
-                string sensor = sensorReadings.name[i];
-                double reading = sensorReadings.position[i];
+            std::vector<double> data;
+            std::string   keys[] = {"katana_r_inside_near_force_sensor",
+                               "katana_r_inside_far_force_sensor",
+                               "katana_r_outside_distance_sensor",
+                               "katana_r_tip_distance_sensor",
+                               "katana_r_inside_near_distance_sensor",
+                               "katana_r_inside_far_distance_sensor",
+
+                               "katana_l_inside_near_force_sensor",
+                               "katana_l_inside_far_force_sensor",
+                               "katana_l_outside_distance_sensor",
+                               "katana_l_tip_distance_sensor",
+                               "katana_l_inside_near_distance_sensor",
+                               "katana_l_inside_far_distance_sensor",
+
+                               "katana_wrist_middle_distance_sensor"};
+            for (int i = 0; i < 13; i++) {
+                std::string sensor = keys[i];
+                double reading = sensorReadings.at(sensor);
                 ROS_INFO_STREAM(sensor << "  : " << reading);
-                data[i] = reading;
+                data.push_back(reading);
             }
-            */
+            response.sensordata = data;
         }
 
         return true;
