@@ -187,7 +187,6 @@ GraspReturnType H2R5::graspObject(const string &obj, const string &surface,
     
 
     ROS_INFO("Publish grasps.");
-    rosTools.publish_grasps_as_markerarray(grasps);
     return Model::graspObject(obj, surface, grasps, simulate, startPose);
 }
 

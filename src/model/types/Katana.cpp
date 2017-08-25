@@ -232,31 +232,6 @@ map<string, short> Katana::getGripperSensors() const {
     return currentSensorReadings;
 }
 
-/**
-GraspReturnType Katana::graspObject(ObjectShape obj, bool simulate,
-        const string &startPose) {
-
-    ROS_INFO("### Invoked graspObject(ObjectShape) ###");
-
-    ROS_INFO("Trying to pick object at %.3f, %.3f, %.3f (frame: %s).",
-            obj.center.xMeter, obj.center.yMeter, obj.center.zMeter,
-            obj.center.frame.c_str());
-    string objId = rosTools.getDefaultObjectName();
-
-    // publish collision object
-    rosTools.publish_collision_object(objId, obj, 0.5);
-
-    vector<moveit_msgs::Grasp> grasps = graspGenerator->generate_grasps(obj);
-
-    for (moveit_msgs::Grasp &i : grasps)
-        fillGrasp(i);
-
-    rosTools.publish_grasps_as_markerarray(grasps);
-
-    return Model::graspObject(objId, "", grasps, simulate,
-            startPose);
-}**/
-
 GraspReturnType Katana::graspObject(const string &obj, const string &surface,
         bool simulate, const string &startPose) {
 
@@ -314,8 +289,6 @@ GraspReturnType Katana::graspObject(const string &obj, const string &surface,
           fillGrasp(i);
       }
     }
-
-    rosTools.publish_grasps_as_markerarray(grasps);
 
     //closeEef(false);
     auto ret = Model::graspObject(obj, surface, grasps, simulate, startPose);

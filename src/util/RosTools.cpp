@@ -23,10 +23,7 @@ RosTools::RosTools() {
 
     object_publisher = nh.advertise<moveit_msgs::CollisionObject>("collision_object", 1);
     object_att_publisher = nh.advertise<moveit_msgs::AttachedCollisionObject>("attached_collision_object", 1);
-    grasps_marker = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker", 10);
-    grasps_marker_red = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_red", 10);
-    grasps_marker_green = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_green", 10);
-    grasps_marker_white = nh.advertise<visualization_msgs::MarkerArray>("grasps_marker_white", 10);
+    place_marker = nh.advertise<visualization_msgs::MarkerArray>("place_marker", 10);
 
     clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
 
@@ -148,57 +145,6 @@ void RosTools::clear_collision_objects(bool with_surface) {
 
 }
 
-void RosTools::publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color) {
-    visualization_msgs::MarkerArray markers;
-    int i = 0;
-
-    for (std::vector<moveit_msgs::Grasp>::iterator it = grasps.begin(); it != grasps.end(); it++) {
-        visualization_msgs::Marker marker;
-        marker.header.stamp = ros::Time::now();
-        marker.header.frame_id = it->grasp_pose.header.frame_id;
-        marker.id = i;
-        marker.type = marker.ARROW;
-        marker.ns = "graspmarker";
-        marker.pose = it->grasp_pose.pose;
-        marker.scale.x = -0.1;
-        marker.scale.y = 0.002;
-        marker.scale.z = 0.002;
-
-        if (color == "red") {
-            marker.color.r = 1.0;
-            marker.color.g = 0.0;
-            marker.color.b = 0.0;
-        } else if (color == "green") {
-            marker.color.r = 0.0;
-            marker.color.g = 1.0;
-            marker.color.b = 0.0;
-        } else if (color == "white") {
-            marker.color.r = 1.0;
-            marker.color.g = 1.0;
-            marker.color.b = 1.0;
-        } else {
-            marker.color.r = 0.0;
-            marker.color.g = 0.0;
-            marker.color.b = 1.0;
-        }
-
-        marker.color.a = 1.0;
-        markers.markers.push_back(marker);
-        i++;
-    }
-
-    if (color == "red") {
-        grasps_marker_red.publish(markers);
-    } else if (color == "green") {
-        grasps_marker_green.publish(markers);
-    } else if (color == "white") {
-        grasps_marker_white.publish(markers);
-    } else {
-
-        grasps_marker.publish(markers);
-    }
-}
-
 void RosTools::clear_grasps_markerarray() {
 
     visualization_msgs::MarkerArray markers;
@@ -208,10 +154,7 @@ void RosTools::clear_grasps_markerarray() {
     markers.markers.push_back(marker);
 
     ROS_DEBUG_STREAM_NAMED(NAME, "Invoked clear_grasps_markerarray");
-    grasps_marker_red.publish(markers);
-    grasps_marker_green.publish(markers);
-    grasps_marker_white.publish(markers);
-    grasps_marker.publish(markers);
+    place_marker.publish(markers);
 }
 
 void RosTools::display_grasps(const std::vector<moveit_msgs::Grasp> &grasps) {
@@ -253,7 +196,7 @@ void RosTools::publish_place_locations_as_markerarray(std::vector<moveit_msgs::P
         markers.markers.push_back(marker);
         i++;
     }
-    grasps_marker.publish(markers);
+    place_marker.publish(markers);
 }
 
 void RosTools::remove_collision_object(const string id) {

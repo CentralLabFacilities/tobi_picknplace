@@ -25,10 +25,7 @@ private:
     TransformerTF tfTransformer;
 
     ros::NodeHandle nh;
-    ros::Publisher grasps_marker;
-    ros::Publisher grasps_marker_red;
-    ros::Publisher grasps_marker_green;
-    ros::Publisher grasps_marker_white;
+    ros::Publisher place_marker;
 
     ros::Publisher object_publisher;
     ros::Publisher object_att_publisher;
@@ -64,7 +61,6 @@ public:
 	void detach_collision_object();
 	void attach_collision_object(moveit_msgs::AttachedCollisionObject& attached_object);
 	bool has_attached_object();
-	void publish_grasps_as_markerarray(std::vector<moveit_msgs::Grasp> grasps, std::string color = "blue");
 	void clear_grasps_markerarray();
 	void display_grasps(const std::vector<moveit_msgs::Grasp> &grasps);
 	void clear_grasps();
