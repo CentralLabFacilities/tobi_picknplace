@@ -30,12 +30,6 @@ RosTools::RosTools() {
 
     clearOctomapClient = nh.serviceClient<std_srvs::Empty>("clear_octomap");
 
-    std::string service = "/display_grasp";
-    ROS_INFO_NAMED(NAME, "Wait for Service: %s", service.c_str());
-    ros::service::waitForService(service);
-    // TODO test if service was found
-    grasp_viz_client = nh.serviceClient<grasp_viewer::DisplayGrasps>(service);
-
     scene_subscriber = nh.subscribe("planning_scene", 10, &RosTools::sceneCallback, this);
     scene_publisher =  nh.advertise<moveit_msgs::PlanningScene>("planning_scene",10);
 }

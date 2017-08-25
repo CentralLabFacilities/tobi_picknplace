@@ -19,23 +19,6 @@ AGNIInterface::AGNIInterface() {
 
     name = AGNI_GRASP_NAME;
 
-	cl_object_fitter.reset(
-			new actionlib::SimpleActionClient<grasping_msgs::FindGraspableObjectsAction>(
-					nh_, ParamReader::getParamReader().fitterNode, false));
-
-	cl_agni.reset(
-	            new actionlib::SimpleActionClient<grasping_msgs::GraspPlanningAction>(
-	                    nh_, ParamReader::getParamReader().graspNode, false));
-
-	rosTools.waitForAction(cl_object_fitter, ros::Duration(0, 0), ParamReader::getParamReader().fitterNode);
-	rosTools.waitForAction(cl_agni, ros::Duration(0, 0), ParamReader::getParamReader().graspNode);
-
-	if (cl_object_fitter->isServerConnected())
-	    ROS_INFO_STREAM("Object fitter server connected!");
-
-	if (cl_agni->isServerConnected())
-        ROS_INFO_STREAM("Grasp manager server connected!");
-
 	//string service = "/display_grasp";
 
 	pub_markers = nh_.advertise<visualization_msgs::Marker>("/primitive_marker", 10);
@@ -52,92 +35,13 @@ vector<grasping_msgs::Object> AGNIInterface::find_objects(bool plan_grasps = fal
 
     vector<grasping_msgs::Object> graspable_objects;
 
-    if (!cl_object_fitter) {
-        ROS_ERROR_STREAM("Object fitter client not found");
-        return graspable_objects;
-    }
-
-    if (!cl_object_fitter->isServerConnected()) {
-        ROS_ERROR_STREAM("Object fitter client not connected");
-        return graspable_objects;
-    }
-
-    grasping_msgs::FindGraspableObjectsGoal goal;
-    goal.plan_grasps = plan_grasps;
-
-    cl_object_fitter->sendGoal(goal);
-
-    if(!cl_object_fitter->waitForResult(ros::Duration(10, 0))) { // wait for 10 seconds
-        ROS_ERROR_STREAM("Object fitter timeout");
-        return graspable_objects;
-    }
-
-    grasping_msgs::FindGraspableObjectsResult::ConstPtr results = cl_object_fitter->getResult();
-    ROS_INFO_STREAM("fitted " << results->objects.size() << " objects" );
-    
-    rosTools.clear_collision_objects(false);
-    rosTools.clear_grasps();
-    rosTools.clear_grasps_markerarray();
-    
-    if(!results->objects.size()) {
-        ROS_ERROR_STREAM("No objects found");
-        return graspable_objects;
-    }
-
-    for(grasping_msgs::GraspableObject obj: results->objects) {
-        graspable_objects.push_back(obj.object);
-        if(plan_grasps && !obj.grasps.size()) {
-            ROS_WARN_STREAM("No grasps for object " << obj.object.name << " found");
-        } else {
-	  rosTools.publish_collision_object(obj.object);
-	}
-    }
-
-    ROS_DEBUG_STREAM("Found " << graspable_objects.size() << " objects.");
-
-    display_primitives(results->objects);
-
     return graspable_objects;
 }
 
 vector<moveit_msgs::Grasp> AGNIInterface::generate_grasps(grasping_msgs::Object object) {
 
     vector<moveit_msgs::Grasp> grasps; 
-    rosTools.clear_grasps();
-    rosTools.clear_grasps_markerarray();
-
-
-    if (!cl_agni) {
-        ROS_ERROR_STREAM("AGNI client not found");
-        return grasps;
-    }
-
-    if (!cl_agni->isServerConnected()) {
-        ROS_ERROR_STREAM("AGNI client not connected");
-        return grasps;
-    }
-
-    grasping_msgs::GraspPlanningGoal goal;
-    
-
-    goal.object = object;
-    goal.group_name = ParamReader::getParamReader().groupArm;
-
-    cl_agni->sendGoal(goal);
-
-    if(!cl_agni->waitForResult(ros::Duration(15, 0))) { // wait for 15 seconds
-        ROS_ERROR_STREAM("AGNI timeout");
-        return grasps;
-    }
-
-    grasping_msgs::GraspPlanningResult::ConstPtr results = cl_agni->getResult();
-
-    if(!results->grasps.size()) {
-        ROS_ERROR_STREAM("No grasps found!");
-        return grasps;
-    }
-    ROS_INFO_STREAM("Number of generated grasps: " <<results->grasps.size());
-    return results->grasps;
+    return grasps;
 
 }
 
