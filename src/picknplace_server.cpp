@@ -96,6 +96,6 @@ int main(int argc, char **argv) {
 
 	cout << "running ..." << endl;
 
-	ros::spin();
+	ros::MultiThreadedSpinner().spin();
 	return 0;
 }
