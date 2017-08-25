@@ -99,6 +99,7 @@ set(DEFAULT_FILES
   src/interface/AGNIInterface.cpp
   src/interface/RsbInterface.cpp
   src/interface/ViewInterface.cpp
+  src/interface/ServiceInterface.cpp
   src/model/ModelFactory.cpp
   src/util/TransitionReader.cpp
   src/util/TransformerTF.cpp

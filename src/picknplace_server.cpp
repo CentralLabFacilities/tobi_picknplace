@@ -10,6 +10,7 @@
 #include "model/ModelFactory.h"
 #include "interface/RsbInterface.h"
 #include "interface/ViewInterface.h"
+#include "interface/ServiceInterface.h"
 #include <boost/program_options.hpp>
 
 #include <ros/ros.h>
@@ -78,7 +79,9 @@ int main(int argc, char **argv) {
 		vector<Transition> t = reader.read(vm["transitions"].as<string>());
 		strategy->setTransitions(t);
 	}
-    cout << "b" << endl;
+	cout << "b" << endl;
+	
+    ServiceInterface::Ptr serviceInterface(new ServiceInterface("/biron_posture"));
 	RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
     cout << "c" << endl;
 	ViewInterface::Ptr viewInterface(new ViewInterface());
@@ -87,6 +90,7 @@ int main(int argc, char **argv) {
 	Controller controller(model, strategy);
     cout << "e" << endl;
 	controller.addControlInterface(rsbInterface);
+	controller.addControlInterface(serviceInterface);
     cout << "f" << endl;
 	controller.addControlInterface(viewInterface);
 
