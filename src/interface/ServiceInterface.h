@@ -9,6 +9,9 @@
 
 #include "ControlInterface.h"
 
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
+#include <moveit/move_group_interface/move_group_interface.h>
+
 
 class ServiceInterface: public ControlInterface {
 public:

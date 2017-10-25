@@ -79,7 +79,7 @@ public:
             response.success = true;
         } else if(request.method == METHOD_PLAN){
             ROS_INFO_STREAM("Method: " << METHOD_PLAN);
-            bool success = listener->requestPlanTo(request.args);
+            bool success = executePose(request.args);
             response.success = success;
         } else if(request.method == METHOD_GRIPPER_SENSORS){
             ROS_INFO_STREAM("Method: " << METHOD_GRIPPER_SENSORS);
@@ -109,6 +109,43 @@ public:
             }
             response.sensordata = data;
         }
+
+        return true;
+    }
+
+    bool executePose(std::string group_and_pose){
+
+        std::stringstream ss(group_and_pose);
+        std::string item;
+
+        std::vector<std::string> tokens;
+
+        while (std::getline(ss, item, ';')) {
+            tokens.push_back(item);
+        }
+
+        std::string group_name = tokens[0];
+        std::string pose_name = tokens[1];
+
+        ROS_INFO_STREAM("Planning group " << group_name << " to pose " << pose_name);
+
+        moveit::planning_interface::MoveGroupInterface m("left_arm");
+        bool pose_found = m.setNamedTarget("default");
+
+        if(!pose_found){
+            ROS_ERROR_STREAM("Pose " << pose_name << " is not known for group " << group_name);
+            return false;
+        }
+
+        moveit::planning_interface::MoveGroupInterface::Plan p;
+
+        bool plan_found = m.plan(p);
+
+        if(!plan_found) {
+            ROS_ERROR_STREAM("No plan found to pose " << pose_name);
+        }
+
+        m.execute(p);
 
         return true;
     }
