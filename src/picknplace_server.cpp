@@ -69,29 +69,23 @@ int main(int argc, char **argv) {
         ros::shutdown();
         return 0;
     }
-    cout << "ModelxsDASDASD: " << vm["model"].as<string>() << endl;
+    cout << "Model: " << vm["model"].as<string>() << endl;
 	Model::Ptr model = ModelFactory::create(vm["model"].as<string>());
 
 	ViaPoseStrategy::Ptr strategy(new ViaPoseStrategy(model));
-    cout << "a" << endl;
 	if (vm.count("transitions")) {
 		TransitionsReader reader;
 		vector<Transition> t = reader.read(vm["transitions"].as<string>());
 		strategy->setTransitions(t);
 	}
-	cout << "b" << endl;
 	
     ServiceInterface::Ptr serviceInterface(new ServiceInterface("/biron_posture"));
 	RsbInterface::Ptr rsbInterface(new RsbInterface("/arm/picknplace/server"));
-    cout << "c" << endl;
 	ViewInterface::Ptr viewInterface(new ViewInterface());
-    cout << "d" << endl;
 
 	Controller controller(model, strategy);
-    cout << "e" << endl;
 	controller.addControlInterface(rsbInterface);
 	controller.addControlInterface(serviceInterface);
-    cout << "f" << endl;
 	controller.addControlInterface(viewInterface);
 
 	cout << "running ..." << endl;
