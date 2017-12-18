@@ -130,7 +130,9 @@ public:
         ROS_INFO_STREAM("Planning group " << group_name << " to pose " << pose_name);
 
         moveit::planning_interface::MoveGroupInterface m(group_name);
-        bool pose_found = m.setNamedTarget(pose_name);
+        moveit::planning_interface::MoveItErrorCode pose_code = bool(m.setNamedTarget(pose_name));
+        
+        bool pose_found = bool(pose_code);
 
         if(!pose_found){
             ROS_ERROR_STREAM("Pose " << pose_name << " is not known for group " << group_name);
@@ -139,7 +141,9 @@ public:
 
         moveit::planning_interface::MoveGroupInterface::Plan p;
 
-        bool plan_found = m.plan(p);
+        moveit::planning_interface::MoveItErrorCode plan_code = m.plan(p);
+        
+        bool plan_found = bool(plan_code);
 
         if(!plan_found) {
             ROS_ERROR_STREAM("No plan found to pose " << pose_name);
